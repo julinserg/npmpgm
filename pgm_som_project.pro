@@ -27,13 +27,15 @@ SOURCES += main.cpp\
     somoclu/src/training.cpp \
     somoclu/src/trainOneEpoch.cpp \
     somoclu/src/uMatrix.cpp \
-    somoclu/src/Windows/getopt.c
+    somoclu/src/Windows/getopt.c \
+    qsomthread.cpp
 
 HEADERS  += mainwindow.h \   
     somoclu/src/Windows/getopt.h \
     somoclu/src/Windows/unistd.h \   
     somoclu/src/somocluWrap.h \
-    ui_mainwindow.h
+    ui_mainwindow.h \
+    qsomthread.h
 
 FORMS    += mainwindow.ui
 
