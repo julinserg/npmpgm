@@ -28,12 +28,14 @@ SOURCES += main.cpp\
     somoclu/src/trainOneEpoch.cpp \
     somoclu/src/uMatrix.cpp \
     somoclu/src/Windows/getopt.c \
+    csv-parser/csv_parser.cpp \
     qsomthread.cpp
 
 HEADERS  += mainwindow.h \   
     somoclu/src/Windows/getopt.h \
     somoclu/src/Windows/unistd.h \   
     somoclu/src/somocluWrap.h \
+    csv-parser/csv_parser.hpp \
     ui_mainwindow.h \
     qsomthread.h
 
@@ -41,4 +43,5 @@ FORMS    += mainwindow.ui
 
 INCLUDEPATH += "C:/Program Files/MPICH2/include"
 INCLUDEPATH += "./somoclu/src"
+INCLUDEPATH += "./csv-parser"
 LIBS += "C:/Program Files/MPICH2/lib/mpi.lib"

@@ -126,7 +126,7 @@ void QSOMThread::run()
             while (currentRankProcessed < nProcs) {
                 if (m_rank == currentRankProcessed) {
                     sparseData=readSparseMatrixChunk(m_inFilename, nVectors, nVectorsPerRank,
-                                                     rank*nVectorsPerRank);
+                                                     m_rank*nVectorsPerRank);
                 }
                 currentRankProcessed++;
     #ifdef HAVE_MPI
