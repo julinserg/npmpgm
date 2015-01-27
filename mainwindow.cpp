@@ -1,7 +1,9 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "csv_parser.hpp"
-
+#include "csv.h"
+#include "armadillo"
+#include <stdlib.h>
+using namespace arma;
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -10,22 +12,45 @@ MainWindow::MainWindow(QWidget *parent) :
     m_somthread = new QSOMThread();
     m_somthread->start();
     m_somthread->moveToThread(m_somthread);
+    mat B;
+   /* mat A = randn(2,3);
+    mat B = randn(4,5);
 
-    csv_parser csv("characterTestLabel.csv");
+    field<mat> F(2,1);
+    F(0,0) = A;
+    F(1,0) = B;
 
-    //For getting values according to row number and column number. Remember it starts from (1,1) and not (0,0)
-    string value = csv.get_value(3,4);
+    F.print("F:");
 
-    //For getting a particular row in the CSV file
-    string line = csv.get_line(3);
+    F.save("mat_field");*/
+   /* csv_parser csv("data/characterTrainLabel.csv");
+    mat B;
+    while(file_parser.has_more_rows())
+    {
+            unsigned int i = 0;
+            csv_row row = file_parser.get_row();
+            B.set_size(row_count,row.size());
+            for (i = 0; i < row.size(); i++)
+            {
+                double val =  atof(row[i].c_str());
 
-    //For getting number of fields in a particular row.
-    int total_fields = csv.fields(csv.get_line(3));
-
-    cout<<"Value in (3,4) :"<<value<<endl;
-    cout<<"Row 3: "<<line<<endl;
-    cout<<"Total fields in row 3:"<<total_fields<<endl;
-
+                B(row_count-1,i) = val;
+            }
+            row_count++;
+    }*/
+    QList<QStringList> listfile = CSV::parseFromFile("data/characterTrainLabel.csv");
+    B.set_size(listfile.size(),listfile.first().size());
+    int i = 0;
+    int j = 0;
+    foreach (QStringList rowList, listfile) {
+        j = 0;
+        foreach (QString valStr, rowList) {
+             bool ok;
+             B(i,j) = valStr.toDouble(&ok);
+             j++;
+        }
+        i++;
+    }
 
 }
 

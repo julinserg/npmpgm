@@ -94,9 +94,9 @@ void QSOMThread::run()
         unsigned int nVectors = 0;
         if(m_rank == 0 ) {
             if (m_kernelType == DENSE_CPU || m_kernelType == DENSE_GPU) {
-                dataRoot = readMatrix(m_inFilename, nVectors, nDimensions);
+                /*dataRoot = readMatrix(m_inFilename, nVectors, nDimensions);*/
             } else {
-                readSparseMatrixDimensions(m_inFilename, nVectors, nDimensions);
+                /*readSparseMatrixDimensions(m_inFilename, nVectors, nDimensions);*/
             }
         }
     #ifdef HAVE_MPI
@@ -123,7 +123,7 @@ void QSOMThread::run()
     #endif
         } else {
             int currentRankProcessed = 0;
-            while (currentRankProcessed < nProcs) {
+            /*while (currentRankProcessed < nProcs) {
                 if (m_rank == currentRankProcessed) {
                     sparseData=readSparseMatrixChunk(m_inFilename, nVectors, nVectorsPerRank,
                                                      m_rank*nVectorsPerRank);
@@ -132,7 +132,7 @@ void QSOMThread::run()
     #ifdef HAVE_MPI
                 MPI_Barrier(MPI_COMM_WORLD);
     #endif
-            }
+            }*/
         }
 
         if(m_rank == 0) {
@@ -159,12 +159,12 @@ void QSOMThread::run()
         MPI_Barrier(MPI_COMM_WORLD);
     #endif
         // TRAINING
-        train(m_rank, data, sparseData, m_nSomX, m_nSomY,
+      /*  train(m_rank, data, sparseData, m_nSomX, m_nSomY,
               nDimensions, nVectors, nVectorsPerRank,
               m_nEpoch, m_radius0, m_radiusN, m_radiusCooling,
               m_scale0, m_scaleN, m_scaleCooling,
               m_outPrefix, m_snapshots, m_kernelType, m_mapType,
-              m_initialCodebookFilename);
+              m_initialCodebookFilename);*/
 
         if (m_kernelType == DENSE_CPU || m_kernelType == DENSE_GPU) {
             delete [] data;

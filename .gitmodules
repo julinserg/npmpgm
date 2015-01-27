@@ -4,3 +4,6 @@
 [submodule "somoclu"]
 	path = somoclu
 	url = https://github.com/peterwittek/somoclu.git
+[submodule "armadillo"]
+	path = armadillo
+	url = https://github.com/lsolanka/armadillo.git
