@@ -30,7 +30,8 @@ SOURCES += main.cpp\
     somoclu/src/Windows/getopt.c \
     qt-csv/csv.cpp \
     armadillo/src/wrapper.cpp \
-    qsomthread.cpp
+    qsomthread.cpp \
+    cgetdata.cpp
 
 HEADERS  += mainwindow.h \   
     somoclu/src/Windows/getopt.h \
@@ -431,7 +432,8 @@ HEADERS  += mainwindow.h \
     armadillo/include/armadillo_bits/wall_clock_bones.hpp \
     armadillo/include/armadillo_bits/wall_clock_meat.hpp \
     armadillo/include/armadillo_bits/xvec_htrans_bones.hpp \
-    armadillo/include/armadillo_bits/xvec_htrans_meat.hpp
+    armadillo/include/armadillo_bits/xvec_htrans_meat.hpp \
+    cgetdata.h
 
 FORMS    += mainwindow.ui
 

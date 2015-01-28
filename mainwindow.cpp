@@ -1,8 +1,8 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "csv.h"
 #include "armadillo"
 #include <stdlib.h>
+#include "cgetdata.h"
 using namespace arma;
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -12,7 +12,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_somthread = new QSOMThread();
     m_somthread->start();
     m_somthread->moveToThread(m_somthread);
-    mat B;
+    field<mat> FD = CGetData::getCellFromFile("data/characterTrainData.csv","data/characterTrainLabel.csv");
+    int t =0;
    /* mat A = randn(2,3);
     mat B = randn(4,5);
 
@@ -38,19 +39,7 @@ MainWindow::MainWindow(QWidget *parent) :
             }
             row_count++;
     }*/
-    QList<QStringList> listfile = CSV::parseFromFile("data/characterTrainLabel.csv");
-    B.set_size(listfile.size(),listfile.first().size());
-    int i = 0;
-    int j = 0;
-    foreach (QStringList rowList, listfile) {
-        j = 0;
-        foreach (QString valStr, rowList) {
-             bool ok;
-             B(i,j) = valStr.toDouble(&ok);
-             j++;
-        }
-        i++;
-    }
+
 
 }
 
