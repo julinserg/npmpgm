@@ -12,7 +12,9 @@ MainWindow::MainWindow(QWidget *parent) :
     m_somthread = new QSOMThread();
     m_somthread->start();
     m_somthread->moveToThread(m_somthread);
-    field<mat> FD = CGetData::getCellFromFile("data/characterTrainData.csv","data/characterTrainLabel.csv");
+    QString str1("data/characterTrainData.csv");
+    QString str2("data/characterTrainLabel.csv");
+    field<mat> FD = CGetData::getCellFromFile(str1,str2);
     int t =0;
    /* mat A = randn(2,3);
     mat B = randn(4,5);
