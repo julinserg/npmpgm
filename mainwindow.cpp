@@ -14,8 +14,13 @@ MainWindow::MainWindow(QWidget *parent) :
     m_somthread->moveToThread(m_somthread);
     QString str1("data/characterTrainData.csv");
     QString str2("data/characterTrainLabel.csv");
-    field<mat> FD = CGetData::getCellFromFile(str1,str2);
+    field<mat> data;
+    mat label;
+    CGetData::getCellFromFile(str1,str2,data,label);   
+    field<mat> dataForSOM;
+    CGetData::formingTrainDataForSOM(data,label,dataForSOM);
     int t =0;
+
    /* mat A = randn(2,3);
     mat B = randn(4,5);
 
