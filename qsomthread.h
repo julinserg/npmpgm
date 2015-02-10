@@ -57,6 +57,78 @@ struct core_data
     int uMatrix_size;
 };
 
+float euclideanDistanceOnToroidMap(const unsigned int som_x, const unsigned int som_y, const unsigned int x, const unsigned int y, const unsigned int nSomX, const unsigned int nSomY);
+float euclideanDistanceOnPlanarMap(const unsigned int som_x, const unsigned int som_y, const unsigned int x, const unsigned int y);
+float getWeight(float distance, float radius, float scaling);
+int saveCodebook(string cbFileName, float *codebook,
+                unsigned int nSomX, unsigned int nSomY, unsigned int nDimensions);
+float *calculateUMatrix(float *codebook, unsigned int nSomX,
+             unsigned int nSomY, unsigned int nDimensions, string mapType);
+int saveUMatrix(string fname, float *uMatrix, unsigned int nSomX,
+              unsigned int nSomY);
+int saveBmus(string filename, int *bmus, unsigned int nSomX,
+             unsigned int nSomY, unsigned int nVectors);
+//void printMatrix(float *A, int nRows, int nCols);
+float *readMatrix(const string inFilename,
+                  unsigned int &nRows, unsigned int &nCols);
+void readSparseMatrixDimensions(const string filename, unsigned int &nRows,
+                            unsigned int &nColumns);
+svm_node** readSparseMatrixChunk(const string filename, unsigned int nRows,
+                                 unsigned int nRowsToRead,
+                                 unsigned int rowOffset);
+core_data trainOneEpoch(int itask, float *data, svm_node **sparseData,
+           core_data coreData, unsigned int nEpoch, unsigned int currentEpoch,
+           bool enableCalculatingUMatrix,
+           unsigned int nSomX, unsigned int nSomY,
+           unsigned int nDimensions, unsigned int nVectors,
+           unsigned int nVectorsPerRank,
+           unsigned int radius0, unsigned int radiusN,
+           string radiusCooling,
+           float scale0, float scaleN,
+           string scaleCooling,
+           unsigned int kernelType, string mapType);
+void train(int itask, float *data, svm_node **sparseData,
+           unsigned int nSomX, unsigned int nSomY,
+           unsigned int nDimensions, unsigned int nVectors,
+           unsigned int nVectorsPerRank, unsigned int nEpoch,
+           unsigned int radius0, unsigned int radiusN,
+           string radiusCooling,
+           float scale0, float scaleN,
+           string scaleCooling,
+           string outPrefix, unsigned int snapshots,
+           unsigned int kernelType, string mapType,
+           string initialCodebookFilename);
+void trainOneEpochDenseCPU(int itask, float *data, float *numerator,
+                           float *denominator, float *codebook,
+                           unsigned int nSomX, unsigned int nSomY,
+                           unsigned int nDimensions, unsigned int nVectors,
+                           unsigned int nVectorsPerRank, float radius,
+                           float scale, string mapType, int *globalBmus);
+void trainOneEpochSparseCPU(int itask, svm_node **sparseData, float *numerator,
+                           float *denominator, float *codebook,
+                           unsigned int nSomX, unsigned int nSomY,
+                           unsigned int nDimensions, unsigned int nVectors,
+                           unsigned int nVectorsPerRank, float radius,
+                           float scale, string mapType, int *globalBmus);
+void initializeCodebook(unsigned int seed, float *codebook, unsigned int nSomX,
+                        unsigned int nSomY, unsigned int nDimensions);
+
+
+extern "C" {
+#ifdef CUDA
+void setDevice(int commRank, int commSize);
+void freeGpu();
+void initializeGpu(float *hostData, int nVectorsPerRank, int nDimensions, int nSomX, int nSomY);
+void trainOneEpochDenseGPU(int itask, float *data, float *numerator,
+                           float *denominator, float *codebook,
+                           unsigned int nSomX, unsigned int nSomY,
+                           unsigned int nDimensions, unsigned int nVectors,
+                           unsigned int nVectorsPerRank, float radius,
+                           float scale, string mapType, int *globalBmus);
+#endif
+void my_abort(int err);
+}
+
 class QSOMThread : public QThread
 {
     Q_OBJECT

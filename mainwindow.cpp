@@ -42,14 +42,15 @@ MainWindow::MainWindow(QWidget *parent) :
     int t =0;
     QString name = namefile.arg(1);
     m_somthread = new QSOMThread();
-
+    int x = 15;
+    int y = 15;
     m_somthread->setFileName(name.toStdString());
     m_somthread->setOutPrefix(QString("./som_train_class_%1").arg(1).toStdString());
-    m_somthread->setNumEpoch(10);
-    m_somthread->setSizeMap(12,12,"planar");
-    m_somthread->setRadiusParam(12,1,"linear");
+    m_somthread->setNumEpoch(500);
+    m_somthread->setSizeMap(x,y,"planar");
+    m_somthread->setRadiusParam(min(x,y),1,"linear");
     m_somthread->setScaleParam(0.1,0.01,"linear");
-    m_somthread->setKernelType(0,1);
+    m_somthread->setKernelType(0,4);
     m_somthread->setSaveParam(0,"");
     m_somthread->start();
     m_somthread->moveToThread(m_somthread);

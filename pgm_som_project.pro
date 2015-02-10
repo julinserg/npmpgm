@@ -19,7 +19,14 @@ DEFINES += HAVE_MPI
 
 SOURCES += main.cpp\
         mainwindow.cpp \
+    somoclu/src/denseCpuKernels.cpp \
+    somoclu/src/io.cpp \
+    somoclu/src/mapDistanceFunctions.cpp \   
     somoclu/src/somocluWrap.cpp \
+    somoclu/src/sparseCpuKernels.cpp \
+    somoclu/src/training.cpp \
+    somoclu/src/trainOneEpoch.cpp \
+    somoclu/src/uMatrix.cpp \
     somoclu/src/Windows/getopt.c \
     qt-csv/csv.cpp \
     armadillo/src/wrapper.cpp \
