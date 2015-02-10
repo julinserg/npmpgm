@@ -84,7 +84,7 @@ public:
         m_nEpoch = number;
     }
     // размер карты и тип карты(planar or toroid)
-    void setNumEpoch(uint nSomX, uint nSomY, string mapType)
+    void setSizeMap(uint nSomX, uint nSomY, string mapType)
     {
         m_nSomX = nSomX;
         m_nSomY = nSomY;
