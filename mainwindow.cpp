@@ -41,7 +41,7 @@ MainWindow::MainWindow(QWidget *parent) :
     }
     int t =0;
     QString name = namefile.arg(1);
-    m_somthread = new QSOMThread();
+    /*m_somthread = new QSOMThread();
     int x = 15;
     int y = 15;
     m_somthread->setFileName(name.toStdString());
@@ -54,33 +54,19 @@ MainWindow::MainWindow(QWidget *parent) :
     m_somthread->setSaveParam(0,"");
     m_somthread->start();
     m_somthread->moveToThread(m_somthread);
-    m_somthread->startTrain();
+    m_somthread->startTrain();*/
 
-   /* mat A = randn(2,3);
-    mat B = randn(4,5);
+    double * codebook = NULL;
+    unsigned int nDimensions = 0;
+    unsigned int nVectors = 0;
+    QString filecodebook = "./som_train_class_%1.wts";
+    filecodebook = filecodebook.arg(1);
+    codebook = readMatrixDoubleType(filecodebook.toStdString(), nVectors, nDimensions);
+    mat CodeBook(codebook, nVectors, nDimensions);
+    int g = 0;
 
-    field<mat> F(2,1);
-    F(0,0) = A;
-    F(1,0) = B;
 
-    F.print("F:");
 
-    F.save("mat_field");*/
-   /* csv_parser csv("data/characterTrainLabel.csv");
-    mat B;
-    while(file_parser.has_more_rows())
-    {
-            unsigned int i = 0;
-            csv_row row = file_parser.get_row();
-            B.set_size(row_count,row.size());
-            for (i = 0; i < row.size(); i++)
-            {
-                double val =  atof(row[i].c_str());
-
-                B(row_count-1,i) = val;
-            }
-            row_count++;
-    }*/
 
 
 }

@@ -42,11 +42,8 @@ void CGetData::getCellFromFile(const QString& namefileData, const QString& namef
            A.clear();
            indexField++;
        }
-       A.resize(index+1,Data.n_cols);
-       for (int j = 0; j < Data.n_cols; ++j)
-       {         
-         A(index,j) =  Data(i,j);         
-       }
+       A.resize(index+1,Data.n_cols);               
+       A(index,span::all) =  Data(i,span::all);
        index++;
        predSeq = Label(i,0);
        predLab = Label(i,1);
@@ -59,6 +56,7 @@ void CGetData::getCellFromFile(const QString& namefileData, const QString& namef
     {
        data(i,0) =  dataTemp(i,0);
     }
+    int t = 0;
 
     return ;
 }
@@ -70,13 +68,16 @@ void CGetData::formingTrainDataForSOM(field<mat> data, mat label, field<mat> &da
     mat A;
     int index = 0;
     int indexField = 0;
+    int first_row = 0;
+    int last_row = 0;
     int sizeRow =label(label.n_rows-1,0) -  label(0,0) + 1;
     dataForSOM.set_size(sizeRow,1);
     for (int i = 0; i < data.n_rows; ++i)
     {
        if (predLab != label(i,0))
        {
-           index = 0;           
+           first_row = 0;
+           last_row = 0;
 
            dataForSOM(indexField,0) = A;
 
@@ -84,7 +85,11 @@ void CGetData::formingTrainDataForSOM(field<mat> data, mat label, field<mat> &da
            indexField++;
        }
        mat D = data(i,0);
-       for (int k = 0; k < D.n_rows; ++k)
+       last_row = first_row + D.n_rows - 1;
+       A.resize(last_row+1,D.n_cols);
+       A(span(first_row, last_row),span::all) = D;
+       first_row = last_row + 1;
+      /* for (int k = 0; k < D.n_rows; ++k)
        {
            A.resize(index+1,D.n_cols);
            for (int j = 0; j < D.n_cols; ++j)
@@ -92,7 +97,7 @@ void CGetData::formingTrainDataForSOM(field<mat> data, mat label, field<mat> &da
              A(index,j) =  D(k,j);
            }
            index++;
-       }
+       }*/
 
        predLab = label(i,0);
     }  

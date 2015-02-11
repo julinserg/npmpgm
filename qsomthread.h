@@ -71,6 +71,8 @@ int saveBmus(string filename, int *bmus, unsigned int nSomX,
 //void printMatrix(float *A, int nRows, int nCols);
 float *readMatrix(const string inFilename,
                   unsigned int &nRows, unsigned int &nCols);
+double *readMatrixDoubleType(const string inFilename,
+                  unsigned int &nRows, unsigned int &nCols);
 void readSparseMatrixDimensions(const string filename, unsigned int &nRows,
                             unsigned int &nColumns);
 svm_node** readSparseMatrixChunk(const string filename, unsigned int nRows,
@@ -113,6 +115,9 @@ void trainOneEpochSparseCPU(int itask, svm_node **sparseData, float *numerator,
 void initializeCodebook(unsigned int seed, float *codebook, unsigned int nSomX,
                         unsigned int nSomY, unsigned int nDimensions);
 
+unsigned int *readLrnHeader(string inFilename, unsigned int &nRows, unsigned int &nColumns);
+unsigned int *readWtsHeader(string inFilename, unsigned int &nRows, unsigned int &nColumns);
+void getMatrixDimensions(string inFilename, unsigned int &nRows, unsigned int &nColumns);
 
 extern "C" {
 #ifdef CUDA

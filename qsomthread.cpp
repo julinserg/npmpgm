@@ -1,4 +1,7 @@
 #include "qsomthread.h"
+#include <sstream>
+#include <iostream>
+#include <fstream>
 // Default parameters
 #define N_EPOCH 10
 #define N_SOM_X 50
@@ -9,6 +12,55 @@
 #define DENSE_CPU 0
 #define DENSE_GPU 1
 #define SPARSE_CPU 2
+
+/** Reads a matrix
+ * @param inFilename
+ * @param nRows - returns the number of rows
+ * @param nColumns - returns the number of columns
+ * @return the matrix
+ */
+double *readMatrixDoubleType(string inFilename, unsigned int &nRows, unsigned int &nColumns)
+{
+    double *data = NULL;
+    unsigned int *columnMap = NULL;
+    if (inFilename.compare(inFilename.size()-3, 3, "lrn") == 0) {
+        columnMap = readLrnHeader(inFilename, nRows, nColumns);
+    } else if (inFilename.compare(inFilename.size()-3, 3, "wts") == 0) {
+        columnMap = readWtsHeader(inFilename, nRows, nColumns);
+    } else {
+        getMatrixDimensions(inFilename, nRows, nColumns);
+        columnMap = new unsigned int[nColumns];
+        for (unsigned int i = 0; i < nColumns; ++i) {
+            columnMap[i] = 1;
+        }
+    }
+    ifstream file;
+    file.open(inFilename.c_str());
+    string line;
+    double tmp;
+    unsigned int j = 0;
+    unsigned int currentColumn = 0;
+
+    while(getline(file,line)) {
+        if ( (line.substr(0,1) == "#") | (line.substr(0,1) == "%") ) {
+            continue;
+        }
+        if (data == NULL) {
+            data = new double[nRows*nColumns];
+        }
+        std::istringstream iss(line);
+        currentColumn = 0;
+        while (iss >> tmp) {
+            if (columnMap[currentColumn++] != 1) {
+                continue;
+            }
+            data[j++] = tmp;
+        }
+    }
+    file.close();
+    delete [] columnMap;
+    return data;
+}
 
 QSOMThread::QSOMThread()
 {
