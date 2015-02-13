@@ -1,4 +1,5 @@
 #include "qsomthread.h"
+#include <QApplication>
 #include <sstream>
 #include <iostream>
 #include <fstream>
@@ -89,20 +90,6 @@ QSOMThread::~QSOMThread()
 
 void QSOMThread::run()
 {
-    int argc = 1;
-    QString strComLine = "-np %1";
-    strComLine = strComLine.arg(m_nThread);
-    char *param = strComLine.toLatin1().data();
-    char **argv = &param;
-   #ifdef HAVE_MPI
-       ///
-       /// MPI init
-       ///
-       MPI_Init(&argc, &argv);
-       MPI_Comm_rank(MPI_COMM_WORLD, &m_rank);
-       MPI_Comm_size(MPI_COMM_WORLD, &m_nProcs);
-       MPI_Barrier(MPI_COMM_WORLD);
-   #endif
 
        if (m_rank==0) {
    #ifndef CUDA
@@ -228,9 +215,13 @@ void QSOMThread::run()
            freeGpu();
        }
    #endif
-   #ifdef HAVE_MPI
+   /*#ifdef HAVE_MPI
        MPI_Finalize();
-   #endif
+   #endif*/
+
+   ESOMThreadStop* ev = new ESOMThreadStop;
+   ev->labelClass = m_labelClass;
+   QApplication::postEvent(m_objectEvent, ev);
 
 }
 

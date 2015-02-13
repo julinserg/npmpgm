@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include "qsomthread.h"
 #include "armadillo"
+#include <stdlib.h>
+#include "cgetdata.h"
 namespace Ui {
 class MainWindow;
 }
@@ -15,6 +17,8 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+    ///Обработчик событий
+    virtual bool event(QEvent* ev);
 
 private:
     Ui::MainWindow *ui;
@@ -30,13 +34,18 @@ private:
     field<mat> m_TrainDataForSOM;
     /// количество классов
     int m_nClass;
-
+    /// веса карты кохонена для каждого класса
+    field<mat> m_SOMCodeBookList;
+    /// матрциа переходов между состояними для каждого класса
+    field<mat> m_MatrixTransactA;
 
 private:
     /// читаем данные из двух csv файлов и заполняем m_TrainData m_TrainLabel m_TrainDataForSOM m_nClass
     void readTrainData(const QString &datafile, const QString &lablefile);
     /// формирвоание набора файлов для оубчения SOM
     void writeSOMtrainfiles(const QString& patternfilename);
+    /// формирвоание матрицы переходов между состояними
+    mat formMatrixTransaction(mat codebook,int label);
 };
 
 #endif // MAINWINDOW_H

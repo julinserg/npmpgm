@@ -2,7 +2,7 @@
 #define QSOMTHREAD_H
 
 #include "QThread"
-
+#include <QEvent>
 #include <string>
 #include <algorithm>
 
@@ -134,6 +134,22 @@ void trainOneEpochDenseGPU(int itask, float *data, float *numerator,
 void my_abort(int err);
 }
 
+#define SOM_THREAD_STOP				9999
+
+class ESOMThreadStop: public QEvent
+{
+public:
+    ESOMThreadStop():QEvent((QEvent::Type)SOM_THREAD_STOP)
+    {
+    }
+
+    ~ESOMThreadStop()
+    {
+    }
+    /// метка класса для которого завершено обучение
+    int labelClass;
+};
+
 class QSOMThread : public QThread
 {
     Q_OBJECT
@@ -197,6 +213,12 @@ public:
        m_snapshots =  snapshots;
        m_initialCodebookFilename = initialCodebookFilename;
     }
+    //отправлять обытия этому объекту
+    void setObjectEvent(QObject* object, int labelClass)
+    {
+        m_objectEvent = object;
+        m_labelClass = labelClass;
+    }
 
  private:
 
@@ -218,6 +240,9 @@ public:
     int m_rank;
     int m_nProcs;
     int m_nThread;
+
+    QObject* m_objectEvent;
+    int m_labelClass;
 
 };
 
