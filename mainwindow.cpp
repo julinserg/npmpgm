@@ -1,61 +1,43 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "armadillo"
 #include <stdlib.h>
 #include "cgetdata.h"
 #include <QFile>
 #include <QTextStream>
 using namespace arma;
+const QString C_SOMFILENAMEDATA = "./som_train_class_%1.%2";
+const QString C_SOMFILENAMECODEBOOK = "./som_train_class_%1";
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);  
-    QString str1("data/characterTrainData.csv");
-    QString str2("data/characterTrainLabel.csv");
-    field<mat> data;
-    mat label;
-    CGetData::getCellFromFile(str1,str2,data,label);   
-    field<mat> dataForSOM;
-    CGetData::formingTrainDataForSOM(data,label,dataForSOM);
-    int nClass = dataForSOM.n_rows;
-    QString namefile = "./som_train_class_%1.csv";
-    for(int k = 0; k < dataForSOM.n_rows; ++k)
+
+    readTrainData("data/characterTrainData.csv","data/characterTrainLabel.csv");
+    writeSOMtrainfiles(C_SOMFILENAME);
+
+    for(int i=1; i<=m_nClass; ++i)
     {
-        QString namefilecur = namefile.arg(k+1);
-        QFile file(namefilecur);
-        mat MATRIX = dataForSOM(k,0);
-        if (file.open(QFile::WriteOnly|QFile::Truncate))
-        {
-          QTextStream stream(&file);
-          for (int i = 0; i < MATRIX.n_rows; ++i)
-          {
-              for (int j = 0; j < MATRIX.n_cols; ++j)
-              {
-                  double val = MATRIX(i,j);
-                  stream << val << " ";
-              }
-              stream << "\n";
-          }
-          file.close();
-        }
+         QString FileName = C_SOMFILENAMECODEBOOK.arg(i).arg("csv");
+         QString OutPrefix = C_SOMFILENAMECODEBOOK.arg(i);
+         QSOMThread*  somthread = new QSOMThread();
+         int x = 15;
+         int y = 15;
+         somthread->setFileName(FileName.toStdString());
+         somthread->setOutPrefix(OutPrefix.toStdString());
+         somthread->setNumEpoch(500);
+         somthread->setSizeMap(x,y,"planar");
+         somthread->setRadiusParam(min(x,y),1,"linear");
+         somthread->setScaleParam(0.1,0.01,"linear");
+         somthread->setKernelType(0,4);
+         somthread->setSaveParam(0,"");
+         somthread->start();
+         somthread->startTrain();
     }
+
     int t =0;
     QString name = namefile.arg(1);
-    /*m_somthread = new QSOMThread();
-    int x = 15;
-    int y = 15;
-    m_somthread->setFileName(name.toStdString());
-    m_somthread->setOutPrefix(QString("./som_train_class_%1").arg(1).toStdString());
-    m_somthread->setNumEpoch(500);
-    m_somthread->setSizeMap(x,y,"planar");
-    m_somthread->setRadiusParam(min(x,y),1,"linear");
-    m_somthread->setScaleParam(0.1,0.01,"linear");
-    m_somthread->setKernelType(0,4);
-    m_somthread->setSaveParam(0,"");
-    m_somthread->start();
-    m_somthread->moveToThread(m_somthread);
-    m_somthread->startTrain();*/
+
 
     double * codebook = NULL;
     unsigned int nDimensions = 0;
@@ -152,4 +134,36 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     delete ui;
+}
+
+void MainWindow::readTrainData(const QString &datafile, const QString &lablefile)
+{
+    CGetData::getCellFromFile(datafile,lablefile,m_TrainData,m_TrainLabel);
+    CGetData::formingTrainDataForSOM(m_TrainData,m_TrainLabel,m_TrainDataForSOM);
+    m_nClass = m_TrainDataForSOM.n_rows;
+}
+
+void MainWindow::writeSOMtrainfiles(const QString &patternfilename)
+{
+    for(int k = 0; k < m_TrainDataForSOM.n_rows; ++k)
+    {
+        QString namefilecur = patternfilename.arg(k+1).append("csv");
+        QFile file(namefilecur);
+        mat MATRIX = m_TrainDataForSOM(k,0);
+        if (file.open(QFile::WriteOnly|QFile::Truncate))
+        {
+          QTextStream stream(&file);
+          for (int i = 0; i < MATRIX.n_rows; ++i)
+          {
+              for (int j = 0; j < MATRIX.n_cols; ++j)
+              {
+                  double val = MATRIX(i,j);
+                  stream << val << " ";
+              }
+              stream << "\n";
+          }
+          file.close();
+        }
+    }
+
 }

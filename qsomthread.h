@@ -219,10 +219,6 @@ public:
     int m_nProcs;
     int m_nThread;
 
- public slots:
-
-    void startTrain();
-
 };
 
 #endif // QSOMTHREAD_H
