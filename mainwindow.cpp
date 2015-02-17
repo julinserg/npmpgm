@@ -15,7 +15,7 @@ MainWindow::MainWindow(QWidget *parent) :
     readTrainData("data/characterTrainData.csv","data/characterTrainLabel.csv");
     writeSOMtrainfiles(C_SOMFILENAMEDATA);
 
-    for(int i=1; i<=1/*m_nClass*/; ++i)
+    for(int i=1; i<=m_nClass; ++i)
     {
          QString FileName = C_SOMFILENAMEDATA.arg(i).arg("csv");
          QString OutPrefix = C_SOMFILENAMECODEBOOK.arg(i);
@@ -120,7 +120,7 @@ mat MainWindow::formMatrixTransaction(mat codebook, int label)
                    double dist = norm(distVec,2);
                    if (dist < minDist)
                    {
-                       winUnit = j+1;
+                       winUnit = j;
                        minDist = dist;
                    }
                 }
