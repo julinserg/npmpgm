@@ -12,28 +12,12 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);  
 
-    readTrainData("data/characterTrainData.csv","data/characterTrainLabel.csv");
-    writeSOMtrainfiles(C_SOMFILENAMEDATA);
 
-    for(int i=1; i<=m_nClass; ++i)
-    {
-         QString FileName = C_SOMFILENAMEDATA.arg(i).arg("csv");
-         QString OutPrefix = C_SOMFILENAMECODEBOOK.arg(i);
-         QSOMThread*  somthread = new QSOMThread();
-         int x = 15;
-         int y = 15;
-         somthread->setFileName(FileName.toStdString());
-         somthread->setOutPrefix(OutPrefix.toStdString());
-         somthread->setNumEpoch(500);
-         somthread->setSizeMap(x,y,"planar");
-         somthread->setRadiusParam(min(x,y),1,"linear");
-         somthread->setScaleParam(0.1,0.01,"linear");
-         somthread->setKernelType(0,4);
-         somthread->setSaveParam(0,"");
-         somthread->setObjectEvent(this,i);
-         somthread->start();      
-    }
-
+    m_nClassComplete = 0;
+  //  train();
+    m_timertrain = new QTimer();
+    bool k = connect(m_timertrain,SIGNAL(timeout()),this,SLOT(timeoutAnalysisTrainComplete()));
+    m_timertrain->start(1000);
 }
 
 MainWindow::~MainWindow()
@@ -56,6 +40,7 @@ bool MainWindow::event(QEvent *ev)
         m_SOMCodeBookList(label-1,0) = CodeBook;
         mat TrasitionM = formMatrixTransaction(CodeBook,label);
         m_MatrixTransactA(label-1,0) = TrasitionM;
+        m_nClassComplete++;
     }
 }
 
@@ -66,6 +51,11 @@ void MainWindow::readTrainData(const QString &datafile, const QString &lablefile
     m_nClass = m_TrainDataForSOM.n_rows;
     m_SOMCodeBookList.set_size(m_nClass,1);
     m_MatrixTransactA.set_size(m_nClass,1);
+}
+
+void MainWindow::readTestData(const QString &datafile, const QString &lablefile)
+{
+   CGetData::getCellFromFile(datafile,lablefile,m_TestData,m_TestLabel);
 }
 
 void MainWindow::writeSOMtrainfiles(const QString &patternfilename)
@@ -156,4 +146,41 @@ mat MainWindow::formMatrixTransaction(mat codebook, int label)
 
     return A;
 
+}
+
+void MainWindow::timeoutAnalysisTrainComplete()
+{
+   /* if (m_nClass == m_nClassComplete)
+    {
+        // если все классы обучены, то выполняем сохранение в файл моделей
+        bool f = m_SOMCodeBookList.save("weight_som.model");
+        bool f1 = m_MatrixTransactA.save("matrix_a.model");
+    }*/
+    bool g1 = m_SOMCodeBookList.load("weight_som.model");
+    bool g2 = m_MatrixTransactA.load("matrix_a.model");
+    int g = 0;
+}
+
+void MainWindow::train()
+{
+    readTrainData("data/characterTrainData.csv","data/characterTrainLabel.csv");
+    writeSOMtrainfiles(C_SOMFILENAMEDATA);
+    for(int i=1; i<=m_nClass; ++i)
+    {
+         QString FileName = C_SOMFILENAMEDATA.arg(i).arg("csv");
+         QString OutPrefix = C_SOMFILENAMECODEBOOK.arg(i);
+         QSOMThread*  somthread = new QSOMThread();
+         int x = 10;
+         int y = 10;
+         somthread->setFileName(FileName.toStdString());
+         somthread->setOutPrefix(OutPrefix.toStdString());
+         somthread->setNumEpoch(50);
+         somthread->setSizeMap(x,y,"planar");
+         somthread->setRadiusParam(min(x,y),1,"linear");
+         somthread->setScaleParam(0.1,0.01,"linear");
+         somthread->setKernelType(0,4);
+         somthread->setSaveParam(0,"");
+         somthread->setObjectEvent(this,i);
+         somthread->start();
+    }
 }
