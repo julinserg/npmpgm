@@ -57,11 +57,17 @@ private:
     void writeSOMtrainfiles(const QString& patternfilename);
     /// формирвоание матрицы переходов между состояними
     mat formMatrixTransaction(mat codebook,int label);
+
+    mat logsumexp(mat a, int dim);
+
+    double hmmFilter(mat initDist, mat transmat, mat softev);
 public slots:
     /// анализ времени обучения
     void timeoutAnalysisTrainComplete();
     /// обучение
     void train();
+    /// тестирование
+    void test();
 };
 
 #endif // MAINWINDOW_H
