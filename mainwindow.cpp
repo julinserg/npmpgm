@@ -14,11 +14,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     m_nClassComplete = 0;
-    //train();
+   // train();
     m_timertrain = new QTimer();
     bool k = connect(m_timertrain,SIGNAL(timeout()),this,SLOT(timeoutAnalysisTrainComplete()));
-    m_timertrain->start(1000);
+   // m_timertrain->start(1000);
     test();
+
 }
 
 MainWindow::~MainWindow()
@@ -37,7 +38,17 @@ bool MainWindow::event(QEvent *ev)
         unsigned int nVectors = 0;
         QString filecodebook = C_SOMFILENAMEDATA.arg(label).arg("wts");
         codebook = readMatrixDoubleType(filecodebook.toStdString(), nVectors, nDimensions);
-        mat CodeBook(codebook, nVectors, nDimensions);
+        mat CodeBook;
+        CodeBook.set_size(nVectors,nDimensions);
+        int index = 0;
+        for(int i = 0; i<nVectors;++i)
+        {
+            for(int j =0; j < nDimensions;++j)
+            {
+                CodeBook(i,j) = codebook[index];
+                ++index;
+            }
+        }
         m_SOMCodeBookList(label-1,0) = CodeBook;
         mat TrasitionM = formMatrixTransaction(CodeBook,label);
         m_MatrixTransactA(label-1,0) = TrasitionM;
@@ -151,55 +162,15 @@ mat MainWindow::formMatrixTransaction(mat codebook, int label)
 
 void MainWindow::timeoutAnalysisTrainComplete()
 {
-   /* if (m_nClass == m_nClassComplete)
+    if (m_nClass == m_nClassComplete)
     {
         // если все классы обучены, то выполняем сохранение в файл моделей
         bool f = m_SOMCodeBookList.save("weight_som.model");
         bool f1 = m_MatrixTransactA.save("matrix_a.model");
-    }*/
-    bool g1 = m_SOMCodeBookList.load("weight_som.model");
-    bool g2 = m_MatrixTransactA.load("matrix_a.model");
-    int nClass = m_SOMCodeBookList.n_rows;
-    for(int i=0; i < m_TestData.n_rows; ++i)
-    {
-        mat SEQ = m_TestData(i,0);
-        int SizeSEQ = SEQ.n_rows;
-        for (int cl =0; cl < nClass; ++cl)
-        {
-            mat WSOM = m_SOMCodeBookList(cl,0);
-            int SizeSOM = WSOM.n_rows;
-            mat Z;
-            Z.set_size(SizeSOM,SizeSEQ);
-            Z.zeros();
-            for (uint t=0; t < SizeSOM; ++t)
-            {
-                rowvec R0 = WSOM(t,span::all);
-                mat R1;
-                R1.set_size(SizeSEQ,R0.n_elem);
-                R1.zeros();
-                R1.each_row() += R0;
-                mat R2 = R1-SEQ;
-                mat R3 = square(R2);
-                mat R4 = sum(R3,1);
-                rowvec R5 = R4.t();
-                Z(t,span::all) = R5;
-            }
-            Z = -sqrt(Z);
-            mat L = logsumexp(Z.t(),2);
-            mat LMAT = repmat(L, 1, Z.n_rows);
-            mat Znorm = Z - LMAT.t();
-            mat B = exp(Znorm);
-            mat G;
-            G.set_size(1,1);
-            G(0,0) = 0;
-            mat PI = repmat(G,1,SizeSOM);
-            PI(0,0) = 1;
-            mat A = m_MatrixTransactA(cl,0);
-            double logp = hmmFilter(PI,A,B);
-        }
+        m_timertrain->stop();
+        test();
     }
 
-    int g = 0;
 }
 
 void MainWindow::train()
@@ -215,10 +186,10 @@ void MainWindow::train()
          int y = 10;
          somthread->setFileName(FileName.toStdString());
          somthread->setOutPrefix(OutPrefix.toStdString());
-         somthread->setNumEpoch(50);
+         somthread->setNumEpoch(100);
          somthread->setSizeMap(x,y,"planar");
-         somthread->setRadiusParam(min(x,y),1,"linear");
-         somthread->setScaleParam(0.1,0.01,"linear");
+         somthread->setRadiusParam(x,1,"exponential");
+         somthread->setScaleParam(0.1,0.01,"exponential");
          somthread->setKernelType(0,4);
          somthread->setSaveParam(0,"");
          somthread->setObjectEvent(this,i);
@@ -228,7 +199,93 @@ void MainWindow::train()
 
 void MainWindow::test()
 {
-     readTestData("data/characterTestData.csv","data/characterTestLabel.csv");
+    readTestData("data/characterTestData.csv","data/characterTestLabel.csv");
+    bool g1 = m_SOMCodeBookList.load("weight_som.model");
+    bool g2 = m_MatrixTransactA.load("matrix_a.model");
+    int nClass = m_SOMCodeBookList.n_rows;
+    mat arrayLL;
+    arrayLL.set_size(100,nClass);
+    for(int i=0; i < 100; ++i)
+    {
+      mat SEQ = m_TestData(i,0);
+      SEQ.print("SEQ");
+      int SizeSEQ = SEQ.n_rows;
+      for (int cl =0; cl < nClass; ++cl)
+      {
+          mat WSOM = m_SOMCodeBookList(cl,0);
+          WSOM.print("SOM");
+          int SizeSOM = WSOM.n_rows;
+          mat Z;
+          Z.set_size(SizeSOM,SizeSEQ);
+          Z.zeros();
+          for (uint t=0; t < SizeSOM; ++t)
+          {
+              rowvec R0 = WSOM(t,span::all);
+              mat R1;
+              R1.set_size(SizeSEQ,R0.n_elem);
+              R1.zeros();
+              R1.each_row() += R0;
+              mat R2 = R1-SEQ;
+              mat R3 = square(R2);
+              mat R4 = sum(R3,1);
+              rowvec R5 = R4.t();
+              Z(t,span::all) = R5;
+          }
+          Z = -sqrt(Z);
+
+          mat L = logsumexp(Z.t(),2);
+          L.print("L");
+          mat LMAT = repmat(L, 1, Z.n_rows);
+          mat Znorm = Z - LMAT.t();
+          mat B = exp(Znorm);
+          mat G;
+          G.set_size(1,1);
+          G(0,0) = 5;
+          mat PI = repmat(G,1,SizeSOM);
+          colvec vecmax = Z(span::all,0);
+          uword maxindex;
+          double pimax = vecmax.max(maxindex);
+          PI(0,maxindex) = 10;
+          PI.print("PI do");
+          mat LPI = logsumexp(PI,2);
+          mat LMATPI = repmat(LPI, 1, PI.n_cols);
+          mat PInorm = PI - LMATPI.t();
+          PI = exp(PI);
+          PI.print("PI posle");
+          mat A = m_MatrixTransactA(cl,0);
+          double logp = hmmFilter(PI,A,B);
+          logp = logp + sum(vectorise(L));
+          arrayLL(i,cl) =logp;
+      }
+    }
+    rowvec labelDetect;
+    labelDetect.set_size(arrayLL.n_rows);
+    for(int i = 0; i < arrayLL.n_rows; ++i)
+    {
+      rowvec vec = arrayLL(i,span::all);
+      uword  index;
+      double max = vec.max(index);
+      labelDetect(i) = index+1;
+    }
+    rowvec labelTrue = m_TestLabel.t();
+    labelTrue.resize(100);
+    double accuracy = 0;
+    for(int i=0; i < labelTrue.n_elem; ++i)
+    {
+       if (labelTrue(i) == labelDetect(i))
+       {
+           accuracy++;
+       }
+    }
+    accuracy = accuracy / labelTrue.n_elem;
+    qDebug("accuracy: %f",accuracy);
+    double fmeasure;
+    double precision;
+    double recall;
+    quality(labelDetect,labelTrue,nClass,fmeasure,precision,recall);
+    qDebug("fmeasure: %f",fmeasure);
+    qDebug("precision: %f",precision);
+    qDebug("recall: %f",recall);
 }
 
 mat MainWindow::logsumexp(mat a, int dim)
@@ -281,9 +338,54 @@ double MainWindow::hmmFilter(mat initDist, mat transmat, mat softev)
       alpha = R2;
       scale(t) = z;
   }
-  scale.print("scale:");
-  alpha.print("alpha:");
   double loglike = sum(log(scale+datum::eps));
   return loglike;
 
+}
+
+void MainWindow::quality(rowvec labeldetect, rowvec labeltrue, int nClass, double& fmesure, double& precision, double& recall)
+{
+    mat Confusion_Matrix;
+    Confusion_Matrix.set_size(nClass,nClass);
+    Confusion_Matrix.zeros();
+    labeldetect.print("labeldetect");
+    labeltrue.print("labeltrue");
+    if (labeldetect.n_elem == labeltrue.n_elem )
+    {
+        for(int i = 0; i < labeldetect.n_elem ; ++i)
+        {
+            int column =  labeltrue(i) - 1;
+            int row = labeldetect(i) - 1;
+            Confusion_Matrix(row,column) = Confusion_Matrix(row,column) + 1;
+        }
+    }
+    rowvec PrecisionVec;
+    PrecisionVec.set_size(nClass);
+    rowvec RecallVec;
+    RecallVec.set_size(nClass);
+    for (int i= 0; i < nClass; ++i)
+    {
+        rowvec p = Confusion_Matrix(i,span::all);
+        if (sum(p) == 0)
+        {
+           PrecisionVec(i) = 0;
+        }
+        else
+        {
+           PrecisionVec(i) =  Confusion_Matrix(i,i) / sum(p);
+        }
+        colvec r = Confusion_Matrix(span::all,i);
+        if (sum(r) == 0)
+        {
+           RecallVec(i) = 0;
+        }
+        else
+        {
+           RecallVec(i) =  Confusion_Matrix(i,i) / sum(r);
+        }
+    }
+    precision = sum(PrecisionVec) / nClass;
+    recall = sum(RecallVec) / nClass;
+    fmesure = 2*precision*recall / (precision + recall);
+    return ;
 }

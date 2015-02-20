@@ -61,6 +61,8 @@ private:
     mat logsumexp(mat a, int dim);
 
     double hmmFilter(mat initDist, mat transmat, mat softev);
+
+    void quality(rowvec labeldetect, rowvec labeltrue, int nClass, double& fmesure, double& precision, double& recall);
 public slots:
     /// анализ времени обучения
     void timeoutAnalysisTrainComplete();
