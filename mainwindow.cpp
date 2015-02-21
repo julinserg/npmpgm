@@ -14,11 +14,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     m_nClassComplete = 0;
-   // train();
+    train();
     m_timertrain = new QTimer();
     bool k = connect(m_timertrain,SIGNAL(timeout()),this,SLOT(timeoutAnalysisTrainComplete()));
-   // m_timertrain->start(1000);
-    test();
+    m_timertrain->start(1000);
+   // test();
 
 }
 
@@ -186,10 +186,10 @@ void MainWindow::train()
          int y = 10;
          somthread->setFileName(FileName.toStdString());
          somthread->setOutPrefix(OutPrefix.toStdString());
-         somthread->setNumEpoch(100);
+         somthread->setNumEpoch(500);
          somthread->setSizeMap(x,y,"planar");
-         somthread->setRadiusParam(x,1,"exponential");
-         somthread->setScaleParam(0.1,0.01,"exponential");
+         somthread->setRadiusParam(3,1,"linear");
+         somthread->setScaleParam(0.1,0.01,"linear");
          somthread->setKernelType(0,4);
          somthread->setSaveParam(0,"");
          somthread->setObjectEvent(this,i);
@@ -204,16 +204,16 @@ void MainWindow::test()
     bool g2 = m_MatrixTransactA.load("matrix_a.model");
     int nClass = m_SOMCodeBookList.n_rows;
     mat arrayLL;
-    arrayLL.set_size(100,nClass);
-    for(int i=0; i < 100; ++i)
+    arrayLL.set_size(m_TestData.n_rows,nClass);
+    for(int i=0; i < m_TestData.n_rows; ++i)
     {
       mat SEQ = m_TestData(i,0);
-      SEQ.print("SEQ");
+     // SEQ.print("SEQ");
       int SizeSEQ = SEQ.n_rows;
       for (int cl =0; cl < nClass; ++cl)
       {
           mat WSOM = m_SOMCodeBookList(cl,0);
-          WSOM.print("SOM");
+         // WSOM.print("SOM");
           int SizeSOM = WSOM.n_rows;
           mat Z;
           Z.set_size(SizeSOM,SizeSEQ);
@@ -234,7 +234,7 @@ void MainWindow::test()
           Z = -sqrt(Z);
 
           mat L = logsumexp(Z.t(),2);
-          L.print("L");
+        //  L.print("L");
           mat LMAT = repmat(L, 1, Z.n_rows);
           mat Znorm = Z - LMAT.t();
           mat B = exp(Znorm);
@@ -246,12 +246,13 @@ void MainWindow::test()
           uword maxindex;
           double pimax = vecmax.max(maxindex);
           PI(0,maxindex) = 10;
-          PI.print("PI do");
+        //  PI.print("PI do");
           mat LPI = logsumexp(PI,2);
           mat LMATPI = repmat(LPI, 1, PI.n_cols);
-          mat PInorm = PI - LMATPI.t();
-          PI = exp(PI);
-          PI.print("PI posle");
+        //  LMATPI.print("LMATPI:");
+          mat PInorm = PI - LMATPI;
+          PI = exp(PInorm);
+        //  PI.print("PI posle");
           mat A = m_MatrixTransactA(cl,0);
           double logp = hmmFilter(PI,A,B);
           logp = logp + sum(vectorise(L));
@@ -268,7 +269,7 @@ void MainWindow::test()
       labelDetect(i) = index+1;
     }
     rowvec labelTrue = m_TestLabel.t();
-    labelTrue.resize(100);
+    //labelTrue.resize(200);
     double accuracy = 0;
     for(int i=0; i < labelTrue.n_elem; ++i)
     {
@@ -349,7 +350,7 @@ void MainWindow::quality(rowvec labeldetect, rowvec labeltrue, int nClass, doubl
     Confusion_Matrix.set_size(nClass,nClass);
     Confusion_Matrix.zeros();
     labeldetect.print("labeldetect");
-    labeltrue.print("labeltrue");
+   // labeltrue.print("labeltrue");
     if (labeldetect.n_elem == labeltrue.n_elem )
     {
         for(int i = 0; i < labeldetect.n_elem ; ++i)

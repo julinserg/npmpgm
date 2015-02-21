@@ -11,7 +11,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = pgm_som_project
 TEMPLATE = app
 
-DEFINES += HAVE_MPI
+#DEFINES += HAVE_MPI
 
 
 
