@@ -1,9 +1,28 @@
 #include "mainwindow.h"
 #include <QApplication>
-
+#include <sstream>
+#include <iostream>
+#include "graph_gen_alg.h"
+#include "chunglu_gen.h"
+#include "erdosrenyi_gen.h"
+#include "embeddings.h"
+// #include "kernels.h"
+#include "gaussian_kernel.h"
+#include "dmaps.h"
+#include "util_fns.h"
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+    std::cout << "<---------------------------------------->" << std::endl;
+
+    const int graph_size = atoi(argv[2]);
+    std::string graph_type;
+    Graph_Gen_Alg* alg;
+    std::vector< std::vector<double> > graph_params;
+    int n_pts;
+
+    double epsilon = 1e-3;
+
     int argcL = 1;
     QString strComLine = "-np %1";
     strComLine = strComLine.arg(10);

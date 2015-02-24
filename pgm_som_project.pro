@@ -5,7 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
-
+QMAKE_CXXFLAGS += -std=gnu++11
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = pgm_som_project
@@ -31,11 +31,14 @@ SOURCES += main.cpp\
     qt-csv/csv.cpp \
     armadillo/src/wrapper.cpp \
     qsomthread.cpp \
-    cgetdata.cpp
+    cgetdata.cpp \
+    graph_similarity/chunglu_gen.cc \
+    graph_similarity/erdosrenyi_gen.cc \
+    graph_similarity/graph_gen_alg.cc \
+    graph_similarity/util_fns.cc
 
 HEADERS  += mainwindow.h \   
     somoclu/src/Windows/getopt.h \
-    somoclu/src/Windows/unistd.h \   
     somoclu/src/somocluWrap.h \
     qt-csv/csv.h \
     ui_mainwindow.h \
@@ -433,7 +436,15 @@ HEADERS  += mainwindow.h \
     armadillo/include/armadillo_bits/wall_clock_meat.hpp \
     armadillo/include/armadillo_bits/xvec_htrans_bones.hpp \
     armadillo/include/armadillo_bits/xvec_htrans_meat.hpp \
-    cgetdata.h
+    cgetdata.h \
+    graph_similarity/chunglu_gen.h \
+    graph_similarity/dmaps.h \
+    graph_similarity/embeddings.h \
+    graph_similarity/erdosrenyi_gen.h \
+    graph_similarity/gaussian_kernel.h \
+    graph_similarity/graph_gen_alg.h \
+    graph_similarity/kernel_function.h \
+    graph_similarity/util_fns.h
 
 FORMS    += mainwindow.ui
 
@@ -441,4 +452,7 @@ INCLUDEPATH += "C:/Program Files/MPICH2/include"
 INCLUDEPATH += "./somoclu/src"
 INCLUDEPATH += "./qt-csv"
 INCLUDEPATH += "./armadillo/include"
+INCLUDEPATH += "./graph_similarity"
+INCLUDEPATH += "./eigen"
+INCLUDEPATH += "./prefAttachModel"
 LIBS += "C:/Program Files/MPICH2/lib/mpi.lib"

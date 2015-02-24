@@ -24,13 +24,13 @@ using namespace std;
 #include <cstdlib>
 #include <iostream>
 
-#ifdef _WIN32
-#include "Windows/unistd.h"
-#include "Windows/getopt.h"
-#else
+//#ifdef _WIN32
+//#include "Windows/unistd.h"
+//#include "Windows/getopt.h"
+//#else
 #include <unistd.h>
 #include <getopt.h>
-#endif
+//#endif
 
 /// For synchronized timing
 #ifndef MPI_WTIME_IS_GLOBAL
