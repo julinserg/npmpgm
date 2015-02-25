@@ -6,7 +6,7 @@
 
 QT       += core gui
 QMAKE_CXXFLAGS += -std=gnu++11
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT += widgets
 
 TARGET = pgm_som_project
 TEMPLATE = app
@@ -35,7 +35,8 @@ SOURCES += main.cpp\
     graph_similarity/chunglu_gen.cc \
     graph_similarity/erdosrenyi_gen.cc \
     graph_similarity/graph_gen_alg.cc \
-    graph_similarity/util_fns.cc
+    graph_similarity/util_fns.cc \
+    prefAttachModel/eigen_solvers.cc
 
 HEADERS  += mainwindow.h \   
     somoclu/src/Windows/getopt.h \
@@ -444,7 +445,9 @@ HEADERS  += mainwindow.h \
     graph_similarity/gaussian_kernel.h \
     graph_similarity/graph_gen_alg.h \
     graph_similarity/kernel_function.h \
-    graph_similarity/util_fns.h
+    graph_similarity/util_fns.h \
+    prefAttachModel/eigen_solvers.h \
+    prefAttachModel/eigen_solvers_utils.h
 
 FORMS    += mainwindow.ui
 
