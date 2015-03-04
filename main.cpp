@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include <QApplication>
-#include <sstream>
+/*#include <sstream>
 #include <iostream>
 #include "graph_gen_alg.h"
 #include "chunglu_gen.h"
@@ -9,11 +9,11 @@
 // #include "kernels.h"
 #include "gaussian_kernel.h"
 #include "dmaps.h"
-#include "util_fns.h"
+#include "util_fns.h"*/
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    std::cout << "<---------------------------------------->" << std::endl;
+   /* std::cout << "<---------------------------------------->" << std::endl;
 
     const int graph_size = atoi(argv[2]);
       std::string graph_type;
@@ -117,7 +117,7 @@ int main(int argc, char *argv[])
       // output_W.close();
       output_graphparams.close();
 
-      std::cout << "<---------------------------------------->" << std::endl;
+      std::cout << "<---------------------------------------->" << std::endl;*/
 
       // std::cout << "--> Testing" << std::endl;
 

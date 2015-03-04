@@ -14,6 +14,33 @@
 #define DENSE_GPU 1
 #define SPARSE_CPU 2
 
+unsigned int *readUmxHeader(string inFilename, unsigned int &nRows, unsigned int &nColumns)
+{
+    ifstream file;
+    file.open(inFilename.c_str());
+    string line;
+    while(getline(file,line)) {
+        if (line.substr(0,1) == "#") {
+            continue;
+        }
+        if (line.substr(0,1) == "%") {
+            std::istringstream iss(line.substr(1,line.length()));
+            if (nRows == 0 && nColumns == 0) {
+                iss >> nRows;
+                iss >> nColumns;
+            }else {
+                break;
+            }
+        }
+    }
+    file.close();
+    unsigned int *columnMap = new unsigned int[nColumns];
+    for (unsigned int i = 0; i < nColumns; ++i) {
+        columnMap[i] = 1;
+    }
+    return columnMap;
+}
+
 /** Reads a matrix
  * @param inFilename
  * @param nRows - returns the number of rows
@@ -28,6 +55,8 @@ double *readMatrixDoubleType(string inFilename, unsigned int &nRows, unsigned in
         columnMap = readLrnHeader(inFilename, nRows, nColumns);
     } else if (inFilename.compare(inFilename.size()-3, 3, "wts") == 0) {
         columnMap = readWtsHeader(inFilename, nRows, nColumns);
+    } else if (inFilename.compare(inFilename.size()-3, 3, "umx") == 0) {
+        columnMap = readUmxHeader(inFilename, nRows, nColumns);
     } else {
         getMatrixDimensions(inFilename, nRows, nColumns);
         columnMap = new unsigned int[nColumns];

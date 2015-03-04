@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-
+#include "util_fns.h"
+#include "embeddings.h"
 #include <QFile>
 #include <QTextStream>
 using namespace arma;
@@ -19,6 +20,8 @@ MainWindow::MainWindow(QWidget *parent) :
     bool k = connect(m_timertrain,SIGNAL(timeout()),this,SLOT(timeoutAnalysisTrainComplete()));
     m_timertrain->start(1000);
    // test();
+   // test2();
+
 
 }
 
@@ -49,6 +52,23 @@ bool MainWindow::event(QEvent *ev)
                 ++index;
             }
         }
+        double * umatrix = NULL;
+        unsigned int nDimensionsU = 0;
+        unsigned int nVectorsU = 0;
+        QString fileumatrix = C_SOMFILENAMEDATA.arg(label).arg("umx");
+        umatrix = readMatrixDoubleType(fileumatrix.toStdString(), nVectorsU, nDimensionsU);
+        mat UMATRIX;
+        UMATRIX.set_size(nVectorsU,nDimensionsU);
+        int indexToo = 0;
+        for(int i = 0; i<nVectorsU;++i)
+        {
+            for(int j =0; j < nDimensionsU;++j)
+            {
+                UMATRIX(i,j) = umatrix[indexToo];
+                ++indexToo;
+            }
+        }
+        m_UmatrixGraphList(label-1,0) = UMATRIX;
         m_SOMCodeBookList(label-1,0) = CodeBook;
         mat TrasitionM = formMatrixTransaction(CodeBook,label);
         m_MatrixTransactA(label-1,0) = TrasitionM;
@@ -63,6 +83,7 @@ void MainWindow::readTrainData(const QString &datafile, const QString &lablefile
     m_nClass = m_TrainDataForSOM.n_rows;
     m_SOMCodeBookList.set_size(m_nClass,1);
     m_MatrixTransactA.set_size(m_nClass,1);
+    m_UmatrixGraphList.set_size(m_nClass,1);
 }
 
 void MainWindow::readTestData(const QString &datafile, const QString &lablefile)
@@ -167,8 +188,10 @@ void MainWindow::timeoutAnalysisTrainComplete()
         // если все классы обучены, то выполняем сохранение в файл моделей
         bool f = m_SOMCodeBookList.save("weight_som.model");
         bool f1 = m_MatrixTransactA.save("matrix_a.model");
+        bool f2 = m_UmatrixGraphList.save("matrix_u.model");
         m_timertrain->stop();
-        test();
+        //test();
+        test2();
     }
 
 }
@@ -289,6 +312,116 @@ void MainWindow::test()
     qDebug("recall: %f",recall);
 }
 
+void MainWindow::test2()
+{
+    const int n_spec_params = 100;
+    std::vector<double> spectral_params(n_spec_params);
+    const double spec_param_max = 0.01;
+    const double spec_param_min = 0.0001;
+    const double dspec_param = (spec_param_max - spec_param_min)/(n_spec_params - 1);
+    for(int i = 0; i < n_spec_params; i++) {
+      spectral_params[i] = spec_param_min + i*dspec_param;
+    }
+
+    readTestData("data/characterTestData.csv","data/characterTestLabel.csv");
+     bool g1 = m_SOMCodeBookList.load("weight_som.model");
+    bool g2 = m_UmatrixGraphList.load("matrix_u.model");
+    int nClass = m_UmatrixGraphList.n_rows;
+    mat arrayLL;
+    arrayLL.set_size(m_TestData.n_rows,nClass);
+    for(int i=0; i < m_TestData.n_rows; ++i)
+    {
+      mat SEQ = m_TestData(i,0);
+     // SEQ.print("SEQ");
+      int SizeSEQ = SEQ.n_rows;
+      for (int cl =0; cl < nClass; ++cl)
+      {
+          mat WSOM = m_SOMCodeBookList(cl,0);
+          mat UMAT = m_UmatrixGraphList(cl,0);
+         // WSOM.print("SOM");
+          int SizeSOM = WSOM.n_rows;
+          mat Z;
+          Z.set_size(SizeSOM,SizeSEQ);
+          Z.zeros();
+          for (uint t=0; t < SizeSOM; ++t)
+          {
+              rowvec R0 = WSOM(t,span::all);
+              mat R1;
+              R1.set_size(SizeSEQ,R0.n_elem);
+              R1.zeros();
+              R1.each_row() += R0;
+              mat R2 = R1-SEQ;
+              mat R3 = square(R2);
+              mat R4 = sum(R3,1);
+              rowvec R5 = R4.t();
+              Z(t,span::all) = R5;
+          }
+          Z = -sqrt(Z);
+          uvec maxvec;
+          maxvec.set_size(Z.n_cols);
+          for(int i=0; i < Z.n_cols; ++i )
+          {
+              colvec vecmax = Z(span::all,i);
+              uword maxindex;
+              double max = vecmax.max(maxindex);
+              maxvec(i) = maxindex;
+          }
+          mat GraphData;
+          GraphData.set_size(UMAT.n_rows,UMAT.n_cols);
+          GraphData.zeros();
+          for (int i=0;i< UMAT.n_rows;++i)
+          {
+              for (int j=0;j< UMAT.n_cols;++j)
+              {
+                  uvec z1 = maxvec.elem(arma::find(maxvec == i));
+                  uvec z2 = maxvec.elem(arma::find(maxvec == j));
+                  if (z1.n_elem > 0 || z2.n_elem > 0)
+                  {
+                      GraphData(i,j) = UMAT(i,j);
+                  }
+              }
+          }
+          GraphData.print("GraphData:");
+          std::vector< std::vector<double> > graph_embedding(2);
+          Eigen::MatrixXd g_model =  convertArmadilloToEngineMatrix(UMAT);
+          Eigen::MatrixXd g_data =  convertArmadilloToEngineMatrix(GraphData);
+          graph_embedding[0] = spectral_embedding(g_model, spectral_params);
+          graph_embedding[1] = spectral_embedding(g_data, spectral_params);
+          double median = get_median(get_squared_distances(graph_embedding));
+          arrayLL(i,cl) = -median;
+      }
+    }
+    rowvec labelDetect;
+    labelDetect.set_size(arrayLL.n_rows);
+    for(int i = 0; i < arrayLL.n_rows; ++i)
+    {
+      rowvec vec = arrayLL(i,span::all);
+      uword  index;
+      double max = vec.max(index);
+      labelDetect(i) = index+1;
+    }
+    rowvec labelTrue = m_TestLabel.t();
+    //labelTrue.resize(200);
+    double accuracy = 0;
+    for(int i=0; i < labelTrue.n_elem; ++i)
+    {
+       if (labelTrue(i) == labelDetect(i))
+       {
+           accuracy++;
+       }
+    }
+    accuracy = accuracy / labelTrue.n_elem;
+    qDebug("accuracy: %f",accuracy);
+    double fmeasure;
+    double precision;
+    double recall;
+    quality(labelDetect,labelTrue,nClass,fmeasure,precision,recall);
+    qDebug("fmeasure: %f",fmeasure);
+    qDebug("precision: %f",precision);
+    qDebug("recall: %f",recall);
+
+}
+
 mat MainWindow::logsumexp(mat a, int dim)
 {
     mat y = max(a,dim-1);
@@ -389,4 +522,15 @@ void MainWindow::quality(rowvec labeldetect, rowvec labeltrue, int nClass, doubl
     recall = sum(RecallVec) / nClass;
     fmesure = 2*precision*recall / (precision + recall);
     return ;
+}
+
+Eigen::MatrixXd MainWindow::convertArmadilloToEngineMatrix(mat matrix)
+{
+    Eigen::MatrixXd G_eigen(matrix.n_rows,matrix.n_cols);
+    for(int i = 0; i < matrix.n_rows; i++) {
+      for(int j = 0; j < matrix.n_cols; j++) {
+        G_eigen(i,j) = matrix(i,j);
+      }
+    }
+    return G_eigen;
 }

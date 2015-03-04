@@ -7,6 +7,10 @@
 #include "armadillo"
 #include <stdlib.h>
 #include "cgetdata.h"
+#include <Eigen/Dense>
+#include <Eigen/Eigenvalues>
+
+
 namespace Ui {
 class MainWindow;
 }
@@ -41,6 +45,8 @@ private:
     int m_nClass;
     /// веса карты кохонена для каждого класса
     field<mat> m_SOMCodeBookList;
+    /// графы карты кохонена для каждого класса
+    field<mat> m_UmatrixGraphList;
     /// матрциа переходов между состояними для каждого класса
     field<mat> m_MatrixTransactA;    
     ///количество классов для которых завершено обучение
@@ -63,6 +69,8 @@ private:
     double hmmFilter(mat initDist, mat transmat, mat softev);
 
     void quality(rowvec labeldetect, rowvec labeltrue, int nClass, double& fmesure, double& precision, double& recall);
+
+    Eigen::MatrixXd convertArmadilloToEngineMatrix(mat matrix);
 public slots:
     /// анализ времени обучения
     void timeoutAnalysisTrainComplete();
@@ -70,6 +78,8 @@ public slots:
     void train();
     /// тестирование
     void test();
+    /// тестирование сравнения графов
+    void test2();
 };
 
 #endif // MAINWINDOW_H
