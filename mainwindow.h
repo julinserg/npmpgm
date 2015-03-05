@@ -54,6 +54,9 @@ private:
     /// таймер времени обучения
     QTimer* m_timertrain;
 
+    string m_mapType;
+    int m_nSOM_X;
+    int m_nSOM_Y;
 private:
     /// читаем данные из двух csv файлов и заполняем m_TrainData m_TrainLabel m_TrainDataForSOM m_nClass
     void readTrainData(const QString &datafile, const QString &lablefile);
@@ -71,6 +74,12 @@ private:
     void quality(rowvec labeldetect, rowvec labeltrue, int nClass, double& fmesure, double& precision, double& recall);
 
     Eigen::MatrixXd convertArmadilloToEngineMatrix(mat matrix);
+
+    mat calculateDistNodeMatrix(mat codebook);
+
+    double get_l2norm(std::vector<double> vec);
+
+    void twoFromOne(ulong z, ushort max_y, ushort& x, ushort& y);
 public slots:
     /// анализ времени обучения
     void timeoutAnalysisTrainComplete();

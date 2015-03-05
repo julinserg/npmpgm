@@ -52,22 +52,7 @@ bool MainWindow::event(QEvent *ev)
                 ++index;
             }
         }
-        double * umatrix = NULL;
-        unsigned int nDimensionsU = 0;
-        unsigned int nVectorsU = 0;
-        QString fileumatrix = C_SOMFILENAMEDATA.arg(label).arg("umx");
-        umatrix = readMatrixDoubleType(fileumatrix.toStdString(), nVectorsU, nDimensionsU);
-        mat UMATRIX;
-        UMATRIX.set_size(nVectorsU,nDimensionsU);
-        int indexToo = 0;
-        for(int i = 0; i<nVectorsU;++i)
-        {
-            for(int j =0; j < nDimensionsU;++j)
-            {
-                UMATRIX(i,j) = umatrix[indexToo];
-                ++indexToo;
-            }
-        }
+        mat UMATRIX =  calculateDistNodeMatrix(CodeBook);
         m_UmatrixGraphList(label-1,0) = UMATRIX;
         m_SOMCodeBookList(label-1,0) = CodeBook;
         mat TrasitionM = formMatrixTransaction(CodeBook,label);
@@ -205,12 +190,13 @@ void MainWindow::train()
          QString FileName = C_SOMFILENAMEDATA.arg(i).arg("csv");
          QString OutPrefix = C_SOMFILENAMECODEBOOK.arg(i);
          QSOMThread*  somthread = new QSOMThread();
-         int x = 10;
-         int y = 10;
+         m_nSOM_X = 10;
+         m_nSOM_Y = 10;
+         m_mapType = "planar";
          somthread->setFileName(FileName.toStdString());
          somthread->setOutPrefix(OutPrefix.toStdString());
          somthread->setNumEpoch(500);
-         somthread->setSizeMap(x,y,"planar");
+         somthread->setSizeMap(m_nSOM_X,m_nSOM_Y,m_mapType);
          somthread->setRadiusParam(3,1,"linear");
          somthread->setScaleParam(0.1,0.01,"linear");
          somthread->setKernelType(0,4);
@@ -323,10 +309,19 @@ void MainWindow::test2()
       spectral_params[i] = spec_param_min + i*dspec_param;
     }
 
+
     readTestData("data/characterTestData.csv","data/characterTestLabel.csv");
-     bool g1 = m_SOMCodeBookList.load("weight_som.model");
+    bool g1 = m_SOMCodeBookList.load("weight_som.model");
     bool g2 = m_UmatrixGraphList.load("matrix_u.model");
-    int nClass = m_UmatrixGraphList.n_rows;
+    int nClass = m_SOMCodeBookList.n_rows;
+    std::vector< std::vector<double> > specmodelvec(nClass, std::vector<double>(n_spec_params));
+    for(int i=0;i<nClass;++i)
+    {
+       mat UMAT = m_UmatrixGraphList(i,0);
+       Eigen::MatrixXd g_model =  convertArmadilloToEngineMatrix(UMAT);
+       std::vector<double> vec = spectral_embedding(g_model, spectral_params);
+       specmodelvec[i] = vec;
+    }
     mat arrayLL;
     arrayLL.set_size(m_TestData.n_rows,nClass);
     for(int i=0; i < m_TestData.n_rows; ++i)
@@ -381,14 +376,17 @@ void MainWindow::test2()
                   }
               }
           }
-          GraphData.print("GraphData:");
+         // GraphData.print("GraphData:");
           std::vector< std::vector<double> > graph_embedding(2);
-          Eigen::MatrixXd g_model =  convertArmadilloToEngineMatrix(UMAT);
+
           Eigen::MatrixXd g_data =  convertArmadilloToEngineMatrix(GraphData);
-          graph_embedding[0] = spectral_embedding(g_model, spectral_params);
+          std::vector<double> vecModel(n_spec_params);
+          vecModel = specmodelvec[cl];
+
+          graph_embedding[0] = vecModel;
           graph_embedding[1] = spectral_embedding(g_data, spectral_params);
-          double median = get_median(get_squared_distances(graph_embedding));
-          arrayLL(i,cl) = -median;
+          double l2n = get_l2norm(get_squared_distances(graph_embedding));
+          arrayLL(i,cl) = -l2n;
       }
     }
     rowvec labelDetect;
@@ -534,3 +532,85 @@ Eigen::MatrixXd MainWindow::convertArmadilloToEngineMatrix(mat matrix)
     }
     return G_eigen;
 }
+
+mat MainWindow::calculateDistNodeMatrix(mat codebook)
+{
+    mat Dist;
+    int numNod = codebook.n_rows;
+    Dist.set_size(numNod,numNod);
+    Dist.zeros();
+    for(int i=0; i < numNod; ++i)
+    {
+        int som_x1 = 0;
+        int som_y1 = 0;
+        twoFromOne((ulong)i,(ushort)m_nSOM_Y,(ushort&)som_x1,(ushort&)som_y1);
+        for(int j=0; j < numNod; ++j)
+        {
+            int som_x2 = 0;
+            int som_y2 = 0;
+            twoFromOne((ulong)j,(ushort)m_nSOM_Y,(ushort&)som_x2,(ushort&)som_y2);
+            float tmp = 0.0f;
+            if (m_mapType == "planar")
+            {
+                tmp = euclideanDistanceOnPlanarMap(som_x1, som_y1, som_x2, som_y2);
+            }
+            if (m_mapType == "toroid")
+            {
+               tmp = euclideanDistanceOnToroidMap(som_x1, som_y1, som_x2, som_y2, m_nSOM_X, m_nSOM_Y);
+            }
+            if (tmp <= 1.001f)
+            {
+                Dist(i,j) = norm(codebook(i,span::all) - codebook(j,span::all),2);
+            }
+        }
+    }
+    colvec A = Dist.elem(arma::find(Dist != 0));
+    float maxV = max(A);
+    float minV = min(A);
+    for(int i=0; i < numNod; ++i)
+    {
+        for(int j=0; i < numNod; ++j)
+        {
+           if(Dist(i,j) != 0)
+           {
+              Dist(i,j) = 1 - ((Dist(i,j) -  minV) / (maxV - minV));
+           }
+        }
+    }
+    Dist.print("Dist:");
+    return Dist;
+}
+
+double MainWindow::get_l2norm(std::vector<double> vec)
+{
+    double res = 0;
+    for (int i= 0; i < vec.size(); ++i)
+    {
+        res = res + pow(vec[i],2);
+    }
+    res = sqrt(res);
+    return res;
+}
+
+void MainWindow::twoFromOne (ulong z, ushort max_y, ushort& x, ushort& y)
+{
+    if ( z % max_y == 0)
+    {
+        x = z/max_y ;
+    }
+    else
+    {
+        x = z/max_y + 1;
+    }
+    y = z - max_y * (x-1);
+
+}
+
+
+
+
+
+
+
+
+
