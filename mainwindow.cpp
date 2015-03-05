@@ -569,7 +569,7 @@ mat MainWindow::calculateDistNodeMatrix(mat codebook)
     float minV = min(A);
     for(int i=0; i < numNod; ++i)
     {
-        for(int j=0; i < numNod; ++j)
+        for(int j=0; j < numNod; ++j)
         {
            if(Dist(i,j) != 0)
            {
