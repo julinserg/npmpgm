@@ -17,12 +17,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     m_nClassComplete = 0;
-  //  train();
+    train();
     m_timertrain = new QTimer();
     bool k = connect(m_timertrain,SIGNAL(timeout()),this,SLOT(timeoutAnalysisTrainComplete()));
-  //  m_timertrain->start(1000);
+    m_timertrain->start(1000);
   //  test();
-    test2();
+  //  test2();
 
      // testEnsemble();
 
@@ -178,8 +178,8 @@ void MainWindow::timeoutAnalysisTrainComplete()
         bool f1 = m_MatrixTransactA.save("matrix_a.model");
         bool f2 = m_UmatrixGraphList.save("matrix_u.model");
         m_timertrain->stop();
-        test();
-       // test2();
+       // test();
+        test2();
        // testEnsemble();
     }
 
@@ -332,8 +332,8 @@ void MainWindow::test2()
        specmodelvec[i] = vec;
     }
     mat arrayLL;
-    arrayLL.set_size(10/*m_TestData.n_rows*/,nClass);
-    for(int i=0; i < 10/*m_TestData.n_rows*/; ++i)
+    arrayLL.set_size(m_TestData.n_rows,nClass);
+    for(int i=0; i < m_TestData.n_rows; ++i)
     {
       mat SEQ = m_TestData(i,0);
      // SEQ.print("SEQ");
@@ -402,7 +402,7 @@ void MainWindow::test2()
           Gaussian_Kernel* gk = new Gaussian_Kernel(epsilon);
           const int dmaps_success = dmaps::map(graph_embedding, gk, eigvals_EIG, eigvects_EIG, W_EIG,k, 1e-12);
          // double l2n = get_l2norm(get_squared_distances(graph_embedding));
-         // arrayLL(i,cl) = -l2n;
+        //  arrayLL(i,cl) = -l2n;
           arrayLL(i,cl) = W_EIG[0][1];
       }
     }
