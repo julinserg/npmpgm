@@ -80,6 +80,10 @@ private:
     double get_l2norm(std::vector<double> vec);
 
     void twoFromOne(ulong z, ushort max_y, ushort& x, ushort& y);
+
+    mat mapminmax(mat matrix, double ymin, double ymax);
+
+    rowvec calcLabelDetect(mat arrayLL);
 public slots:
     /// анализ времени обучения
     void timeoutAnalysisTrainComplete();
@@ -89,6 +93,8 @@ public slots:
     void test();
     /// тестирование сравнения графов
     void test2();
+    /// тестирование объединение классификаторов
+    void testEnsemble();
 };
 
 #endif // MAINWINDOW_H

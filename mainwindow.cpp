@@ -2,6 +2,8 @@
 #include "ui_mainwindow.h"
 #include "util_fns.h"
 #include "embeddings.h"
+#include "gaussian_kernel.h"
+#include "dmaps.h"
 #include <QFile>
 #include <QTextStream>
 using namespace arma;
@@ -15,13 +17,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     m_nClassComplete = 0;
-    train();
+  //  train();
     m_timertrain = new QTimer();
     bool k = connect(m_timertrain,SIGNAL(timeout()),this,SLOT(timeoutAnalysisTrainComplete()));
-    m_timertrain->start(1000);
-   // test();
-   // test2();
+  //  m_timertrain->start(1000);
+  //  test();
+    test2();
 
+     // testEnsemble();
 
 }
 
@@ -175,8 +178,9 @@ void MainWindow::timeoutAnalysisTrainComplete()
         bool f1 = m_MatrixTransactA.save("matrix_a.model");
         bool f2 = m_UmatrixGraphList.save("matrix_u.model");
         m_timertrain->stop();
-        //test();
-        test2();
+        test();
+       // test2();
+       // testEnsemble();
     }
 
 }
@@ -296,6 +300,11 @@ void MainWindow::test()
     qDebug("fmeasure: %f",fmeasure);
     qDebug("precision: %f",precision);
     qDebug("recall: %f",recall);
+
+    mat DP = mapminmax(arrayLL,0,1);
+    DP.save("classif_1.result");
+    DP.print("DP:");
+    int gg = 0;
 }
 
 void MainWindow::test2()
@@ -323,8 +332,8 @@ void MainWindow::test2()
        specmodelvec[i] = vec;
     }
     mat arrayLL;
-    arrayLL.set_size(m_TestData.n_rows,nClass);
-    for(int i=0; i < m_TestData.n_rows; ++i)
+    arrayLL.set_size(10/*m_TestData.n_rows*/,nClass);
+    for(int i=0; i < 10/*m_TestData.n_rows*/; ++i)
     {
       mat SEQ = m_TestData(i,0);
      // SEQ.print("SEQ");
@@ -385,8 +394,16 @@ void MainWindow::test2()
 
           graph_embedding[0] = vecModel;
           graph_embedding[1] = spectral_embedding(g_data, spectral_params);
-          double l2n = get_l2norm(get_squared_distances(graph_embedding));
-          arrayLL(i,cl) = -l2n;
+          const int k = 2;
+          std::vector<double> eigvals_EIG(k);
+          std::vector< std::vector<double> > eigvects_EIG(k);
+          std::vector< std::vector<double> > W_EIG(k);
+          double epsilon = 1e-3;
+          Gaussian_Kernel* gk = new Gaussian_Kernel(epsilon);
+          const int dmaps_success = dmaps::map(graph_embedding, gk, eigvals_EIG, eigvects_EIG, W_EIG,k, 1e-12);
+         // double l2n = get_l2norm(get_squared_distances(graph_embedding));
+         // arrayLL(i,cl) = -l2n;
+          arrayLL(i,cl) = W_EIG[0][1];
       }
     }
     rowvec labelDetect;
@@ -398,6 +415,7 @@ void MainWindow::test2()
       double max = vec.max(index);
       labelDetect(i) = index+1;
     }
+    labelDetect.print("labelDetect:");
     rowvec labelTrue = m_TestLabel.t();
     //labelTrue.resize(200);
     double accuracy = 0;
@@ -417,6 +435,152 @@ void MainWindow::test2()
     qDebug("fmeasure: %f",fmeasure);
     qDebug("precision: %f",precision);
     qDebug("recall: %f",recall);
+
+    mat DP = mapminmax(arrayLL,0,1);
+    DP.save("classif_2.result");
+
+}
+
+void MainWindow::testEnsemble()
+{
+    readTestData("data/characterTestData.csv","data/characterTestLabel.csv");
+    mat DP1;
+    mat DP2;
+    bool g1 = DP1.load("classif_1.result");
+    bool g2 = DP2.load("classif_2.result");
+    int nClass = DP1.n_cols;
+    mat arrayLL_MAX;
+    arrayLL_MAX.set_size(DP1.n_rows,DP1.n_cols);
+    mat arrayLL_MIN;
+    arrayLL_MIN.set_size(DP1.n_rows,DP1.n_cols);
+    mat arrayLL_SUM;
+    arrayLL_SUM.set_size(DP1.n_rows,DP1.n_cols);
+    mat arrayLL_AVR;
+    arrayLL_AVR.set_size(DP1.n_rows,DP1.n_cols);
+    mat arrayLL_PRO;
+    arrayLL_PRO.set_size(DP1.n_rows,DP1.n_cols);
+    for(int i=0; i < DP1.n_rows; ++i)
+    {
+        for(int j=0; j < DP1.n_cols; ++j)
+        {
+            rowvec vec;
+            vec.set_size(2);
+            vec(0) = DP1(i,j);
+            vec(1) = DP2(i,j);
+            arrayLL_MAX(i,j) = max(vec);
+            arrayLL_MIN(i,j) = min(vec);
+            arrayLL_SUM(i,j) = sum(vec);
+            arrayLL_AVR(i,j) = mean(vec);
+            arrayLL_PRO(i,j) = prod(vec);
+        }
+    }
+
+    rowvec labelTrue = m_TestLabel.t();
+
+
+    rowvec labelDetect_MAX = calcLabelDetect(arrayLL_MAX);
+    rowvec labelDetect_MIN = calcLabelDetect(arrayLL_MIN);
+    rowvec labelDetect_SUM = calcLabelDetect(arrayLL_SUM);
+    rowvec labelDetect_AVR = calcLabelDetect(arrayLL_AVR);
+    rowvec labelDetect_PRO = calcLabelDetect(arrayLL_PRO);
+    labelDetect_MAX.print("labelDetect_MAX:");
+    //labelTrue.resize(200);
+    double accuracy_max = 0;
+    for(int i=0; i < labelTrue.n_elem; ++i)
+    {
+       if (labelTrue(i) == labelDetect_MAX(i))
+       {
+           accuracy_max++;
+       }
+    }
+    accuracy_max = accuracy_max / labelTrue.n_elem;
+    qDebug("accuracy_max: %f",accuracy_max);
+
+    double accuracy_min = 0;
+    for(int i=0; i < labelTrue.n_elem; ++i)
+    {
+       if (labelTrue(i) == labelDetect_MIN(i))
+       {
+           accuracy_min++;
+       }
+    }
+    accuracy_min = accuracy_min / labelTrue.n_elem;
+    qDebug("accuracy_min: %f",accuracy_min);
+
+    double accuracy_sum = 0;
+    for(int i=0; i < labelTrue.n_elem; ++i)
+    {
+       if (labelTrue(i) == labelDetect_SUM(i))
+       {
+           accuracy_sum++;
+       }
+    }
+    accuracy_sum = accuracy_sum / labelTrue.n_elem;
+    qDebug("accuracy_sum: %f",accuracy_sum);
+
+    double accuracy_avr = 0;
+    for(int i=0; i < labelTrue.n_elem; ++i)
+    {
+       if (labelTrue(i) == labelDetect_AVR(i))
+       {
+           accuracy_avr++;
+       }
+    }
+    accuracy_avr = accuracy_avr / labelTrue.n_elem;
+    qDebug("accuracy_avr: %f",accuracy_avr);
+
+    double accuracy_pro = 0;
+    for(int i=0; i < labelTrue.n_elem; ++i)
+    {
+       if (labelTrue(i) == labelDetect_PRO(i))
+       {
+           accuracy_pro++;
+       }
+    }
+    accuracy_pro = accuracy_pro / labelTrue.n_elem;
+    qDebug("accuracy_pro: %f",accuracy_pro);
+
+
+    double fmeasure_max;
+    double precision_max;
+    double recall_max;
+    quality(labelDetect_MAX,labelTrue,nClass,fmeasure_max,precision_max,recall_max);
+    qDebug("fmeasure_max: %f",fmeasure_max);
+    qDebug("precision_max: %f",precision_max);
+    qDebug("recall_max: %f",recall_max);
+
+    double fmeasure_min;
+    double precision_min;
+    double recall_min;
+    quality(labelDetect_MIN,labelTrue,nClass,fmeasure_min,precision_min,recall_min);
+    qDebug("fmeasure_min: %f",fmeasure_min);
+    qDebug("precision_min: %f",precision_min);
+    qDebug("recall_min: %f",recall_min);
+
+    double fmeasure_sum;
+    double precision_sum;
+    double recall_sum;
+    quality(labelDetect_SUM,labelTrue,nClass,fmeasure_sum,precision_sum,recall_sum);
+    qDebug("fmeasure_sum: %f",fmeasure_sum);
+    qDebug("precision_sum: %f",precision_sum);
+    qDebug("recall_sum: %f",recall_sum);
+
+    double fmeasure_avr;
+    double precision_avr;
+    double recall_avr;
+    quality(labelDetect_AVR,labelTrue,nClass,fmeasure_avr,precision_avr,recall_avr);
+    qDebug("fmeasure_avr: %f",fmeasure_avr);
+    qDebug("precision_avr: %f",precision_avr);
+    qDebug("recall_avr: %f",recall_avr);
+
+    double fmeasure_prod;
+    double precision_prod;
+    double recall_prod;
+    quality(labelDetect_PRO,labelTrue,nClass,fmeasure_prod,precision_prod,recall_prod);
+    qDebug("fmeasure_prod: %f",fmeasure_prod);
+    qDebug("precision_prod: %f",precision_prod);
+    qDebug("recall_prod: %f",recall_prod);
+
 
 }
 
@@ -480,7 +644,7 @@ void MainWindow::quality(rowvec labeldetect, rowvec labeltrue, int nClass, doubl
     mat Confusion_Matrix;
     Confusion_Matrix.set_size(nClass,nClass);
     Confusion_Matrix.zeros();
-    labeldetect.print("labeldetect");
+   // labeldetect.print("labeldetect");
    // labeltrue.print("labeltrue");
     if (labeldetect.n_elem == labeltrue.n_elem )
     {
@@ -577,7 +741,7 @@ mat MainWindow::calculateDistNodeMatrix(mat codebook)
            }
         }
     }
-    Dist.print("Dist:");
+    //Dist.print("Dist:");
     return Dist;
 }
 
@@ -606,7 +770,36 @@ void MainWindow::twoFromOne (ulong z, ushort max_y, ushort& x, ushort& y)
 
 }
 
+mat MainWindow::mapminmax(mat matrix, double ymin, double ymax)
+{
+    mat resMatrix;
+    resMatrix.set_size(matrix.n_rows,matrix.n_cols);
+    for(int i=0; i < matrix.n_rows; ++i)
+    {
+        rowvec vec = matrix(i,span::all);
+        double xmax = vec.max();
+        double xmin = vec.min();
+        for(int j=0;j < vec.n_elem; ++j)
+        {
+            resMatrix(i,j) = (ymax-ymin)*(vec(j)-xmin)/(xmax-xmin) + ymin;
+        }
+    }
+    return resMatrix;
+}
 
+rowvec MainWindow::calcLabelDetect(mat arrayLL)
+{
+    rowvec labelDetect;
+    labelDetect.set_size(arrayLL.n_rows);
+    for(int i = 0; i < arrayLL.n_rows; ++i)
+    {
+      rowvec vec = arrayLL(i,span::all);
+      uword  index;
+      double max = vec.max(index);
+      labelDetect(i) = index+1;
+    }
+    return labelDetect;
+}
 
 
 
