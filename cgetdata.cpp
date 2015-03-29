@@ -1,28 +1,49 @@
 #include "cgetdata.h"
-#include "csv.h"
-mat CGetData::getMatFromFile(const QString& namefile)
+#include <QTime>
+#include <QFile>
+#include <QTextStream>
+const int C_MAX_ROWS = 999999;
+const int C_MAX_COLUMNS = 20;
+void CGetData::getMatFromFile(const QString& namefile, mat &data, mat &label)
 {
-    mat B;
-    QList<QStringList> listfile = CSV::parseFromFile(namefile);
-    B.set_size(listfile.size(),listfile.first().size());
-    int i = 0;
-    int j = 0;
-    foreach (QStringList rowList, listfile) {
-        j = 0;
-        foreach (QString valStr, rowList) {
-             bool ok;
-             B(i,j) = valStr.toDouble(&ok);
-             j++;
+    QFile file(namefile);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return;
+    label.set_size(C_MAX_ROWS,2);
+    data.set_size(C_MAX_ROWS,C_MAX_COLUMNS);
+    QTextStream in(&file);
+    int lineNum = 0;
+    bool ok;
+    int desi = 0;
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+        QStringList strListVal = line.split(",");
+        if (strListVal.size() > 3)
+        {
+           // label.resize(lineNum+1,2);
+            label(lineNum,0) = strListVal.at(1).toInt(&ok);
+            label(lineNum,1) = strListVal.at(2).toInt(&ok);
+            desi = strListVal.size() - 3;
+            for(int i=0;i< desi;++i)
+            {
+               // data.resize(lineNum+1,desi);
+                data(lineNum,i) = strListVal.at(3+i).toDouble(&ok);
+            }
         }
-        i++;
+        lineNum++;
     }
-    return B;
+    label.resize(lineNum,2);
+    data.resize(lineNum,desi);
+    int g = 0;
+
 }
 
-void CGetData::getCellFromFile(const QString& namefileData, const QString& namefileLable, field<mat>& data, mat& label)
+void CGetData::getCellFromFile(const QString& namefileData,field<mat>& data, mat& label)
 {
-    mat Data = CGetData::getMatFromFile(namefileData);
-    mat Label = CGetData::getMatFromFile(namefileLable);
+    mat Data;
+    mat Label;
+    CGetData::getMatFromFile(namefileData,Data,Label);
+
     field<mat> dataTemp;
     dataTemp.set_size(Data.n_rows,1);
     int predSeq = Label(0,0);
@@ -30,28 +51,32 @@ void CGetData::getCellFromFile(const QString& namefileData, const QString& namef
     mat A;
     int index = 0;
     int indexField = 0;
+    label.set_size(C_MAX_ROWS,1);
+    A.set_size(C_MAX_ROWS,Data.n_cols);
     for (int i = 0; i < Data.n_rows; ++i)
     {
        if (predSeq != Label(i,0))
        {
-           index = 0;           
-           label.resize(indexField+1,1);
+           A.resize(index,Data.n_cols);
+           index = 0;
            dataTemp(indexField,0) = A;
            label(indexField,0) = predLab;
            int predLab0 = label(0,0);
            A.clear();
+           A.set_size(C_MAX_ROWS,Data.n_cols);
            indexField++;
        }
-       A.resize(index+1,Data.n_cols);               
+
        A(index,span::all) =  Data(i,span::all);
        index++;
        predSeq = Label(i,0);
        predLab = Label(i,1);
-    }   
-    label.resize(indexField+1,1);
+    }
+    A.resize(index,Data.n_cols);
     dataTemp(indexField,0) = A;
     label(indexField,0) = predLab;
     data.set_size(indexField+1,1);
+    label.resize(indexField+1,1);
     for (int i = 0; i < data.n_rows; ++i)
     {
        data(i,0) =  dataTemp(i,0);
@@ -71,22 +96,25 @@ void CGetData::formingTrainDataForSOM(field<mat> data, mat label, field<mat> &da
     int first_row = 0;
     int last_row = 0;
     int sizeRow =label(label.n_rows-1,0) -  label(0,0) + 1;
+    A.set_size(C_MAX_ROWS,data(0,0).n_cols);
     dataForSOM.set_size(sizeRow,1);
+    int des = 0;
     for (int i = 0; i < data.n_rows; ++i)
     {
        if (predLab != label(i,0))
        {
+           A.resize(first_row,data(0,0).n_cols);
            first_row = 0;
            last_row = 0;
 
            dataForSOM(indexField,0) = A;
 
            A.clear();
+           A.set_size(C_MAX_ROWS,data(0,0).n_cols);
            indexField++;
        }
-       mat D = data(i,0);
-       last_row = first_row + D.n_rows - 1;
-       A.resize(last_row+1,D.n_cols);
+       mat D = data(i,0);     
+       last_row = first_row + D.n_rows - 1;       
        A(span(first_row, last_row),span::all) = D;
        first_row = last_row + 1;
       /* for (int k = 0; k < D.n_rows; ++k)
@@ -100,7 +128,8 @@ void CGetData::formingTrainDataForSOM(field<mat> data, mat label, field<mat> &da
        }*/
 
        predLab = label(i,0);
-    }  
+    }
+    A.resize(first_row,data(0,0).n_cols);
     dataForSOM(indexField,0) = A;
 
     return ;

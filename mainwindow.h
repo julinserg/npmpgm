@@ -48,7 +48,9 @@ private:
     /// графы карты кохонена для каждого класса
     field<mat> m_UmatrixGraphList;
     /// матрциа переходов между состояними для каждого класса
-    field<mat> m_MatrixTransactA;    
+    field<mat> m_MatrixTransactA;
+    /// вектор инициализации переходов между состояними для каждого класса
+    field<mat> m_MatrixPI;
     ///количество классов для которых завершено обучение
     int m_nClassComplete;
     /// таймер времени обучения
@@ -58,14 +60,14 @@ private:
     int m_nSOM_X;
     int m_nSOM_Y;
 private:
-    /// читаем данные из двух csv файлов и заполняем m_TrainData m_TrainLabel m_TrainDataForSOM m_nClass
-    void readTrainData(const QString &datafile, const QString &lablefile);
-    /// читаем данные из двух csv файлов и заполняем m_TestData m_TestLabel
-    void readTestData(const QString &datafile, const QString &lablefile);
+    /// читаем данные из csv файла и заполняем m_TrainData m_TrainLabel m_TrainDataForSOM m_nClass
+    void readTrainData(const QString &datafile);
+    /// читаем данные из csv файла и заполняем m_TestData m_TestLabel
+    void readTestData(const QString &datafile);
     /// формирвоание набора файлов для оубчения SOM
     void writeSOMtrainfiles(const QString& patternfilename);
     /// формирвоание матрицы переходов между состояними
-    mat formMatrixTransaction(mat codebook,int label);
+    void formMatrixTransaction(mat codebook,int label, mat& TR, mat& PI);
 
     mat logsumexp(mat a, int dim);
 

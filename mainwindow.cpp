@@ -58,25 +58,29 @@ bool MainWindow::event(QEvent *ev)
         mat UMATRIX =  calculateDistNodeMatrix(CodeBook);
         m_UmatrixGraphList(label-1,0) = UMATRIX;
         m_SOMCodeBookList(label-1,0) = CodeBook;
-        mat TrasitionM = formMatrixTransaction(CodeBook,label);
+        mat TrasitionM;
+        mat PiM;
+        formMatrixTransaction(CodeBook,label,TrasitionM,PiM);
         m_MatrixTransactA(label-1,0) = TrasitionM;
+        m_MatrixPI(label-1,0) = PiM;
         m_nClassComplete++;
     }
 }
 
-void MainWindow::readTrainData(const QString &datafile, const QString &lablefile)
+void MainWindow::readTrainData(const QString &datafile)
 {
-    CGetData::getCellFromFile(datafile,lablefile,m_TrainData,m_TrainLabel);
+    CGetData::getCellFromFile(datafile,m_TrainData,m_TrainLabel);
     CGetData::formingTrainDataForSOM(m_TrainData,m_TrainLabel,m_TrainDataForSOM);
     m_nClass = m_TrainDataForSOM.n_rows;
     m_SOMCodeBookList.set_size(m_nClass,1);
     m_MatrixTransactA.set_size(m_nClass,1);
     m_UmatrixGraphList.set_size(m_nClass,1);
+    m_MatrixPI.set_size(m_nClass,1);
 }
 
-void MainWindow::readTestData(const QString &datafile, const QString &lablefile)
+void MainWindow::readTestData(const QString &datafile)
 {
-   CGetData::getCellFromFile(datafile,lablefile,m_TestData,m_TestLabel);
+   CGetData::getCellFromFile(datafile,m_TestData,m_TestLabel);
 }
 
 void MainWindow::writeSOMtrainfiles(const QString &patternfilename)
@@ -104,14 +108,17 @@ void MainWindow::writeSOMtrainfiles(const QString &patternfilename)
 
 }
 
-mat MainWindow::formMatrixTransaction(mat codebook, int label)
+void MainWindow::formMatrixTransaction(mat codebook, int label, mat& TR, mat& PI)
 {
     mat ProbabilityA;
     mat ProbabilityAt;
+
     ProbabilityA.set_size(codebook.n_rows,codebook.n_rows);
     ProbabilityA.zeros();
     ProbabilityAt.set_size(codebook.n_rows,1);
     ProbabilityAt.zeros();
+    PI.set_size(1,codebook.n_rows);
+    PI.zeros();
     for(int k=0; k < m_TrainData.n_rows; ++k)
     {
         if (m_TrainLabel(k,0) == label)
@@ -136,6 +143,7 @@ mat MainWindow::formMatrixTransaction(mat codebook, int label)
                    }
                 }
                 arrayWinUnit(i) = winUnit;
+                PI(0,winUnit) = PI(0,winUnit) + 1;
             }
 
             for(int i = 0; i < arrayWinUnit.n_cols - 1; ++i)
@@ -148,9 +156,9 @@ mat MainWindow::formMatrixTransaction(mat codebook, int label)
         }
     }
 
-    mat A;
-    A.copy_size(ProbabilityA);
-    A.zeros();
+
+    TR.copy_size(ProbabilityA);
+    TR.zeros();
     for(int j=0; j < ProbabilityA.n_rows; ++j)
     {
        rowvec vect;
@@ -162,10 +170,23 @@ mat MainWindow::formMatrixTransaction(mat codebook, int label)
           int cc = ProbabilityAt(j,0);
           vect =  vect2 / cc;
        }
-       A(j,span::all) = vect;
+       TR(j,span::all) = vect;
     }
-
-    return A;
+   // PI.print("PI:");
+    double sumPi = 0;
+    sumPi = sum(sum(PI));
+    if (sumPi == 0)
+    {
+        sumPi = 1;
+    }
+    PI = PI / sumPi;
+   /* mat LPI = logsumexp(PI,2);
+    mat LMATPI = repmat(LPI, 1, PI.n_cols);
+  //  LMATPI.print("LMATPI:");
+    mat PInorm = PI - LMATPI;
+    PI = exp(PInorm);*/
+   // PI.print("PI:");
+   // int g = 0;
 
 }
 
@@ -177,9 +198,10 @@ void MainWindow::timeoutAnalysisTrainComplete()
         bool f = m_SOMCodeBookList.save("weight_som.model");
         bool f1 = m_MatrixTransactA.save("matrix_a.model");
         bool f2 = m_UmatrixGraphList.save("matrix_u.model");
+        bool f3 = m_MatrixPI.save("matrix_pi.model");
         m_timertrain->stop();
-       // test();
-        test2();
+        test();
+       // test2();
        // testEnsemble();
     }
 
@@ -187,19 +209,19 @@ void MainWindow::timeoutAnalysisTrainComplete()
 
 void MainWindow::train()
 {
-    readTrainData("data/characterTrainData.csv","data/characterTrainLabel.csv");
+    readTrainData("data/characterTrainData.csv");
     writeSOMtrainfiles(C_SOMFILENAMEDATA);
     for(int i=1; i<=m_nClass; ++i)
     {
          QString FileName = C_SOMFILENAMEDATA.arg(i).arg("csv");
          QString OutPrefix = C_SOMFILENAMECODEBOOK.arg(i);
          QSOMThread*  somthread = new QSOMThread();
-         m_nSOM_X = 10;
-         m_nSOM_Y = 10;
+         m_nSOM_X = 15;
+         m_nSOM_Y = 15;
          m_mapType = "planar";
          somthread->setFileName(FileName.toStdString());
          somthread->setOutPrefix(OutPrefix.toStdString());
-         somthread->setNumEpoch(2000);
+         somthread->setNumEpoch(1000);
          somthread->setSizeMap(m_nSOM_X,m_nSOM_Y,m_mapType);
          somthread->setRadiusParam(3,1,"linear");
          somthread->setScaleParam(0.1,0.01,"linear");
@@ -212,9 +234,10 @@ void MainWindow::train()
 
 void MainWindow::test()
 {
-    readTestData("data/characterTestData.csv","data/characterTestLabel.csv");
+    readTestData("data/characterTestData.csv");
     bool g1 = m_SOMCodeBookList.load("weight_som.model");
     bool g2 = m_MatrixTransactA.load("matrix_a.model");
+    bool g3 = m_MatrixPI.load("matrix_pi.model");
     int nClass = m_SOMCodeBookList.n_rows;
     mat arrayLL;
     arrayLL.set_size(m_TestData.n_rows,nClass);
@@ -251,7 +274,7 @@ void MainWindow::test()
           mat LMAT = repmat(L, 1, Z.n_rows);
           mat Znorm = Z - LMAT.t();
           mat B = exp(Znorm);
-          mat G;
+         /* mat G;
           G.set_size(1,1);
           G(0,0) = 5;
           mat PI = repmat(G,1,SizeSOM);
@@ -259,14 +282,15 @@ void MainWindow::test()
           uword maxindex;
           double pimax = vecmax.max(maxindex);
           PI(0,maxindex) = 10;
-        //  PI.print("PI do");
+
           mat LPI = logsumexp(PI,2);
           mat LMATPI = repmat(LPI, 1, PI.n_cols);
-        //  LMATPI.print("LMATPI:");
+
           mat PInorm = PI - LMATPI;
-          PI = exp(PInorm);
-        //  PI.print("PI posle");
+          PI = exp(PInorm);*/
+
           mat A = m_MatrixTransactA(cl,0);
+          mat PI = m_MatrixPI(cl,0);
           double logp = hmmFilter(PI,A,B);
           logp = logp + sum(vectorise(L));
           arrayLL(i,cl) =logp;
@@ -302,8 +326,7 @@ void MainWindow::test()
     qDebug("recall: %f",recall);
 
     mat DP = mapminmax(arrayLL,0,1);
-    DP.save("classif_1.result");
-    DP.print("DP:");
+    DP.save("classif_1.result");  
     int gg = 0;
 }
 
@@ -319,7 +342,7 @@ void MainWindow::test2()
     }
 
 
-    readTestData("data/characterTestData.csv","data/characterTestLabel.csv");
+    readTestData("data/characterTestData.csv");
     bool g1 = m_SOMCodeBookList.load("weight_som.model");
     bool g2 = m_UmatrixGraphList.load("matrix_u.model");
     int nClass = m_SOMCodeBookList.n_rows;
@@ -444,7 +467,7 @@ void MainWindow::test2()
 
 void MainWindow::testEnsemble()
 {
-    readTestData("data/characterTestData.csv","data/characterTestLabel.csv");
+    readTestData("data/characterTestData.csv");
     mat DP1;
     mat DP2;
     bool g1 = DP1.load("classif_1.result");
