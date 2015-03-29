@@ -21,8 +21,8 @@ MainWindow::MainWindow(QWidget *parent) :
     m_timertrain = new QTimer();
     bool k = connect(m_timertrain,SIGNAL(timeout()),this,SLOT(timeoutAnalysisTrainComplete()));
     m_timertrain->start(1000);
-  //  test();
-  //  test2();
+   // test();
+   // test2();
 
      // testEnsemble();
 
@@ -199,7 +199,7 @@ void MainWindow::train()
          m_mapType = "planar";
          somthread->setFileName(FileName.toStdString());
          somthread->setOutPrefix(OutPrefix.toStdString());
-         somthread->setNumEpoch(500);
+         somthread->setNumEpoch(2000);
          somthread->setSizeMap(m_nSOM_X,m_nSOM_Y,m_mapType);
          somthread->setRadiusParam(3,1,"linear");
          somthread->setScaleParam(0.1,0.01,"linear");
@@ -309,7 +309,7 @@ void MainWindow::test()
 
 void MainWindow::test2()
 {
-    const int n_spec_params = 100;
+    const int n_spec_params = 10;
     std::vector<double> spectral_params(n_spec_params);
     const double spec_param_max = 0.01;
     const double spec_param_min = 0.0001;
@@ -370,6 +370,7 @@ void MainWindow::test2()
               double max = vecmax.max(maxindex);
               maxvec(i) = maxindex;
           }
+         // UMAT.print("UMAT:");
           mat GraphData;
           GraphData.set_size(UMAT.n_rows,UMAT.n_cols);
           GraphData.zeros();
@@ -385,7 +386,7 @@ void MainWindow::test2()
                   }
               }
           }
-         // GraphData.print("GraphData:");
+         //GraphData.print("GraphData:");
           std::vector< std::vector<double> > graph_embedding(2);
 
           Eigen::MatrixXd g_data =  convertArmadilloToEngineMatrix(GraphData);
@@ -401,8 +402,8 @@ void MainWindow::test2()
           double epsilon = 1e-3;
           Gaussian_Kernel* gk = new Gaussian_Kernel(epsilon);
           const int dmaps_success = dmaps::map(graph_embedding, gk, eigvals_EIG, eigvects_EIG, W_EIG,k, 1e-12);
-         // double l2n = get_l2norm(get_squared_distances(graph_embedding));
-        //  arrayLL(i,cl) = -l2n;
+          //double l2n = get_l2norm(get_squared_distances(graph_embedding));
+         // arrayLL(i,cl) = -l2n;
           arrayLL(i,cl) = W_EIG[0][1];
       }
     }
