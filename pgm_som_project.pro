@@ -35,7 +35,8 @@ SOURCES += main.cpp\
     graph_similarity/erdosrenyi_gen.cc \
     graph_similarity/graph_gen_alg.cc \
     graph_similarity/util_fns.cc \
-    prefAttachModel/eigen_solvers.cc
+    prefAttachModel/eigen_solvers.cc \
+    npmpgmthread.cpp
 
 HEADERS  += mainwindow.h \   
     somoclu/src/Windows/getopt.h \
@@ -445,7 +446,8 @@ HEADERS  += mainwindow.h \
     graph_similarity/kernel_function.h \
     graph_similarity/util_fns.h \
     prefAttachModel/eigen_solvers.h \
-    prefAttachModel/eigen_solvers_utils.h
+    prefAttachModel/eigen_solvers_utils.h \
+    npmpgmthread.h
 
 FORMS    += mainwindow.ui
 
@@ -455,4 +457,4 @@ INCLUDEPATH += "./armadillo/include"
 INCLUDEPATH += "./graph_similarity"
 INCLUDEPATH += "./eigen"
 INCLUDEPATH += "./prefAttachModel"
-LIBS += "C:/Program Files/MPICH2/lib/mpi.lib"
+#LIBS += "C:/Program Files/MPICH2/lib/mpi.lib"

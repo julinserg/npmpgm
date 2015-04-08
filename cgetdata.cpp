@@ -2,13 +2,14 @@
 #include <QTime>
 #include <QFile>
 #include <QTextStream>
+#include <QStringList>
 const int C_MAX_ROWS = 999999;
 const int C_MAX_COLUMNS = 20;
-void CGetData::getMatFromFile(const QString& namefile, mat &data, mat &label)
+bool CGetData::getMatFromFile(const QString& namefile, mat &data, mat &label)
 {
     QFile file(namefile);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-        return;
+        return false;
     label.set_size(C_MAX_ROWS,2);
     data.set_size(C_MAX_ROWS,C_MAX_COLUMNS);
     QTextStream in(&file);
@@ -35,14 +36,19 @@ void CGetData::getMatFromFile(const QString& namefile, mat &data, mat &label)
     label.resize(lineNum,2);
     data.resize(lineNum,desi);
     int g = 0;
+    return true;
 
 }
 
-void CGetData::getCellFromFile(const QString& namefileData,field<mat>& data, mat& label)
+bool CGetData::getCellFromFile(const QString& namefileData,field<mat>& data, mat& label)
 {
     mat Data;
     mat Label;
-    CGetData::getMatFromFile(namefileData,Data,Label);
+    if (!CGetData::getMatFromFile(namefileData,Data,Label))
+    {
+      return false;
+    }
+
 
     field<mat> dataTemp;
     dataTemp.set_size(Data.n_rows,1);
@@ -83,7 +89,7 @@ void CGetData::getCellFromFile(const QString& namefileData,field<mat>& data, mat
     }
     int t = 0;
 
-    return ;
+    return true;
 }
 
 void CGetData::formingTrainDataForSOM(field<mat> data, mat label, field<mat> &dataForSOM)
