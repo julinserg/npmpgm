@@ -27,8 +27,7 @@ SOURCES += main.cpp\
     somoclu/src/training.cpp \
     somoclu/src/trainOneEpoch.cpp \
     somoclu/src/uMatrix.cpp \
-    somoclu/src/Windows/getopt.c \
-    qt-csv/csv.cpp \
+    somoclu/src/Windows/getopt.c \    
     armadillo/src/wrapper.cpp \
     qsomthread.cpp \
     cgetdata.cpp \
@@ -36,12 +35,12 @@ SOURCES += main.cpp\
     graph_similarity/erdosrenyi_gen.cc \
     graph_similarity/graph_gen_alg.cc \
     graph_similarity/util_fns.cc \
-    prefAttachModel/eigen_solvers.cc
+    prefAttachModel/eigen_solvers.cc \
+    npmpgmthread.cpp
 
 HEADERS  += mainwindow.h \   
     somoclu/src/Windows/getopt.h \
-    somoclu/src/somocluWrap.h \
-    qt-csv/csv.h \
+    somoclu/src/somocluWrap.h \   
     ui_mainwindow.h \
     qsomthread.h \
     armadillo/include/armadillo_bits/access.hpp \
@@ -447,15 +446,15 @@ HEADERS  += mainwindow.h \
     graph_similarity/kernel_function.h \
     graph_similarity/util_fns.h \
     prefAttachModel/eigen_solvers.h \
-    prefAttachModel/eigen_solvers_utils.h
+    prefAttachModel/eigen_solvers_utils.h \
+    npmpgmthread.h
 
 FORMS    += mainwindow.ui
 
 INCLUDEPATH += "C:/Program Files/MPICH2/include"
 INCLUDEPATH += "./somoclu/src"
-INCLUDEPATH += "./qt-csv"
 INCLUDEPATH += "./armadillo/include"
 INCLUDEPATH += "./graph_similarity"
 INCLUDEPATH += "./eigen"
 INCLUDEPATH += "./prefAttachModel"
-LIBS += "C:/Program Files/MPICH2/lib/mpi.lib"
+#LIBS += "C:/Program Files/MPICH2/lib/mpi.lib"
