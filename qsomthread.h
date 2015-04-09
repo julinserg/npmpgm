@@ -150,14 +150,14 @@ public:
     int labelClass;
 };
 
-class QSOMThread : public QThread
+class class_som_thread : public QThread
 {
     Q_OBJECT
 public:
 
-    QSOMThread();
+    class_som_thread();
 
-    ~QSOMThread();
+    ~class_som_thread();
 
     void run();
 

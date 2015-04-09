@@ -7,9 +7,9 @@ using namespace arma;
 class CGetData
 {   
 public:    
-    static bool getMatFromFile(const QString& namefile, mat& data, mat& label);
-    static bool getCellFromFile(const QString& namefileData, field<mat>& data, mat& label);
-    static void formingTrainDataForSOM(field<mat> data, mat label, field<mat>& dataForSOM);
+    static bool get_mat_from_file(const QString& namefile, mat& data, mat& label);
+    static bool get_cell_from_file(const QString& namefileData, field<mat>& data, mat& label);
+    static void forming_train_data_for_som(field<mat> data, mat label, field<mat>& dataForSOM);
 };
 
 #endif // CGETDATA_H

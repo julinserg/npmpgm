@@ -10,20 +10,20 @@ namespace Ui {
 class MainWindow;
 }
 
-class NPMPGM_GUI : public QMainWindow
+class class_npmpgm_gui : public QMainWindow
 {
     Q_OBJECT
 
 public:
-    explicit NPMPGM_GUI(QWidget *parent = 0);
-    ~NPMPGM_GUI();
+    explicit class_npmpgm_gui(QWidget *parent = 0);
+    ~class_npmpgm_gui();
 
 
 private:
     Ui::MainWindow *ui;
-    NPMPGMThread* m_ModelThread;
-    QString m_fileNameTrainData;
-    QString m_dirNameModel;
+    class_npmpgm_model* m_model;
+    QString m_filename_traindata;
+    QString m_dirname_model;
 private:
 
 
@@ -32,14 +32,14 @@ private slots:
     void on_pbLoadTrainData_clicked();
     void on_pbSetModelPath_clicked();
     void on_pbTrain_clicked();
-
+    void end_load_traindata(bool res);
 signals:
-    /// читаем данные из csv файла и заполняем m_TrainData m_TrainLabel m_TrainDataForSOM m_nClass
-    void readTrainData(QString datafile);
-    /// читаем данные из csv файла и заполняем m_TestData m_TestLabel
-    void readTestData(QString datafile);
+    /// читаем данные из csv файла и заполняем m_train_data m_train_label m_train_data_for_som m_nclass
+    void read_train_data(QString datafile);
+    /// читаем данные из csv файла и заполняем m_test_data m_test_label
+    void read_test_data(QString datafile);
     /// путь к файлам модели
-    void setPathToModel(QString path);
+    void set_path_to_model(QString path);
     /// обучение
     void train(int numEpoch,int nSOM_X, int nSOM_Y,
                QString mapType, int bRadius, int eRadiusm,

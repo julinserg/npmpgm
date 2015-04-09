@@ -5,7 +5,7 @@
 #include <QStringList>
 const int C_MAX_ROWS = 999999;
 const int C_MAX_COLUMNS = 20;
-bool CGetData::getMatFromFile(const QString& namefile, mat &data, mat &label)
+bool CGetData::get_mat_from_file(const QString& namefile, mat &data, mat &label)
 {
     QFile file(namefile);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -40,11 +40,11 @@ bool CGetData::getMatFromFile(const QString& namefile, mat &data, mat &label)
 
 }
 
-bool CGetData::getCellFromFile(const QString& namefileData,field<mat>& data, mat& label)
+bool CGetData::get_cell_from_file(const QString& namefileData,field<mat>& data, mat& label)
 {
     mat Data;
     mat Label;
-    if (!CGetData::getMatFromFile(namefileData,Data,Label))
+    if (!CGetData::get_mat_from_file(namefileData,Data,Label))
     {
       return false;
     }
@@ -92,7 +92,7 @@ bool CGetData::getCellFromFile(const QString& namefileData,field<mat>& data, mat
     return true;
 }
 
-void CGetData::formingTrainDataForSOM(field<mat> data, mat label, field<mat> &dataForSOM)
+void CGetData::forming_train_data_for_som(field<mat> data, mat label, field<mat> &dataForSOM)
 {
     int predLab = 0;
     predLab = label(0,0);

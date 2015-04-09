@@ -92,7 +92,7 @@ double *readMatrixDoubleType(string inFilename, unsigned int &nRows, unsigned in
     return data;
 }
 
-QSOMThread::QSOMThread()
+class_som_thread::class_som_thread()
 {
    m_nEpoch = N_EPOCH;
    m_nSomX = N_SOM_X;
@@ -112,12 +112,12 @@ QSOMThread::QSOMThread()
 
 }
 
-QSOMThread::~QSOMThread()
+class_som_thread::~class_som_thread()
 {
 
 }
 
-void QSOMThread::run()
+void class_som_thread::run()
 {
 
        if (m_rank==0) {

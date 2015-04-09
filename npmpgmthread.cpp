@@ -9,12 +9,12 @@
 using namespace arma;
 const QString C_SOMFILENAMEDATA = "som_train_class_%1.%2";
 const QString C_SOMFILENAMECODEBOOK = "som_train_class_%1";
-NPMPGMThread::NPMPGMThread()
+class_npmpgm_model::class_npmpgm_model()
 {
 
-    m_nClassComplete = 0;
+    m_nclassComplete = 0;
     m_timertrain = new QTimer();
-    bool k = connect(m_timertrain,SIGNAL(timeout()),this,SLOT(timeoutAnalysisTrainComplete()));
+    bool k = connect(m_timertrain,SIGNAL(timeout()),this,SLOT(timeout_analysis_train_complete()));
     m_timertrain->start(1000);
     m_pathtomodel = "";
    // test();
@@ -24,17 +24,17 @@ NPMPGMThread::NPMPGMThread()
 
 }
 
-NPMPGMThread::~NPMPGMThread()
+class_npmpgm_model::~class_npmpgm_model()
 {
 
 }
 
-void NPMPGMThread::run()
+void class_npmpgm_model::run()
 {
     exec();
 }
 
-bool NPMPGMThread::event(QEvent *ev)
+bool class_npmpgm_model::event(QEvent *ev)
 {
     if(ev->type() == SOM_THREAD_STOP)
     {
@@ -56,58 +56,57 @@ bool NPMPGMThread::event(QEvent *ev)
                 ++index;
             }
         }
-        mat UMATRIX =  calculateDistNodeMatrix(CodeBook);
-        m_UmatrixGraphList(label-1,0) = UMATRIX;
-        m_SOMCodeBookList(label-1,0) = CodeBook;
+        mat UMATRIX =  calculate_dist_node_matrix(CodeBook);
+        m_umatrix_graph_list(label-1,0) = UMATRIX;
+        m_som_codebook_list(label-1,0) = CodeBook;
         mat TrasitionM;
         mat PiM;
-        formMatrixTransaction(CodeBook,label,TrasitionM,PiM);
-        m_MatrixTransactA(label-1,0) = TrasitionM;
-        m_MatrixPI(label-1,0) = PiM;
-        m_nClassComplete++;
+        form_matrix_transaction(CodeBook,label,TrasitionM,PiM);
+        m_matrix_transact_a(label-1,0) = TrasitionM;
+        m_matrix_pi(label-1,0) = PiM;
+        m_nclassComplete++;
         return true;
     }
     return QThread::event(ev);
 }
 
-void NPMPGMThread::readTrainData(QString datafile)
+void class_npmpgm_model::read_train_data(QString datafile)
 {
-    if (CGetData::getCellFromFile(datafile,m_TrainData,m_TrainLabel))
+    if (CGetData::get_cell_from_file(datafile,m_train_data,m_train_label))
     {
-        CGetData::formingTrainDataForSOM(m_TrainData,m_TrainLabel,m_TrainDataForSOM);
-        m_nClass = m_TrainDataForSOM.n_rows;
-        m_SOMCodeBookList.set_size(m_nClass,1);
-        m_MatrixTransactA.set_size(m_nClass,1);
-        m_UmatrixGraphList.set_size(m_nClass,1);
-        m_MatrixPI.set_size(m_nClass,1);
+        CGetData::forming_train_data_for_som(m_train_data,m_train_label,m_train_data_for_som);
+        m_nclass = m_train_data_for_som.n_rows;
+        m_som_codebook_list.set_size(m_nclass,1);
+        m_matrix_transact_a.set_size(m_nclass,1);
+        m_umatrix_graph_list.set_size(m_nclass,1);
+        m_matrix_pi.set_size(m_nclass,1);
 
-        writeSOMtrainfiles(m_pathtomodel + C_SOMFILENAMEDATA);
-
+        emit end_load_traindata(true);
     }
     else
     {
         qDebug() << "No train data!";
-        exit(0);
+        emit end_load_traindata(false);
     }
 }
 
-void NPMPGMThread::readTestData(QString datafile)
+void class_npmpgm_model::read_test_data(QString datafile)
 {
-    return (void)CGetData::getCellFromFile(datafile,m_TestData,m_TestLabel);
+    return (void)CGetData::get_cell_from_file(datafile,m_test_data,m_test_label);
 }
 
-void NPMPGMThread::setPathToModel(QString path)
+void class_npmpgm_model::set_path_to_model(QString path)
 {
     m_pathtomodel = path;
 }
 
-void NPMPGMThread::writeSOMtrainfiles(const QString &patternfilename)
+void class_npmpgm_model::write_som_trainfiles(const QString &patternfilename)
 {
-    for(int k = 0; k < m_TrainDataForSOM.n_rows; ++k)
+    for(int k = 0; k < m_train_data_for_som.n_rows; ++k)
     {
         QString namefilecur = patternfilename.arg(k+1).arg("csv");
         QFile file(namefilecur);
-        mat MATRIX = m_TrainDataForSOM(k,0);
+        mat MATRIX = m_train_data_for_som(k,0);
         if (file.open(QFile::WriteOnly|QFile::Truncate))
         {
           QTextStream stream(&file);
@@ -126,7 +125,7 @@ void NPMPGMThread::writeSOMtrainfiles(const QString &patternfilename)
 
 }
 
-void NPMPGMThread::formMatrixTransaction(mat codebook, int label, mat& TR, mat& PI)
+void class_npmpgm_model::form_matrix_transaction(mat codebook, int label, mat& TR, mat& PI)
 {
     mat ProbabilityA;
     mat ProbabilityAt;
@@ -137,11 +136,11 @@ void NPMPGMThread::formMatrixTransaction(mat codebook, int label, mat& TR, mat& 
     ProbabilityAt.zeros();
     PI.set_size(1,codebook.n_rows);
     PI.zeros();
-    for(int k=0; k < m_TrainData.n_rows; ++k)
+    for(int k=0; k < m_train_data.n_rows; ++k)
     {
-        if (m_TrainLabel(k,0) == label)
+        if (m_train_label(k,0) == label)
         {
-            mat A = m_TrainData(k,0);
+            mat A = m_train_data(k,0);
             rowvec arrayWinUnit;
             arrayWinUnit.set_size(A.n_rows);
             for(int i=0; i < A.n_rows; ++i)
@@ -208,15 +207,15 @@ void NPMPGMThread::formMatrixTransaction(mat codebook, int label, mat& TR, mat& 
 
 }
 
-void NPMPGMThread::timeoutAnalysisTrainComplete()
+void class_npmpgm_model::timeout_analysis_train_complete()
 {
-    if (m_nClass == m_nClassComplete)
+    if (m_nclass == m_nclassComplete)
     {
         // если все классы обучены, то выполняем сохранение в файл моделей
-        bool f = m_SOMCodeBookList.save("weight_som.model");
-        bool f1 = m_MatrixTransactA.save("matrix_a.model");
-        bool f2 = m_UmatrixGraphList.save("matrix_u.model");
-        bool f3 = m_MatrixPI.save("matrix_pi.model");
+        bool f = m_som_codebook_list.save(m_pathtomodel.toStdString()+"weight_som.model");
+        bool f1 = m_matrix_transact_a.save(m_pathtomodel.toStdString()+"matrix_a.model");
+        bool f2 = m_umatrix_graph_list.save(m_pathtomodel.toStdString()+"matrix_u.model");
+        bool f3 = m_matrix_pi.save(m_pathtomodel.toStdString()+"matrix_pi.model");
         m_timertrain->stop();
         test();
        // test2();
@@ -225,22 +224,23 @@ void NPMPGMThread::timeoutAnalysisTrainComplete()
 
 }
 
-void NPMPGMThread::train(int numEpoch,int nSOM_X, int nSOM_Y,
+void class_npmpgm_model::train(int numEpoch,int nSOM_X, int nSOM_Y,
                          QString mapType, int bRadius, int eRadiusm,
                          QString typeRadius, int bScale, int eScale, QString typeScale)
 {
-    for(int i=1; i<=m_nClass; ++i)
+    write_som_trainfiles(m_pathtomodel + C_SOMFILENAMEDATA);
+    for(int i=1; i<=m_nclass; ++i)
     {
          QString FileName = m_pathtomodel + C_SOMFILENAMEDATA.arg(i).arg("csv");
          QString OutPrefix = m_pathtomodel + C_SOMFILENAMECODEBOOK.arg(i);
-         QSOMThread*  somthread = new QSOMThread();
-         m_nSOM_X = nSOM_X;
-         m_nSOM_Y = nSOM_Y;
-         m_mapType = mapType.toStdString();
+         class_som_thread*  somthread = new class_som_thread();
+         m_nsom_x = nSOM_X;
+         m_nsom_y = nSOM_Y;
+         m_map_type = mapType.toStdString();
          somthread->setFileName(FileName.toStdString());
          somthread->setOutPrefix(OutPrefix.toStdString());
          somthread->setNumEpoch(numEpoch);
-         somthread->setSizeMap(m_nSOM_X,m_nSOM_Y,m_mapType);
+         somthread->setSizeMap(m_nsom_x,m_nsom_y,m_map_type);
          somthread->setRadiusParam(bRadius,eRadiusm,typeRadius.toStdString());
          somthread->setScaleParam(bScale,eScale,typeScale.toStdString());
          somthread->setKernelType(0,4);
@@ -250,23 +250,23 @@ void NPMPGMThread::train(int numEpoch,int nSOM_X, int nSOM_Y,
     }
 }
 
-void NPMPGMThread::test()
+void class_npmpgm_model::test()
 {
-    readTestData("data/characterTestData.csv");
-    bool g1 = m_SOMCodeBookList.load("weight_som.model");
-    bool g2 = m_MatrixTransactA.load("matrix_a.model");
-    bool g3 = m_MatrixPI.load("matrix_pi.model");
-    int nClass = m_SOMCodeBookList.n_rows;
+    read_test_data("data/characterTestData.csv");
+    bool g1 = m_som_codebook_list.load(m_pathtomodel.toStdString()+"weight_som.model");
+    bool g2 = m_matrix_transact_a.load(m_pathtomodel.toStdString()+"matrix_a.model");
+    bool g3 = m_matrix_pi.load(m_pathtomodel.toStdString()+"matrix_pi.model");
+    int nClass = m_som_codebook_list.n_rows;
     mat arrayLL;
-    arrayLL.set_size(m_TestData.n_rows,nClass);
-    for(int i=0; i < m_TestData.n_rows; ++i)
+    arrayLL.set_size(m_test_data.n_rows,nClass);
+    for(int i=0; i < m_test_data.n_rows; ++i)
     {
-      mat SEQ = m_TestData(i,0);
+      mat SEQ = m_test_data(i,0);
      // SEQ.print("SEQ");
       int SizeSEQ = SEQ.n_rows;
       for (int cl =0; cl < nClass; ++cl)
       {
-          mat WSOM = m_SOMCodeBookList(cl,0);
+          mat WSOM = m_som_codebook_list(cl,0);
          // WSOM.print("SOM");
           int SizeSOM = WSOM.n_rows;
           mat Z;
@@ -307,9 +307,9 @@ void NPMPGMThread::test()
           mat PInorm = PI - LMATPI;
           PI = exp(PInorm);*/
 
-          mat A = m_MatrixTransactA(cl,0);
-          mat PI = m_MatrixPI(cl,0);
-          double logp = hmmFilter(PI,A,B);
+          mat A = m_matrix_transact_a(cl,0);
+          mat PI = m_matrix_pi(cl,0);
+          double logp = hmm_filter(PI,A,B);
           logp = logp + sum(vectorise(L));
           arrayLL(i,cl) =logp;
       }
@@ -323,7 +323,7 @@ void NPMPGMThread::test()
       double max = vec.max(index);
       labelDetect(i) = index+1;
     }
-    rowvec labelTrue = m_TestLabel.t();
+    rowvec labelTrue = m_test_label.t();
     //labelTrue.resize(200);
     double accuracy = 0;
     for(int i=0; i < labelTrue.n_elem; ++i)
@@ -348,7 +348,7 @@ void NPMPGMThread::test()
     int gg = 0;
 }
 
-void NPMPGMThread::test2()
+void class_npmpgm_model::test2()
 {
     const int n_spec_params = 10;
     std::vector<double> spectral_params(n_spec_params);
@@ -360,29 +360,29 @@ void NPMPGMThread::test2()
     }
 
 
-    readTestData("data/characterTestData.csv");
-    bool g1 = m_SOMCodeBookList.load("weight_som.model");
-    bool g2 = m_UmatrixGraphList.load("matrix_u.model");
-    int nClass = m_SOMCodeBookList.n_rows;
+    read_test_data("data/characterTestData.csv");
+    bool g1 = m_som_codebook_list.load("weight_som.model");
+    bool g2 = m_umatrix_graph_list.load("matrix_u.model");
+    int nClass = m_som_codebook_list.n_rows;
     std::vector< std::vector<double> > specmodelvec(nClass, std::vector<double>(n_spec_params));
     for(int i=0;i<nClass;++i)
     {
-       mat UMAT = m_UmatrixGraphList(i,0);
-       Eigen::MatrixXd g_model =  convertArmadilloToEngineMatrix(UMAT);
+       mat UMAT = m_umatrix_graph_list(i,0);
+       Eigen::MatrixXd g_model =  convert_armadillo_to_engine_matrix(UMAT);
        std::vector<double> vec = spectral_embedding(g_model, spectral_params);
        specmodelvec[i] = vec;
     }
     mat arrayLL;
-    arrayLL.set_size(m_TestData.n_rows,nClass);
-    for(int i=0; i < m_TestData.n_rows; ++i)
+    arrayLL.set_size(m_test_data.n_rows,nClass);
+    for(int i=0; i < m_test_data.n_rows; ++i)
     {
-      mat SEQ = m_TestData(i,0);
+      mat SEQ = m_test_data(i,0);
      // SEQ.print("SEQ");
       int SizeSEQ = SEQ.n_rows;
       for (int cl =0; cl < nClass; ++cl)
       {
-          mat WSOM = m_SOMCodeBookList(cl,0);
-          mat UMAT = m_UmatrixGraphList(cl,0);
+          mat WSOM = m_som_codebook_list(cl,0);
+          mat UMAT = m_umatrix_graph_list(cl,0);
          // WSOM.print("SOM");
           int SizeSOM = WSOM.n_rows;
           mat Z;
@@ -430,7 +430,7 @@ void NPMPGMThread::test2()
          //GraphData.print("GraphData:");
           std::vector< std::vector<double> > graph_embedding(2);
 
-          Eigen::MatrixXd g_data =  convertArmadilloToEngineMatrix(GraphData);
+          Eigen::MatrixXd g_data =  convert_armadillo_to_engine_matrix(GraphData);
           std::vector<double> vecModel(n_spec_params);
           vecModel = specmodelvec[cl];
 
@@ -458,7 +458,7 @@ void NPMPGMThread::test2()
       labelDetect(i) = index+1;
     }
     labelDetect.print("labelDetect:");
-    rowvec labelTrue = m_TestLabel.t();
+    rowvec labelTrue = m_test_label.t();
     //labelTrue.resize(200);
     double accuracy = 0;
     for(int i=0; i < labelTrue.n_elem; ++i)
@@ -483,9 +483,9 @@ void NPMPGMThread::test2()
 
 }
 
-void NPMPGMThread::testEnsemble()
+void class_npmpgm_model::test_ensemble()
 {
-    readTestData("data/characterTestData.csv");
+    read_test_data("data/characterTestData.csv");
     mat DP1;
     mat DP2;
     bool g1 = DP1.load("classif_1.result");
@@ -517,14 +517,14 @@ void NPMPGMThread::testEnsemble()
         }
     }
 
-    rowvec labelTrue = m_TestLabel.t();
+    rowvec labelTrue = m_test_label.t();
 
 
-    rowvec labelDetect_MAX = calcLabelDetect(arrayLL_MAX);
-    rowvec labelDetect_MIN = calcLabelDetect(arrayLL_MIN);
-    rowvec labelDetect_SUM = calcLabelDetect(arrayLL_SUM);
-    rowvec labelDetect_AVR = calcLabelDetect(arrayLL_AVR);
-    rowvec labelDetect_PRO = calcLabelDetect(arrayLL_PRO);
+    rowvec labelDetect_MAX = calc_label_detect(arrayLL_MAX);
+    rowvec labelDetect_MIN = calc_label_detect(arrayLL_MIN);
+    rowvec labelDetect_SUM = calc_label_detect(arrayLL_SUM);
+    rowvec labelDetect_AVR = calc_label_detect(arrayLL_AVR);
+    rowvec labelDetect_PRO = calc_label_detect(arrayLL_PRO);
     labelDetect_MAX.print("labelDetect_MAX:");
     //labelTrue.resize(200);
     double accuracy_max = 0;
@@ -626,7 +626,7 @@ void NPMPGMThread::testEnsemble()
 
 }
 
-mat NPMPGMThread::logsumexp(mat a, int dim)
+mat class_npmpgm_model::logsumexp(mat a, int dim)
 {
     mat y = max(a,dim-1);
     mat dims = ones(1,2);
@@ -644,7 +644,7 @@ mat NPMPGMThread::logsumexp(mat a, int dim)
     return s;
 }
 
-double NPMPGMThread::hmmFilter(mat initDist, mat transmat, mat softev)
+double class_npmpgm_model::hmm_filter(mat initDist, mat transmat, mat softev)
 {
   int K =  softev.n_rows;
   int T = softev.n_cols;
@@ -681,7 +681,7 @@ double NPMPGMThread::hmmFilter(mat initDist, mat transmat, mat softev)
 
 }
 
-void NPMPGMThread::quality(rowvec labeldetect, rowvec labeltrue, int nClass, double& fmesure, double& precision, double& recall)
+void class_npmpgm_model::quality(rowvec labeldetect, rowvec labeltrue, int nClass, double& fmesure, double& precision, double& recall)
 {
     mat Confusion_Matrix;
     Confusion_Matrix.set_size(nClass,nClass);
@@ -728,7 +728,7 @@ void NPMPGMThread::quality(rowvec labeldetect, rowvec labeltrue, int nClass, dou
     return ;
 }
 
-Eigen::MatrixXd NPMPGMThread::convertArmadilloToEngineMatrix(mat matrix)
+Eigen::MatrixXd class_npmpgm_model::convert_armadillo_to_engine_matrix(mat matrix)
 {
     Eigen::MatrixXd G_eigen(matrix.n_rows,matrix.n_cols);
     for(int i = 0; i < matrix.n_rows; i++) {
@@ -739,7 +739,7 @@ Eigen::MatrixXd NPMPGMThread::convertArmadilloToEngineMatrix(mat matrix)
     return G_eigen;
 }
 
-mat NPMPGMThread::calculateDistNodeMatrix(mat codebook)
+mat class_npmpgm_model::calculate_dist_node_matrix(mat codebook)
 {
     mat Dist;
     int numNod = codebook.n_rows;
@@ -749,20 +749,20 @@ mat NPMPGMThread::calculateDistNodeMatrix(mat codebook)
     {
         int som_x1 = 0;
         int som_y1 = 0;
-        twoFromOne((ulong)i,(ushort)m_nSOM_Y,(ushort&)som_x1,(ushort&)som_y1);
+        two_from_one((ulong)i,(ushort)m_nsom_y,(ushort&)som_x1,(ushort&)som_y1);
         for(int j=0; j < numNod; ++j)
         {
             int som_x2 = 0;
             int som_y2 = 0;
-            twoFromOne((ulong)j,(ushort)m_nSOM_Y,(ushort&)som_x2,(ushort&)som_y2);
+            two_from_one((ulong)j,(ushort)m_nsom_y,(ushort&)som_x2,(ushort&)som_y2);
             float tmp = 0.0f;
-            if (m_mapType == "planar")
+            if (m_map_type == "planar")
             {
                 tmp = euclideanDistanceOnPlanarMap(som_x1, som_y1, som_x2, som_y2);
             }
-            if (m_mapType == "toroid")
+            if (m_map_type == "toroid")
             {
-               tmp = euclideanDistanceOnToroidMap(som_x1, som_y1, som_x2, som_y2, m_nSOM_X, m_nSOM_Y);
+               tmp = euclideanDistanceOnToroidMap(som_x1, som_y1, som_x2, som_y2, m_nsom_x, m_nsom_y);
             }
             if (tmp <= 1.001f)
             {
@@ -787,7 +787,7 @@ mat NPMPGMThread::calculateDistNodeMatrix(mat codebook)
     return Dist;
 }
 
-double NPMPGMThread::get_l2norm(std::vector<double> vec)
+double class_npmpgm_model::get_l2norm(std::vector<double> vec)
 {
     double res = 0;
     for (int i= 0; i < vec.size(); ++i)
@@ -798,7 +798,7 @@ double NPMPGMThread::get_l2norm(std::vector<double> vec)
     return res;
 }
 
-void NPMPGMThread::twoFromOne (ulong z, ushort max_y, ushort& x, ushort& y)
+void class_npmpgm_model::two_from_one (ulong z, ushort max_y, ushort& x, ushort& y)
 {
     if ( z % max_y == 0)
     {
@@ -812,7 +812,7 @@ void NPMPGMThread::twoFromOne (ulong z, ushort max_y, ushort& x, ushort& y)
 
 }
 
-mat NPMPGMThread::mapminmax(mat matrix, double ymin, double ymax)
+mat class_npmpgm_model::mapminmax(mat matrix, double ymin, double ymax)
 {
     mat resMatrix;
     resMatrix.set_size(matrix.n_rows,matrix.n_cols);
@@ -829,7 +829,7 @@ mat NPMPGMThread::mapminmax(mat matrix, double ymin, double ymax)
     return resMatrix;
 }
 
-rowvec NPMPGMThread::calcLabelDetect(mat arrayLL)
+rowvec class_npmpgm_model::calc_label_detect(mat arrayLL)
 {
     rowvec labelDetect;
     labelDetect.set_size(arrayLL.n_rows);

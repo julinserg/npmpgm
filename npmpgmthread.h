@@ -10,81 +10,81 @@
 #include <Eigen/Eigenvalues>
 
 
-class NPMPGMThread : public QThread
+class class_npmpgm_model : public QThread
 {
     Q_OBJECT
 
 public:
-     NPMPGMThread();
-    ~NPMPGMThread();
+     class_npmpgm_model();
+    ~class_npmpgm_model();
     ///Обработчик событий
     virtual bool event(QEvent* ev);
     void run();
 private:
 
-    QSOMThread* m_somthread;
+    class_som_thread* m_somthread;
 
     /// обучающие данные (мапятся с метками по индексу строки)
-    field<mat> m_TrainData;
+    field<mat> m_train_data;
     /// метки классов (мапятся с данными по индексу строки)
-    mat m_TrainLabel;
+    mat m_train_label;
     /// тестовые данные (мапятся с метками по индексу строки)
-    field<mat> m_TestData;
+    field<mat> m_test_data;
     /// метки классов если таковые имеются (мапятся с данными по индексу строки)
-    mat m_TestLabel;
+    mat m_test_label;
     /// все оубчающие данные дял каждого класса представлены как одна матрциа
     ///(без разделений на последовательности)
-    field<mat> m_TrainDataForSOM;
+    field<mat> m_train_data_for_som;
     /// количество классов
-    int m_nClass;
+    int m_nclass;
     /// веса карты кохонена для каждого класса
-    field<mat> m_SOMCodeBookList;
+    field<mat> m_som_codebook_list;
     /// графы карты кохонена для каждого класса
-    field<mat> m_UmatrixGraphList;
+    field<mat> m_umatrix_graph_list;
     /// матрциа переходов между состояними для каждого класса
-    field<mat> m_MatrixTransactA;
+    field<mat> m_matrix_transact_a;
     /// вектор инициализации переходов между состояними для каждого класса
-    field<mat> m_MatrixPI;
+    field<mat> m_matrix_pi;
     ///количество классов для которых завершено обучение
-    int m_nClassComplete;
+    int m_nclassComplete;
     /// таймер времени обучения
     QTimer* m_timertrain;
     /// путь к файлам модели
     QString m_pathtomodel;
 
-    string m_mapType;
-    int m_nSOM_X;
-    int m_nSOM_Y;
+    string m_map_type;
+    int m_nsom_x;
+    int m_nsom_y;
 private:   
     /// формирвоание набора файлов для оубчения SOM
-    void writeSOMtrainfiles(const QString& patternfilename);
+    void write_som_trainfiles(const QString& patternfilename);
     /// формирвоание матрицы переходов между состояними
-    void formMatrixTransaction(mat codebook,int label, mat& TR, mat& PI);
+    void form_matrix_transaction(mat codebook,int label, mat& TR, mat& PI);
 
     mat logsumexp(mat a, int dim);
 
-    double hmmFilter(mat initDist, mat transmat, mat softev);
+    double hmm_filter(mat initDist, mat transmat, mat softev);
 
     void quality(rowvec labeldetect, rowvec labeltrue, int nClass, double& fmesure, double& precision, double& recall);
 
-    Eigen::MatrixXd convertArmadilloToEngineMatrix(mat matrix);
+    Eigen::MatrixXd convert_armadillo_to_engine_matrix(mat matrix);
 
-    mat calculateDistNodeMatrix(mat codebook);
+    mat calculate_dist_node_matrix(mat codebook);
 
     double get_l2norm(std::vector<double> vec);
 
-    void twoFromOne(ulong z, ushort max_y, ushort& x, ushort& y);
+    void two_from_one(ulong z, ushort max_y, ushort& x, ushort& y);
 
     mat mapminmax(mat matrix, double ymin, double ymax);
 
-    rowvec calcLabelDetect(mat arrayLL);
+    rowvec calc_label_detect(mat arrayLL);
 public slots:
-    /// читаем данные из csv файла и заполняем m_TrainData m_TrainLabel m_TrainDataForSOM m_nClass
-    void readTrainData(QString datafile);
-    /// читаем данные из csv файла и заполняем m_TestData m_TestLabel
-    void readTestData(QString datafile);
+    /// читаем данные из csv файла и заполняем m_train_data m_train_label m_train_data_for_som m_nclass
+    void read_train_data(QString datafile);
+    /// читаем данные из csv файла и заполняем m_test_data m_test_label
+    void read_test_data(QString datafile);
     /// путь к файлам модели
-    void setPathToModel(QString path);
+    void set_path_to_model(QString path);
     /// обучение
     void train(int numEpoch,int nSOM_X, int nSOM_Y,
                QString mapType, int bRadius, int eRadiusm,
@@ -94,10 +94,12 @@ public slots:
     /// тестирование сравнения графов
     void test2();
     /// тестирование объединение классификаторов
-    void testEnsemble();
+    void test_ensemble();
 private slots:
     /// анализ времени обучения
-    void timeoutAnalysisTrainComplete();
+    void timeout_analysis_train_complete();
+signals:
+    void end_load_traindata(bool);
 
 };
 
