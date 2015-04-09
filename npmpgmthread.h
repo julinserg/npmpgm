@@ -80,15 +80,15 @@ private:
     rowvec calcLabelDetect(mat arrayLL);
 public slots:
     /// читаем данные из csv файла и заполняем m_TrainData m_TrainLabel m_TrainDataForSOM m_nClass
-    void readTrainData(const QString &datafile);
+    void readTrainData(QString datafile);
     /// читаем данные из csv файла и заполняем m_TestData m_TestLabel
-    void readTestData(const QString &datafile);
+    void readTestData(QString datafile);
     /// путь к файлам модели
-    void setPathToModel(const QString &path);
+    void setPathToModel(QString path);
     /// обучение
     void train(int numEpoch,int nSOM_X, int nSOM_Y,
-               string mapType, int bRadius, int eRadiusm,
-               string typeRadius, int bScale, int eScale, string typeScale);
+               QString mapType, int bRadius, int eRadiusm,
+               QString typeRadius, int bScale, int eScale, QString typeScale);
     /// тестирование
     void test();
     /// тестирование сравнения графов

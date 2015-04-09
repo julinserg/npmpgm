@@ -9,7 +9,7 @@
 using namespace arma;
 const QString C_SOMFILENAMEDATA = "som_train_class_%1.%2";
 const QString C_SOMFILENAMECODEBOOK = "som_train_class_%1";
-NPMPGMThread::NPMPGMThread():QThread()
+NPMPGMThread::NPMPGMThread()
 {
 
     m_nClassComplete = 0;
@@ -65,10 +65,12 @@ bool NPMPGMThread::event(QEvent *ev)
         m_MatrixTransactA(label-1,0) = TrasitionM;
         m_MatrixPI(label-1,0) = PiM;
         m_nClassComplete++;
+        return true;
     }
+    return QThread::event(ev);
 }
 
-void NPMPGMThread::readTrainData(const QString &datafile)
+void NPMPGMThread::readTrainData(QString datafile)
 {
     if (CGetData::getCellFromFile(datafile,m_TrainData,m_TrainLabel))
     {
@@ -89,12 +91,12 @@ void NPMPGMThread::readTrainData(const QString &datafile)
     }
 }
 
-void NPMPGMThread::readTestData(const QString &datafile)
+void NPMPGMThread::readTestData(QString datafile)
 {
     return (void)CGetData::getCellFromFile(datafile,m_TestData,m_TestLabel);
 }
 
-void NPMPGMThread::setPathToModel(const QString &path)
+void NPMPGMThread::setPathToModel(QString path)
 {
     m_pathtomodel = path;
 }
@@ -224,10 +226,9 @@ void NPMPGMThread::timeoutAnalysisTrainComplete()
 }
 
 void NPMPGMThread::train(int numEpoch,int nSOM_X, int nSOM_Y,
-                         string mapType, int bRadius, int eRadiusm,
-                         string typeRadius, int bScale, int eScale, string typeScale)
+                         QString mapType, int bRadius, int eRadiusm,
+                         QString typeRadius, int bScale, int eScale, QString typeScale)
 {
-
     for(int i=1; i<=m_nClass; ++i)
     {
          QString FileName = m_pathtomodel + C_SOMFILENAMEDATA.arg(i).arg("csv");
@@ -235,13 +236,13 @@ void NPMPGMThread::train(int numEpoch,int nSOM_X, int nSOM_Y,
          QSOMThread*  somthread = new QSOMThread();
          m_nSOM_X = nSOM_X;
          m_nSOM_Y = nSOM_Y;
-         m_mapType = mapType;
+         m_mapType = mapType.toStdString();
          somthread->setFileName(FileName.toStdString());
          somthread->setOutPrefix(OutPrefix.toStdString());
          somthread->setNumEpoch(numEpoch);
          somthread->setSizeMap(m_nSOM_X,m_nSOM_Y,m_mapType);
-         somthread->setRadiusParam(bRadius,eRadiusm,typeRadius);
-         somthread->setScaleParam(bScale,eScale,typeScale);
+         somthread->setRadiusParam(bRadius,eRadiusm,typeRadius.toStdString());
+         somthread->setScaleParam(bScale,eScale,typeScale.toStdString());
          somthread->setKernelType(0,4);
          somthread->setSaveParam(0,"");
          somthread->setObjectEvent(this,i);

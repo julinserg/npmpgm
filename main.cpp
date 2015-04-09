@@ -156,7 +156,7 @@ int main(int argc, char *argv[])
        MPI_Barrier(MPI_COMM_WORLD);
    #endif
 
-    MainWindow w;
+    NPMPGM_GUI w;
     w.show();
 
     return a.exec();

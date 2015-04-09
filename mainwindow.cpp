@@ -18,49 +18,65 @@
 //somthread->setObjectEvent(this,i);
 //somthread->start();
 
-MainWindow::MainWindow(QWidget *parent) :
+const QString C_DEF_PATH_TO_TRAIN_DATA = "./data/characterTrainData.csv";
+const QString C_DEF_PATH_TO_MODEL = "./model";
+
+NPMPGM_GUI::NPMPGM_GUI(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    ui->setupUi(this);  
+    ui->setupUi(this);
+
+
 
     m_ModelThread = new NPMPGMThread();
     m_ModelThread->moveToThread(m_ModelThread);
+    m_ModelThread->start();
     bool isconnected1 = false;
     bool isconnected2 = false;
     bool isconnected3 = false;
-    isconnected1 = connect(this,SIGNAL(readTrainData(const QString &)),m_ModelThread,SLOT(readTrainData(const QString &)),Qt::QueuedConnection);
-    isconnected2 = connect(this,SIGNAL(setPathToModel(const QString &)),m_ModelThread,SLOT(setPathToModel(const QString &)),Qt::QueuedConnection);
-    isconnected3 = connect(this,SIGNAL(train(int ,int , int , string , int , int , string , int , int , string )),
-            m_ModelThread,SLOT(train(int ,int , int , string , int , int , string , int , int , string )),Qt::QueuedConnection);
+    isconnected1 = QObject::connect(this,SIGNAL(readTrainData(QString)),m_ModelThread,SLOT(readTrainData(QString)),Qt::QueuedConnection);
+    isconnected2 = QObject::connect(this,SIGNAL(setPathToModel(QString)),m_ModelThread,SLOT(setPathToModel(QString)),Qt::QueuedConnection);
+    isconnected3 = QObject::connect(this,SIGNAL(train(int ,int , int , QString , int , int , QString , int , int , QString )),
+            m_ModelThread,SLOT(train(int ,int , int , QString , int , int , QString , int , int , QString )),Qt::QueuedConnection);
 
-    m_ModelThread->start();
-
-
+    m_fileNameTrainData = C_DEF_PATH_TO_TRAIN_DATA;
+    ui->leLoadTrainData->setText(C_DEF_PATH_TO_TRAIN_DATA);
+    m_dirNameModel = C_DEF_PATH_TO_MODEL;
+    ui->leSetModelPath->setText(C_DEF_PATH_TO_MODEL);
 
 }
 
-MainWindow::~MainWindow()
+NPMPGM_GUI::~NPMPGM_GUI()
 {
     delete ui;
 }
 
-void MainWindow::on_pbLoadTrainData_clicked()
+void NPMPGM_GUI::on_pbSetTrainData_clicked()
 {
    QString fileName = QFileDialog::getOpenFileName(this,
         tr("Load Train Data File"), "./", tr("Train Data File (*.csv)"));
-   emit readTrainData(fileName);
+   ui->leLoadTrainData->setText(fileName);
+   m_fileNameTrainData = fileName;
+
 }
 
-void MainWindow::on_pbSetModelPath_clicked()
+void NPMPGM_GUI::on_pbLoadTrainData_clicked()
 {
-  /*  QString dirName = QFileDialog::getExistingDirectory(this,
-         tr("Select Models Path"), "./");*/
-    emit setPathToModel(/*dirName*/"123123");
+   emit readTrainData(m_fileNameTrainData);
 }
 
-void MainWindow::on_pbTrain_clicked()
+void NPMPGM_GUI::on_pbSetModelPath_clicked()
 {
+    QString dirName = QFileDialog::getExistingDirectory(this,
+         tr("Select Models Path"), "./");
+    ui->leSetModelPath->setText(dirName);
+    m_dirNameModel = dirName;
+}
+
+void NPMPGM_GUI::on_pbTrain_clicked()
+{
+    emit setPathToModel(m_dirNameModel);
     emit train(500,10, 10,"planar", 3, 1,"linear", 0.1, 0.01, "linear");
 }
 
