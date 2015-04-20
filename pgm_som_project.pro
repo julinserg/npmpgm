@@ -36,7 +36,8 @@ SOURCES += main.cpp\
     graph_similarity/graph_gen_alg.cc \
     graph_similarity/util_fns.cc \
     prefAttachModel/eigen_solvers.cc \
-    npmpgmthread.cpp
+    npmpgmthread.cpp \
+    realclsnpmpgmthread.cpp
 
 HEADERS  += mainwindow.h \   
     somoclu/src/Windows/getopt.h \
@@ -447,7 +448,8 @@ HEADERS  += mainwindow.h \
     graph_similarity/util_fns.h \
     prefAttachModel/eigen_solvers.h \
     prefAttachModel/eigen_solvers_utils.h \
-    npmpgmthread.h
+    npmpgmthread.h \
+    realclsnpmpgmthread.h
 
 FORMS    += mainwindow.ui
 

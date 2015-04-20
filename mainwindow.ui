@@ -6,15 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>670</width>
-    <height>585</height>
+    <width>808</width>
+    <height>615</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>NPM-PGM</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QGridLayout" name="gridLayout_11">
+   <layout class="QGridLayout" name="gridLayout_16">
     <item row="0" column="0" rowspan="2">
      <widget class="QGroupBox" name="groupBox">
       <property name="title">
@@ -41,7 +41,14 @@
               </widget>
              </item>
              <item row="0" column="1">
-              <widget class="QSpinBox" name="spinBox"/>
+              <widget class="QSpinBox" name="spb_nSOM_X">
+               <property name="maximum">
+                <number>10000</number>
+               </property>
+               <property name="value">
+                <number>10</number>
+               </property>
+              </widget>
              </item>
              <item row="0" column="2">
               <widget class="QLabel" name="label_3">
@@ -51,7 +58,7 @@
               </widget>
              </item>
              <item row="0" column="3" colspan="2">
-              <widget class="QComboBox" name="comboBox">
+              <widget class="QComboBox" name="cb_mapType">
                <item>
                 <property name="text">
                  <string>планарная</string>
@@ -72,7 +79,14 @@
               </widget>
              </item>
              <item row="1" column="1">
-              <widget class="QSpinBox" name="spinBox_2"/>
+              <widget class="QSpinBox" name="spb_nSOM_Y">
+               <property name="maximum">
+                <number>10000</number>
+               </property>
+               <property name="value">
+                <number>10</number>
+               </property>
+              </widget>
              </item>
              <item row="1" column="2" colspan="2">
               <widget class="QLabel" name="label_7">
@@ -82,7 +96,17 @@
               </widget>
              </item>
              <item row="1" column="4">
-              <widget class="QSpinBox" name="spinBox_3"/>
+              <widget class="QSpinBox" name="spb_numEpoch">
+               <property name="maximum">
+                <number>1000000000</number>
+               </property>
+               <property name="singleStep">
+                <number>10</number>
+               </property>
+               <property name="value">
+                <number>500</number>
+               </property>
+              </widget>
              </item>
             </layout>
            </widget>
@@ -101,7 +125,20 @@
               </widget>
              </item>
              <item row="0" column="1">
-              <widget class="QDoubleSpinBox" name="doubleSpinBox_3"/>
+              <widget class="QDoubleSpinBox" name="spb_bScale">
+               <property name="decimals">
+                <number>3</number>
+               </property>
+               <property name="maximum">
+                <double>1.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.010000000000000</double>
+               </property>
+               <property name="value">
+                <double>0.100000000000000</double>
+               </property>
+              </widget>
              </item>
              <item row="1" column="0">
               <widget class="QLabel" name="label_9">
@@ -111,7 +148,20 @@
               </widget>
              </item>
              <item row="1" column="1">
-              <widget class="QDoubleSpinBox" name="doubleSpinBox_4"/>
+              <widget class="QDoubleSpinBox" name="spb_eScale">
+               <property name="decimals">
+                <number>3</number>
+               </property>
+               <property name="maximum">
+                <double>1.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.010000000000000</double>
+               </property>
+               <property name="value">
+                <double>0.010000000000000</double>
+               </property>
+              </widget>
              </item>
              <item row="2" column="0">
               <widget class="QLabel" name="label_10">
@@ -121,7 +171,7 @@
               </widget>
              </item>
              <item row="2" column="1">
-              <widget class="QComboBox" name="comboBox_3">
+              <widget class="QComboBox" name="cb_typeScale">
                <item>
                 <property name="text">
                  <string>линейный</string>
@@ -165,7 +215,7 @@
               </widget>
              </item>
              <item row="2" column="2">
-              <widget class="QComboBox" name="comboBox_2">
+              <widget class="QComboBox" name="cb_typeRadius">
                <item>
                 <property name="text">
                  <string>линейный</string>
@@ -179,10 +229,24 @@
               </widget>
              </item>
              <item row="0" column="2">
-              <widget class="QDoubleSpinBox" name="doubleSpinBox"/>
+              <widget class="QDoubleSpinBox" name="spb_bRadius">
+               <property name="maximum">
+                <double>10000.000000000000000</double>
+               </property>
+               <property name="value">
+                <double>3.000000000000000</double>
+               </property>
+              </widget>
              </item>
              <item row="1" column="2">
-              <widget class="QDoubleSpinBox" name="doubleSpinBox_2"/>
+              <widget class="QDoubleSpinBox" name="spb_eRadius">
+               <property name="maximum">
+                <double>10000.000000000000000</double>
+               </property>
+               <property name="value">
+                <double>1.000000000000000</double>
+               </property>
+              </widget>
              </item>
             </layout>
            </widget>
@@ -191,9 +255,9 @@
         </widget>
        </item>
        <item row="3" column="0">
-        <widget class="QProgressBar" name="progressBar_2">
+        <widget class="QProgressBar" name="prbar_Learn">
          <property name="value">
-          <number>24</number>
+          <number>0</number>
          </property>
         </widget>
        </item>
@@ -240,7 +304,7 @@
        <item row="1" column="0" colspan="2">
         <widget class="QGroupBox" name="groupBox_8">
          <property name="title">
-          <string>Путь сохранения обученной модели</string>
+          <string>Путь сохранения модели</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_6">
           <item row="0" column="1">
@@ -264,44 +328,32 @@
       <property name="title">
        <string>Тестирование на размеченных данных</string>
       </property>
-      <layout class="QGridLayout" name="gridLayout_10">
-       <item row="0" column="0" colspan="3">
+      <layout class="QGridLayout" name="gridLayout_12">
+       <item row="0" column="0">
         <widget class="QGroupBox" name="groupBox_9">
          <property name="title">
           <string>Загрузить тестовые данные</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_8">
           <item row="0" column="0">
-           <widget class="QLineEdit" name="lineEdit_3"/>
+           <widget class="QLineEdit" name="leLoadTestData"/>
           </item>
           <item row="0" column="1">
-           <widget class="QPushButton" name="pbLoadTestData">
+           <widget class="QPushButton" name="pbSetTestData">
             <property name="text">
-             <string>Загрузить</string>
+             <string>Обзор</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="0" colspan="2">
-           <widget class="QProgressBar" name="progressBar_3">
-            <property name="value">
-             <number>24</number>
+          <item row="1" column="0">
+           <widget class="QLineEdit" name="leStatusTestData">
+            <property name="frame">
+             <bool>false</bool>
             </property>
            </widget>
           </item>
-         </layout>
-        </widget>
-       </item>
-       <item row="1" column="0" colspan="3">
-        <widget class="QGroupBox" name="groupBox_10">
-         <property name="title">
-          <string>Загрузить модель</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_9">
-          <item row="0" column="0">
-           <widget class="QLineEdit" name="lineEdit_4"/>
-          </item>
-          <item row="0" column="1">
-           <widget class="QPushButton" name="m_pbLoadModel">
+          <item row="1" column="1">
+           <widget class="QPushButton" name="pbLoadTestData">
             <property name="text">
              <string>Загрузить</string>
             </property>
@@ -311,64 +363,208 @@
         </widget>
        </item>
        <item row="2" column="0">
-        <widget class="QLabel" name="label_11">
-         <property name="text">
-          <string>Точность:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="1">
-        <widget class="QLineEdit" name="lineEdit_5"/>
-       </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="label_12">
-         <property name="text">
-          <string>Полнота:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="3" column="1">
-        <widget class="QLineEdit" name="lineEdit_6"/>
-       </item>
-       <item row="4" column="0">
-        <widget class="QLabel" name="label_13">
-         <property name="text">
-          <string>F-мера:</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
-        <widget class="QLineEdit" name="lineEdit_7"/>
-       </item>
-       <item row="5" column="0" colspan="2">
-        <widget class="QProgressBar" name="progressBar_5">
-         <property name="value">
-          <number>24</number>
-         </property>
-        </widget>
-       </item>
-       <item row="5" column="2">
-        <widget class="QPushButton" name="pbTest">
-         <property name="text">
+        <widget class="QGroupBox" name="groupBox_11">
+         <property name="title">
           <string>Тестирование</string>
          </property>
+         <layout class="QGridLayout" name="gridLayout_11">
+          <item row="0" column="0">
+           <widget class="QProgressBar" name="prbar_Test">
+            <property name="value">
+             <number>0</number>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QPushButton" name="pbTest">
+            <property name="text">
+             <string>Тестирование</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QGroupBox" name="groupBox_12">
+         <property name="title">
+          <string>Результат</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_10">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_11">
+            <property name="text">
+             <string>Точность:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="le_Result_Precision">
+            <property name="frame">
+             <bool>false</bool>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_12">
+            <property name="text">
+             <string>Полнота:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="le_Result_Recall">
+            <property name="frame">
+             <bool>false</bool>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_13">
+            <property name="text">
+             <string>F-мера:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QLineEdit" name="le_Result_Fmeasure">
+            <property name="frame">
+             <bool>false</bool>
+            </property>
+            <property name="readOnly">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QGroupBox" name="groupBox_10">
+         <property name="title">
+          <string>Загрузить модель</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_9">
+          <item row="0" column="0">
+           <widget class="QLineEdit" name="leLoadTestModel"/>
+          </item>
+          <item row="0" column="1">
+           <widget class="QPushButton" name="pbSetTestModel">
+            <property name="text">
+             <string>Обзор</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLineEdit" name="leStatusTestModel">
+            <property name="frame">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QPushButton" name="pbLoadTestModel">
+            <property name="text">
+             <string>Загрузить</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
       </layout>
      </widget>
     </item>
     <item row="1" column="1">
-     <spacer name="verticalSpacer">
-      <property name="orientation">
-       <enum>Qt::Vertical</enum>
+     <widget class="QGroupBox" name="groupBox_13">
+      <property name="title">
+       <string>Классификация</string>
       </property>
-      <property name="sizeHint" stdset="0">
-       <size>
-        <width>20</width>
-        <height>273</height>
-       </size>
-      </property>
-     </spacer>
+      <layout class="QGridLayout" name="gridLayout_15">
+       <item row="0" column="0" colspan="3">
+        <widget class="QGroupBox" name="groupBox_15">
+         <property name="title">
+          <string>Путь к данным</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_14">
+          <item row="0" column="0">
+           <widget class="QLineEdit" name="leLoadClassifyData"/>
+          </item>
+          <item row="0" column="1">
+           <widget class="QPushButton" name="pbSetClassifyData">
+            <property name="text">
+             <string>Обзор</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="1" column="0" colspan="3">
+        <widget class="QGroupBox" name="groupBox_14">
+         <property name="title">
+          <string>Загрузить модель</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_13">
+          <item row="0" column="0">
+           <widget class="QLineEdit" name="leLoadClassifyModel"/>
+          </item>
+          <item row="0" column="1">
+           <widget class="QPushButton" name="pbSetClassifyModel">
+            <property name="text">
+             <string>Обзор</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLineEdit" name="leStatusClassifyModel">
+            <property name="frame">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QPushButton" name="pbLoadClassifyModel">
+            <property name="text">
+             <string>Загрузить</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_14">
+         <property name="text">
+          <string>Класс:</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLineEdit" name="le_Result_Class">
+         <property name="frame">
+          <bool>false</bool>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QPushButton" name="pbClassify">
+         <property name="text">
+          <string>Классификация</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
     </item>
    </layout>
   </widget>

@@ -11,26 +11,19 @@ const QString C_SOMFILENAMEDATA = "som_train_class_%1.%2";
 const QString C_SOMFILENAMECODEBOOK = "som_train_class_%1";
 class_npmpgm_model::class_npmpgm_model()
 {
-
-    m_nclassComplete = 0;
-    m_timertrain = new QTimer();
-    bool k = connect(m_timertrain,SIGNAL(timeout()),this,SLOT(timeout_analysis_train_complete()));
-    m_timertrain->start(1000);
+    m_nclassComplete = 0;   
     m_pathtomodel = "";
-   // test();
-   // test2();
-
-     // testEnsemble();
-
 }
 
 class_npmpgm_model::~class_npmpgm_model()
 {
-
+    delete m_timertrain;
 }
 
 void class_npmpgm_model::run()
 {
+    m_timertrain = new QTimer();
+    bool k = connect(m_timertrain,SIGNAL(timeout()),this,SLOT(timeout_analysis_train_complete()));
     exec();
 }
 
@@ -65,6 +58,7 @@ bool class_npmpgm_model::event(QEvent *ev)
         m_matrix_transact_a(label-1,0) = TrasitionM;
         m_matrix_pi(label-1,0) = PiM;
         m_nclassComplete++;
+        emit number_class_complet(m_nclassComplete);
         return true;
     }
     return QThread::event(ev);
@@ -92,12 +86,36 @@ void class_npmpgm_model::read_train_data(QString datafile)
 
 void class_npmpgm_model::read_test_data(QString datafile)
 {
-    return (void)CGetData::get_cell_from_file(datafile,m_test_data,m_test_label);
+    if (CGetData::get_cell_from_file(datafile,m_test_data,m_test_label))
+    {
+        emit end_load_testdata(true);
+    }
+    else
+    {
+        qDebug() << "No test data!";
+        emit end_load_testdata(false);
+    }
 }
 
 void class_npmpgm_model::set_path_to_model(QString path)
 {
     m_pathtomodel = path;
+}
+
+void class_npmpgm_model::read_test_model(QString path)
+{
+    bool g1 = m_som_codebook_list.load(path.toStdString()+"weight_som.model");
+    bool g2 = m_matrix_transact_a.load(path.toStdString()+"matrix_a.model");
+    bool g3 = m_matrix_pi.load(path.toStdString()+"matrix_pi.model");
+    if (g1 && g2 && g3)
+    {
+        emit end_load_testmodel(true);
+    }
+    else
+    {
+        qDebug() << "No model!";
+        emit end_load_testmodel(false);
+    }
 }
 
 void class_npmpgm_model::write_som_trainfiles(const QString &patternfilename)
@@ -217,17 +235,15 @@ void class_npmpgm_model::timeout_analysis_train_complete()
         bool f2 = m_umatrix_graph_list.save(m_pathtomodel.toStdString()+"matrix_u.model");
         bool f3 = m_matrix_pi.save(m_pathtomodel.toStdString()+"matrix_pi.model");
         m_timertrain->stop();
-        test();
-       // test2();
-       // testEnsemble();
     }
-
 }
 
 void class_npmpgm_model::train(int numEpoch,int nSOM_X, int nSOM_Y,
                          QString mapType, int bRadius, int eRadiusm,
                          QString typeRadius, int bScale, int eScale, QString typeScale)
 {
+    m_nclassComplete = 0;
+    m_timertrain->start(1000);
     write_som_trainfiles(m_pathtomodel + C_SOMFILENAMEDATA);
     for(int i=1; i<=m_nclass; ++i)
     {
@@ -252,17 +268,16 @@ void class_npmpgm_model::train(int numEpoch,int nSOM_X, int nSOM_Y,
 
 void class_npmpgm_model::test()
 {
-    read_test_data("data/characterTestData.csv");
-    bool g1 = m_som_codebook_list.load(m_pathtomodel.toStdString()+"weight_som.model");
-    bool g2 = m_matrix_transact_a.load(m_pathtomodel.toStdString()+"matrix_a.model");
-    bool g3 = m_matrix_pi.load(m_pathtomodel.toStdString()+"matrix_pi.model");
     int nClass = m_som_codebook_list.n_rows;
+    if (nClass <= 0)
+    {
+        return ;
+    }
     mat arrayLL;
     arrayLL.set_size(m_test_data.n_rows,nClass);
     for(int i=0; i < m_test_data.n_rows; ++i)
     {
-      mat SEQ = m_test_data(i,0);
-     // SEQ.print("SEQ");
+      mat SEQ = m_test_data(i,0);      
       int SizeSEQ = SEQ.n_rows;
       for (int cl =0; cl < nClass; ++cl)
       {
@@ -313,6 +328,7 @@ void class_npmpgm_model::test()
           logp = logp + sum(vectorise(L));
           arrayLL(i,cl) =logp;
       }
+      emit number_testdata_complet(i);
     }
     rowvec labelDetect;
     labelDetect.set_size(arrayLL.n_rows);
@@ -322,7 +338,7 @@ void class_npmpgm_model::test()
       uword  index;
       double max = vec.max(index);
       labelDetect(i) = index+1;
-    }
+    }   
     rowvec labelTrue = m_test_label.t();
     //labelTrue.resize(200);
     double accuracy = 0;
@@ -342,10 +358,11 @@ void class_npmpgm_model::test()
     qDebug("fmeasure: %f",fmeasure);
     qDebug("precision: %f",precision);
     qDebug("recall: %f",recall);
+    emit result_testing(fmeasure,precision,recall);
 
-    mat DP = mapminmax(arrayLL,0,1);
-    DP.save("classif_1.result");  
-    int gg = 0;
+    ///!!!!!!!!! РАСКОМЕНТИРОВАТЬ ДЛЯ АНСАМБЛЯ
+   /* mat DP = mapminmax(arrayLL,0,1);
+    DP.save("classif_1.result"); */
 }
 
 void class_npmpgm_model::test2()
@@ -478,8 +495,9 @@ void class_npmpgm_model::test2()
     qDebug("precision: %f",precision);
     qDebug("recall: %f",recall);
 
-    mat DP = mapminmax(arrayLL,0,1);
-    DP.save("classif_2.result");
+    ///!!!!!!!!! РАСКОМЕНТИРОВАТЬ ДЛЯ АНСАМБЛЯ
+   /* mat DP = mapminmax(arrayLL,0,1);
+    DP.save("classif_2.result");*/
 
 }
 
@@ -625,6 +643,8 @@ void class_npmpgm_model::test_ensemble()
 
 
 }
+
+
 
 mat class_npmpgm_model::logsumexp(mat a, int dim)
 {

@@ -20,6 +20,15 @@ public:
     ///Обработчик событий
     virtual bool event(QEvent* ev);
     void run();
+    int getNumberClass()
+    {
+        return m_nclass;
+    }
+    int getNumberDataTest()
+    {
+        return m_test_data.n_rows;
+    }
+
 private:
 
     class_som_thread* m_somthread;
@@ -85,6 +94,8 @@ public slots:
     void read_test_data(QString datafile);
     /// путь к файлам модели
     void set_path_to_model(QString path);
+    /// загрузка обученной модели
+    void read_test_model(QString path);
     /// обучение
     void train(int numEpoch,int nSOM_X, int nSOM_Y,
                QString mapType, int bRadius, int eRadiusm,
@@ -100,6 +111,11 @@ private slots:
     void timeout_analysis_train_complete();
 signals:
     void end_load_traindata(bool);
+    void end_load_testdata(bool);
+    void end_load_testmodel(bool);
+    void number_class_complet(int);
+    void result_testing(float,float,float);
+    void number_testdata_complet(int);
 
 };
 
