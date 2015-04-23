@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include <QApplication>
+#include "mpi.h"
 /*#include <sstream>
 #include <iostream>
 #include "graph_gen_alg.h"

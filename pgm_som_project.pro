@@ -11,7 +11,7 @@ QT += widgets
 TARGET = pgm_som_project
 TEMPLATE = app
 
-#DEFINES += HAVE_MPI
+DEFINES += HAVE_MPI
 
 
 
@@ -453,10 +453,10 @@ HEADERS  += mainwindow.h \
 
 FORMS    += mainwindow.ui
 
-INCLUDEPATH += "C:/Program Files/MPICH2/include"
+INCLUDEPATH += "C:/Program Files (x86)/MPICH2/include"
 INCLUDEPATH += "./somoclu/src"
 INCLUDEPATH += "./armadillo/include"
 INCLUDEPATH += "./graph_similarity"
 INCLUDEPATH += "./eigen"
 INCLUDEPATH += "./prefAttachModel"
-#LIBS += "C:/Program Files/MPICH2/lib/mpi.lib"
+LIBS += "C:/Program Files (x86)/MPICH2/lib/mpi.lib"

@@ -349,6 +349,8 @@ void class_npmpgm_model::test()
            accuracy++;
        }
     }
+    labelTrue.print("labelTrue:");
+    labelDetect.print("labelDetect:");
     accuracy = accuracy / labelTrue.n_elem;
     qDebug("accuracy: %f",accuracy);
     double fmeasure;
@@ -744,7 +746,15 @@ void class_npmpgm_model::quality(rowvec labeldetect, rowvec labeltrue, int nClas
     }
     precision = sum(PrecisionVec) / nClass;
     recall = sum(RecallVec) / nClass;
-    fmesure = 2*precision*recall / (precision + recall);
+    if ((precision + recall) != 0)
+    {
+        fmesure = 2*precision*recall / (precision + recall);
+    }
+    else
+    {
+        fmesure = 0;
+    }
+
     return ;
 }
 
