@@ -9,6 +9,9 @@
 using namespace arma;
 const QString C_SOMFILENAMEDATA = "som_train_class_%1.%2";
 const QString C_SOMFILENAMECODEBOOK = "som_train_class_%1";
+
+
+
 class_npmpgm_model::class_npmpgm_model()
 {
     m_nclassComplete = 0;   
@@ -324,7 +327,13 @@ void class_npmpgm_model::test()
 
           mat A = m_matrix_transact_a(cl,0);
           mat PI = m_matrix_pi(cl,0);
-          double logp = hmm_filter(PI,A,B);
+          int K =B.n_rows;
+          int T = B.n_cols;
+          Eigen::Map<MatrixType> softev(B.memptr(), K, T);
+          Eigen::Map<VectorType> init(PI.memptr(), K);
+          Eigen::Map<MatrixType> transmat(A.memptr(), K, K);
+          double logp = FilterFwd(transmat, softev, init);
+         // double logp = hmm_filter(PI,A,B);
           logp = logp + sum(vectorise(L));
           arrayLL(i,cl) =logp;
       }
@@ -664,6 +673,35 @@ mat class_npmpgm_model::logsumexp(mat a, int dim)
     a = a - b;
     mat s = y + log(sum(exp(a),dim-1));
     return s;
+}
+
+double class_npmpgm_model::FilterFwd(const Eigen::Map<MatrixType>& transmat, const Eigen::Map<MatrixType>& softev,
+                                     const Eigen::Map<VectorType>& init)
+{
+    double loglik = 0;
+
+    int T = (int) softev.cols();
+    int K = (int) softev.rows();
+    MatrixType alpha = MatrixType::Zero(K,T);
+    if (alpha.cols() != T && alpha.rows() != K) {
+        alpha.resize(K, T);
+    }
+    VectorType scale = VectorType::Zero(T);
+    Eigen::MatrixXd at = transmat.matrix().transpose();
+
+
+    alpha.col(0) = init * softev.col(0);
+    scale(0) = alpha.col(0).sum();
+    alpha.col(0) /= scale(0);
+
+    for (int t = 1; t < T; ++t) {
+        alpha.col(t) = (at.matrix() * alpha.col(t-1).matrix()).array();
+        alpha.col(t) *= softev.col(t);
+        scale(t) = alpha.col(t).sum();
+        alpha.col(t) /= scale(t);
+    }
+    loglik = scale.log().sum();
+    return loglik;
 }
 
 double class_npmpgm_model::hmm_filter(mat initDist, mat transmat, mat softev)

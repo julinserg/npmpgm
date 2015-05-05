@@ -9,6 +9,10 @@
 #include <Eigen/Dense>
 #include <Eigen/Eigenvalues>
 
+typedef Eigen::ArrayXXd MatrixType;
+typedef Eigen::ArrayXi StateVectorType;
+typedef Eigen::ArrayXd VectorType;
+typedef Eigen::ArrayXXi StateMatrixType;
 
 class class_npmpgm_model : public QThread
 {
@@ -73,6 +77,9 @@ private:
     mat logsumexp(mat a, int dim);
 
     double hmm_filter(mat initDist, mat transmat, mat softev);
+
+    double FilterFwd(const Eigen::Map<MatrixType>& transmat, const Eigen::Map<MatrixType>& softev,
+                     const Eigen::Map<VectorType>& init);
 
     void quality(rowvec labeldetect, rowvec labeltrue, int nClass, double& fmesure, double& precision, double& recall);
 

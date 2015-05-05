@@ -3,7 +3,8 @@
 #include <QFile>
 #include <QTextStream>
 #include <QStringList>
-const int C_MAX_ROWS = 999999;
+//const int C_MAX_ROWS = 999999;
+const int C_MAX_ROWS = 1100000;
 const int C_MAX_COLUMNS = 20;
 bool CGetData::get_mat_from_file(const QString& namefile, mat &data, mat &label)
 {
@@ -15,7 +16,7 @@ bool CGetData::get_mat_from_file(const QString& namefile, mat &data, mat &label)
     QTextStream in(&file);
     int lineNum = 0;
     bool ok;
-    int desi = 0;
+    int desi = 0;  
     while (!in.atEnd()) {
         QString line = in.readLine();
         QStringList strListVal = line.split(",");
@@ -29,8 +30,9 @@ bool CGetData::get_mat_from_file(const QString& namefile, mat &data, mat &label)
             {
                // data.resize(lineNum+1,desi);
                 data(lineNum,i) = strListVal.at(3+i).toDouble(&ok);
+
             }
-        }
+        }       
         lineNum++;
     }
     label.resize(lineNum,2);
