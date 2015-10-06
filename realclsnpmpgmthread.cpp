@@ -88,8 +88,8 @@ void thread_npmpgm_classify::classifyData(std::vector<std::vector<double> > data
 
       mat A = m_matrix_transact_a(cl,0);
       mat PI = m_matrix_pi(cl,0);
-      double logp = hmm_filter(PI,A,B);
-      logp = logp + sum(vectorise(L));
+      double logp = hmm_filter(PI,A,B);     
+      logp = logp + accu(L);
       arrayLL(0,cl) =logp;
     }
 
@@ -122,37 +122,37 @@ mat thread_npmpgm_classify::logsumexp(mat a, int dim)
 
 double thread_npmpgm_classify::hmm_filter(mat initDist, mat transmat, mat softev)
 {
-  int K =  softev.n_rows;
-  int T = softev.n_cols;
+    int K =  softev.n_rows;
+    int T = softev.n_cols;
 
-  colvec scale;
-  scale.set_size(T,1);
-  scale.zeros();
-  mat AT = transmat.t();
-  mat alpha;
-  mat R1 = vectorise(initDist) % softev(span::all,0);
-  double z = sum( vectorise(R1));
-  if (z == 0)
-  {
-      z = 1;
-  }
- // Z.elem( find(Z ==0) ).ones();
-  R1 = R1 / z;
-  alpha = R1;
-  scale(0) = z;
-  for(int t =1; t < T; ++t)
-  {
-      mat R2 = (AT * alpha) %  softev(span::all,t);
-      double z = sum( vectorise(R2));
-      if (z == 0)
-      {
-          z = 1;
-      }
-      R2 = R2 / z;
-      alpha = R2;
-      scale(t) = z;
-  }
-  double loglike = sum(log(scale+datum::eps));
-  return loglike;
+    colvec scale;
+    scale.set_size(T,1);
+    scale.zeros();
+    mat AT = transmat.t();
+    mat alpha;
+    mat R1 = trans(initDist(0,span::all)) % softev(span::all,0);
+    double z = accu(R1);
+    if (z == 0)
+    {
+        z = 1;
+    }
+   // Z.elem( find(Z ==0) ).ones();
+    R1 = R1 / z;
+    alpha = R1;
+    scale(0) = z;
+    for(int t =1; t < T; ++t)
+    {
+        mat R2 = (AT * alpha) %  softev(span::all,t);
+        double z = accu( R2);
+        if (z == 0)
+        {
+            z = 1;
+        }
+        R2 = R2 / z;
+        alpha = R2;
+        scale(t) = z;
+    }
+    double loglike = sum(log(scale+datum::eps));
+    return loglike;
 
 }

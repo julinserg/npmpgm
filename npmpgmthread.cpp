@@ -1,8 +1,4 @@
 #include "npmpgmthread.h"
-#include "util_fns.h"
-#include "embeddings.h"
-#include "gaussian_kernel.h"
-#include "dmaps.h"
 #include <QFile>
 #include <QTextStream>
 #include<QDebug>
@@ -329,12 +325,12 @@ void class_npmpgm_model::test()
           mat PI = m_matrix_pi(cl,0);
           int K =B.n_rows;
           int T = B.n_cols;
-          Eigen::Map<MatrixType> softev(B.memptr(), K, T);
-          Eigen::Map<VectorType> init(PI.memptr(), K);
-          Eigen::Map<MatrixType> transmat(A.memptr(), K, K);
-          double logp = FilterFwd(transmat, softev, init);
-         // double logp = hmm_filter(PI,A,B);
-          logp = logp + sum(vectorise(L));
+          //Eigen::Map<MatrixType> softev(B.memptr(), K, T);
+         // Eigen::Map<VectorType> init(PI.memptr(), K);
+         // Eigen::Map<MatrixType> transmat(A.memptr(), K, K);
+          //double logp = FilterFwd(transmat, softev, init);
+          double logp = hmm_filter(PI,A,B);
+          logp = logp + accu(L);
           arrayLL(i,cl) =logp;
       }
       emit number_testdata_complet(i);
@@ -376,143 +372,143 @@ void class_npmpgm_model::test()
     DP.save("classif_1.result"); */
 }
 
-void class_npmpgm_model::test2()
-{
-    const int n_spec_params = 10;
-    std::vector<double> spectral_params(n_spec_params);
-    const double spec_param_max = 0.01;
-    const double spec_param_min = 0.0001;
-    const double dspec_param = (spec_param_max - spec_param_min)/(n_spec_params - 1);
-    for(int i = 0; i < n_spec_params; i++) {
-      spectral_params[i] = spec_param_min + i*dspec_param;
-    }
+//void class_npmpgm_model::test2()
+//{
+//    const int n_spec_params = 10;
+//    std::vector<double> spectral_params(n_spec_params);
+//    const double spec_param_max = 0.01;
+//    const double spec_param_min = 0.0001;
+//    const double dspec_param = (spec_param_max - spec_param_min)/(n_spec_params - 1);
+//    for(int i = 0; i < n_spec_params; i++) {
+//      spectral_params[i] = spec_param_min + i*dspec_param;
+//    }
 
 
-    read_test_data("data/characterTestData.csv");
-    bool g1 = m_som_codebook_list.load("weight_som.model");
-    bool g2 = m_umatrix_graph_list.load("matrix_u.model");
-    int nClass = m_som_codebook_list.n_rows;
-    std::vector< std::vector<double> > specmodelvec(nClass, std::vector<double>(n_spec_params));
-    for(int i=0;i<nClass;++i)
-    {
-       mat UMAT = m_umatrix_graph_list(i,0);
-       Eigen::MatrixXd g_model =  convert_armadillo_to_engine_matrix(UMAT);
-       std::vector<double> vec = spectral_embedding(g_model, spectral_params);
-       specmodelvec[i] = vec;
-    }
-    mat arrayLL;
-    arrayLL.set_size(m_test_data.n_rows,nClass);
-    for(int i=0; i < m_test_data.n_rows; ++i)
-    {
-      mat SEQ = m_test_data(i,0);
-     // SEQ.print("SEQ");
-      int SizeSEQ = SEQ.n_rows;
-      for (int cl =0; cl < nClass; ++cl)
-      {
-          mat WSOM = m_som_codebook_list(cl,0);
-          mat UMAT = m_umatrix_graph_list(cl,0);
-         // WSOM.print("SOM");
-          int SizeSOM = WSOM.n_rows;
-          mat Z;
-          Z.set_size(SizeSOM,SizeSEQ);
-          Z.zeros();
-          for (uint t=0; t < SizeSOM; ++t)
-          {
-              rowvec R0 = WSOM(t,span::all);
-              mat R1;
-              R1.set_size(SizeSEQ,R0.n_elem);
-              R1.zeros();
-              R1.each_row() += R0;
-              mat R2 = R1-SEQ;
-              mat R3 = square(R2);
-              mat R4 = sum(R3,1);
-              rowvec R5 = R4.t();
-              Z(t,span::all) = R5;
-          }
-          Z = -sqrt(Z);
-          uvec maxvec;
-          maxvec.set_size(Z.n_cols);
-          for(int i=0; i < Z.n_cols; ++i )
-          {
-              colvec vecmax = Z(span::all,i);
-              uword maxindex;
-              double max = vecmax.max(maxindex);
-              maxvec(i) = maxindex;
-          }
-         // UMAT.print("UMAT:");
-          mat GraphData;
-          GraphData.set_size(UMAT.n_rows,UMAT.n_cols);
-          GraphData.zeros();
-          for (int i=0;i< UMAT.n_rows;++i)
-          {
-              for (int j=0;j< UMAT.n_cols;++j)
-              {
-                  uvec z1 = maxvec.elem(arma::find(maxvec == i));
-                  uvec z2 = maxvec.elem(arma::find(maxvec == j));
-                  if (z1.n_elem > 0 || z2.n_elem > 0)
-                  {
-                      GraphData(i,j) = UMAT(i,j);
-                  }
-              }
-          }
-         //GraphData.print("GraphData:");
-          std::vector< std::vector<double> > graph_embedding(2);
+//    read_test_data("data/characterTestData.csv");
+//    bool g1 = m_som_codebook_list.load("weight_som.model");
+//    bool g2 = m_umatrix_graph_list.load("matrix_u.model");
+//    int nClass = m_som_codebook_list.n_rows;
+//    std::vector< std::vector<double> > specmodelvec(nClass, std::vector<double>(n_spec_params));
+//    for(int i=0;i<nClass;++i)
+//    {
+//       mat UMAT = m_umatrix_graph_list(i,0);
+//       Eigen::MatrixXd g_model =  convert_armadillo_to_engine_matrix(UMAT);
+//       std::vector<double> vec = spectral_embedding(g_model, spectral_params);
+//       specmodelvec[i] = vec;
+//    }
+//    mat arrayLL;
+//    arrayLL.set_size(m_test_data.n_rows,nClass);
+//    for(int i=0; i < m_test_data.n_rows; ++i)
+//    {
+//      mat SEQ = m_test_data(i,0);
+//     // SEQ.print("SEQ");
+//      int SizeSEQ = SEQ.n_rows;
+//      for (int cl =0; cl < nClass; ++cl)
+//      {
+//          mat WSOM = m_som_codebook_list(cl,0);
+//          mat UMAT = m_umatrix_graph_list(cl,0);
+//         // WSOM.print("SOM");
+//          int SizeSOM = WSOM.n_rows;
+//          mat Z;
+//          Z.set_size(SizeSOM,SizeSEQ);
+//          Z.zeros();
+//          for (uint t=0; t < SizeSOM; ++t)
+//          {
+//              rowvec R0 = WSOM(t,span::all);
+//              mat R1;
+//              R1.set_size(SizeSEQ,R0.n_elem);
+//              R1.zeros();
+//              R1.each_row() += R0;
+//              mat R2 = R1-SEQ;
+//              mat R3 = square(R2);
+//              mat R4 = sum(R3,1);
+//              rowvec R5 = R4.t();
+//              Z(t,span::all) = R5;
+//          }
+//          Z = -sqrt(Z);
+//          uvec maxvec;
+//          maxvec.set_size(Z.n_cols);
+//          for(int i=0; i < Z.n_cols; ++i )
+//          {
+//              colvec vecmax = Z(span::all,i);
+//              uword maxindex;
+//              double max = vecmax.max(maxindex);
+//              maxvec(i) = maxindex;
+//          }
+//         // UMAT.print("UMAT:");
+//          mat GraphData;
+//          GraphData.set_size(UMAT.n_rows,UMAT.n_cols);
+//          GraphData.zeros();
+//          for (int i=0;i< UMAT.n_rows;++i)
+//          {
+//              for (int j=0;j< UMAT.n_cols;++j)
+//              {
+//                  uvec z1 = maxvec.elem(arma::find(maxvec == i));
+//                  uvec z2 = maxvec.elem(arma::find(maxvec == j));
+//                  if (z1.n_elem > 0 || z2.n_elem > 0)
+//                  {
+//                      GraphData(i,j) = UMAT(i,j);
+//                  }
+//              }
+//          }
+//         //GraphData.print("GraphData:");
+//          std::vector< std::vector<double> > graph_embedding(2);
 
-          Eigen::MatrixXd g_data =  convert_armadillo_to_engine_matrix(GraphData);
-          std::vector<double> vecModel(n_spec_params);
-          vecModel = specmodelvec[cl];
+//          Eigen::MatrixXd g_data =  convert_armadillo_to_engine_matrix(GraphData);
+//          std::vector<double> vecModel(n_spec_params);
+//          vecModel = specmodelvec[cl];
 
-          graph_embedding[0] = vecModel;
-          graph_embedding[1] = spectral_embedding(g_data, spectral_params);
-          const int k = 2;
-          std::vector<double> eigvals_EIG(k);
-          std::vector< std::vector<double> > eigvects_EIG(k);
-          std::vector< std::vector<double> > W_EIG(k);
-          double epsilon = 1e-3;
-          Gaussian_Kernel* gk = new Gaussian_Kernel(epsilon);
-          const int dmaps_success = dmaps::map(graph_embedding, gk, eigvals_EIG, eigvects_EIG, W_EIG,k, 1e-12);
-          //double l2n = get_l2norm(get_squared_distances(graph_embedding));
-         // arrayLL(i,cl) = -l2n;
-          arrayLL(i,cl) = W_EIG[0][1];
-      }
-    }
-    rowvec labelDetect;
-    labelDetect.set_size(arrayLL.n_rows);
-    for(int i = 0; i < arrayLL.n_rows; ++i)
-    {
-      rowvec vec = arrayLL(i,span::all);
-      uword  index;
-      double max = vec.max(index);
-      labelDetect(i) = index+1;
-    }
-    labelDetect.print("labelDetect:");
-    rowvec labelTrue = m_test_label.t();
-    //labelTrue.resize(200);
-    double accuracy = 0;
-    for(int i=0; i < labelTrue.n_elem; ++i)
-    {
-       if (labelTrue(i) == labelDetect(i))
-       {
-           accuracy++;
-       }
-    }
-    accuracy = accuracy / labelTrue.n_elem;
-    qDebug("accuracy: %f",accuracy);
-    double fmeasure;
-    double precision;
-    double recall;
-    quality(labelDetect,labelTrue,nClass,fmeasure,precision,recall);
-    qDebug("fmeasure: %f",fmeasure);
-    qDebug("precision: %f",precision);
-    qDebug("recall: %f",recall);
+//          graph_embedding[0] = vecModel;
+//          graph_embedding[1] = spectral_embedding(g_data, spectral_params);
+//          const int k = 2;
+//          std::vector<double> eigvals_EIG(k);
+//          std::vector< std::vector<double> > eigvects_EIG(k);
+//          std::vector< std::vector<double> > W_EIG(k);
+//          double epsilon = 1e-3;
+//          Gaussian_Kernel* gk = new Gaussian_Kernel(epsilon);
+//          const int dmaps_success = dmaps::map(graph_embedding, gk, eigvals_EIG, eigvects_EIG, W_EIG,k, 1e-12);
+//          //double l2n = get_l2norm(get_squared_distances(graph_embedding));
+//         // arrayLL(i,cl) = -l2n;
+//          arrayLL(i,cl) = W_EIG[0][1];
+//      }
+//    }
+//    rowvec labelDetect;
+//    labelDetect.set_size(arrayLL.n_rows);
+//    for(int i = 0; i < arrayLL.n_rows; ++i)
+//    {
+//      rowvec vec = arrayLL(i,span::all);
+//      uword  index;
+//      double max = vec.max(index);
+//      labelDetect(i) = index+1;
+//    }
+//    labelDetect.print("labelDetect:");
+//    rowvec labelTrue = m_test_label.t();
+//    //labelTrue.resize(200);
+//    double accuracy = 0;
+//    for(int i=0; i < labelTrue.n_elem; ++i)
+//    {
+//       if (labelTrue(i) == labelDetect(i))
+//       {
+//           accuracy++;
+//       }
+//    }
+//    accuracy = accuracy / labelTrue.n_elem;
+//    qDebug("accuracy: %f",accuracy);
+//    double fmeasure;
+//    double precision;
+//    double recall;
+//    quality(labelDetect,labelTrue,nClass,fmeasure,precision,recall);
+//    qDebug("fmeasure: %f",fmeasure);
+//    qDebug("precision: %f",precision);
+//    qDebug("recall: %f",recall);
 
-    ///!!!!!!!!! РАСКОМЕНТИРОВАТЬ ДЛЯ АНСАМБЛЯ
-   /* mat DP = mapminmax(arrayLL,0,1);
-    DP.save("classif_2.result");*/
+//    ///!!!!!!!!! РАСКОМЕНТИРОВАТЬ ДЛЯ АНСАМБЛЯ
+//   /* mat DP = mapminmax(arrayLL,0,1);
+//    DP.save("classif_2.result");*/
 
-}
+//}
 
-void class_npmpgm_model::test_ensemble()
+/*void class_npmpgm_model::test_ensemble()
 {
     read_test_data("data/characterTestData.csv");
     mat DP1;
@@ -653,7 +649,7 @@ void class_npmpgm_model::test_ensemble()
     qDebug("recall_prod: %f",recall_prod);
 
 
-}
+}*/
 
 
 
@@ -675,7 +671,7 @@ mat class_npmpgm_model::logsumexp(mat a, int dim)
     return s;
 }
 
-double class_npmpgm_model::FilterFwd(const Eigen::Map<MatrixType>& transmat, const Eigen::Map<MatrixType>& softev,
+/*double class_npmpgm_model::FilterFwd(const Eigen::Map<MatrixType>& transmat, const Eigen::Map<MatrixType>& softev,
                                      const Eigen::Map<VectorType>& init)
 {
     double loglik = 0;
@@ -702,42 +698,42 @@ double class_npmpgm_model::FilterFwd(const Eigen::Map<MatrixType>& transmat, con
     }
     loglik = scale.log().sum();
     return loglik;
-}
+}*/
 
 double class_npmpgm_model::hmm_filter(mat initDist, mat transmat, mat softev)
 {
-  int K =  softev.n_rows;
-  int T = softev.n_cols;
+    int K =  softev.n_rows;
+    int T = softev.n_cols;
 
-  colvec scale;
-  scale.set_size(T,1);
-  scale.zeros();
-  mat AT = transmat.t();
-  mat alpha;
-  mat R1 = vectorise(initDist) % softev(span::all,0);
-  double z = sum( vectorise(R1));
-  if (z == 0)
-  {
-      z = 1;
-  }
- // Z.elem( find(Z ==0) ).ones();
-  R1 = R1 / z;
-  alpha = R1;
-  scale(0) = z;
-  for(int t =1; t < T; ++t)
-  {
-      mat R2 = (AT * alpha) %  softev(span::all,t);
-      double z = sum( vectorise(R2));
-      if (z == 0)
-      {
-          z = 1;
-      }
-      R2 = R2 / z;
-      alpha = R2;
-      scale(t) = z;
-  }
-  double loglike = sum(log(scale+datum::eps));
-  return loglike;
+    colvec scale;
+    scale.set_size(T,1);
+    scale.zeros();
+    mat AT = transmat.t();
+    mat alpha;
+    mat R1 = trans(initDist(0,span::all)) % softev(span::all,0);
+    double z = accu(R1);
+    if (z == 0)
+    {
+        z = 1;
+    }
+   // Z.elem( find(Z ==0) ).ones();
+    R1 = R1 / z;
+    alpha = R1;
+    scale(0) = z;
+    for(int t =1; t < T; ++t)
+    {
+        mat R2 = (AT * alpha) %  softev(span::all,t);
+        double z = accu( R2);
+        if (z == 0)
+        {
+            z = 1;
+        }
+        R2 = R2 / z;
+        alpha = R2;
+        scale(t) = z;
+    }
+    double loglike = sum(log(scale+datum::eps));
+    return loglike;
 
 }
 
@@ -796,7 +792,7 @@ void class_npmpgm_model::quality(rowvec labeldetect, rowvec labeltrue, int nClas
     return ;
 }
 
-Eigen::MatrixXd class_npmpgm_model::convert_armadillo_to_engine_matrix(mat matrix)
+/*Eigen::MatrixXd class_npmpgm_model::convert_armadillo_to_engine_matrix(mat matrix)
 {
     Eigen::MatrixXd G_eigen(matrix.n_rows,matrix.n_cols);
     for(int i = 0; i < matrix.n_rows; i++) {
@@ -805,7 +801,7 @@ Eigen::MatrixXd class_npmpgm_model::convert_armadillo_to_engine_matrix(mat matri
       }
     }
     return G_eigen;
-}
+}*/
 
 mat class_npmpgm_model::calculate_dist_node_matrix(mat codebook)
 {
