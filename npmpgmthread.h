@@ -6,13 +6,6 @@
 #include "armadillo"
 #include <stdlib.h>
 #include "cgetdata.h"
-#include <Eigen/Dense>
-#include <Eigen/Eigenvalues>
-
-typedef Eigen::ArrayXXd MatrixType;
-typedef Eigen::ArrayXi StateVectorType;
-typedef Eigen::ArrayXd VectorType;
-typedef Eigen::ArrayXXi StateMatrixType;
 
 class class_npmpgm_model : public QThread
 {
@@ -78,12 +71,12 @@ private:
 
     double hmm_filter(mat initDist, mat transmat, mat softev);
 
-    double FilterFwd(const Eigen::Map<MatrixType>& transmat, const Eigen::Map<MatrixType>& softev,
-                     const Eigen::Map<VectorType>& init);
+    /*double FilterFwd(const Eigen::Map<MatrixType>& transmat, const Eigen::Map<MatrixType>& softev,
+                     const Eigen::Map<VectorType>& init);*/
 
     void quality(rowvec labeldetect, rowvec labeltrue, int nClass, double& fmesure, double& precision, double& recall);
 
-    Eigen::MatrixXd convert_armadillo_to_engine_matrix(mat matrix);
+    /*Eigen::MatrixXd convert_armadillo_to_engine_matrix(mat matrix);*/
 
     mat calculate_dist_node_matrix(mat codebook);
 
@@ -110,9 +103,9 @@ public slots:
     /// тестирование
     void test();
     /// тестирование сравнения графов
-    void test2();
+    //void test2();
     /// тестирование объединение классификаторов
-    void test_ensemble();
+    //void test_ensemble();
 private slots:
     /// анализ времени обучения
     void timeout_analysis_train_complete();

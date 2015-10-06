@@ -1,6 +1,8 @@
 #include "mainwindow.h"
 #include <QApplication>
-#include "mpi.h"
+#ifdef HAVE_MPI
+    #include "mpi.h"
+#endif
 /*#include <sstream>
 #include <iostream>
 #include "graph_gen_alg.h"

@@ -55,7 +55,7 @@ class_npmpgm_gui::class_npmpgm_gui(QWidget *parent) :
     isconnected = QObject::connect(m_model,SIGNAL(end_load_testmodel(bool)),this,SLOT(end_load_testmodel(bool)),Qt::QueuedConnection);
 
 
-    qRegisterMetaType<std::vector< std::vector<double> >>("std::vector< std::vector<double> >");
+    qRegisterMetaType<std::vector< std::vector<double> > >("std::vector< std::vector<double> >");
     isconnected = QObject::connect(this,SIGNAL(classifyData(std::vector< std::vector<double> >, int)),
                                    m_classify,SLOT(classifyData(std::vector< std::vector<double> >, int)),Qt::QueuedConnection);
     isconnected = QObject::connect(this,SIGNAL(set_model(QString)),m_classify,SLOT(set_model(QString)),Qt::QueuedConnection);
