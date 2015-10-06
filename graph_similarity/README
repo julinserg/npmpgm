@@ -1,8 +1,0 @@
-graph_similarity
-================
-
-tests various measures of graph similarity
-
-to run, you must ensure that LD_LIBRARY_PATH (or better ld.so.conf) contains
-the directory in which libaes.so is located, otherwise this library will not
-be found at runtime
