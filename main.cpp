@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include <QApplication>
+#include <QTextCodec>
 #ifdef HAVE_MPI
     #include "mpi.h"
 #endif
@@ -141,7 +142,8 @@ int main(int argc, char *argv[])
       // output_graphparams_EIG.close();
 
       // std::cout << "<---------------------------------------->" << std::endl;
-
+    QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
+    QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
     int argcL = 1;
     QString strComLine = "-np %1";
     strComLine = strComLine.arg(10);

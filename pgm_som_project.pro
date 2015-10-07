@@ -22,14 +22,12 @@ SOURCES += main.cpp\
     somoclu/src/training.cpp \
     somoclu/src/trainOneEpoch.cpp \
     somoclu/src/uMatrix.cpp \
-    somoclu/src/Windows/getopt.c \
     qsomthread.cpp \
     cgetdata.cpp \    
     npmpgmthread.cpp \
     realclsnpmpgmthread.cpp
 
-HEADERS  += mainwindow.h \   
-    somoclu/src/Windows/getopt.h \
+HEADERS  += mainwindow.h \
     somoclu/src/somocluWrap.h \   
     ui_mainwindow.h \
     qsomthread.h \  
