@@ -1,9 +1,14 @@
 // Copyright (C) 2010 NICTA (www.nicta.com.au)
 // Copyright (C) 2010 Conrad Sanderson
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup injector
@@ -42,7 +47,7 @@ class mat_injector
   private:
   
   inline mat_injector(T1& in_X, const elem_type val);
-  inline mat_injector(T1& in_X, const injector_end_of_row<>& x);
+  inline mat_injector(T1& in_X, const injector_end_of_row& x);
   
   T1&           X;
   mutable uword n_rows;
@@ -93,7 +98,7 @@ class field_injector
   private:
   
   inline field_injector(T1& in_X, const object_type& val);
-  inline field_injector(T1& in_X, const injector_end_of_row<>& x);
+  inline field_injector(T1& in_X, const injector_end_of_row& x);
   
   T1&           X;
   mutable uword n_rows;

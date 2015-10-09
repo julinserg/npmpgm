@@ -1,11 +1,16 @@
-// Copyright (C) 2010-2012 NICTA (www.nicta.com.au)
-// Copyright (C) 2010-2012 Conrad Sanderson
+// Copyright (C) 2010-2011 NICTA (www.nicta.com.au)
+// Copyright (C) 2010-2011 Conrad Sanderson
 // Copyright (C) 2010 Dimitrios Bouzas
 // Copyright (C) 2011 Stanislav Funiak
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup op_princomp
@@ -20,26 +25,19 @@
 //! score_out    -> projected samples
 //! latent_out   -> eigenvalues of principal vectors
 //! tsquared_out -> Hotelling's T^2 statistic
-template<typename T1>
+template<typename eT>
 inline
 bool
 op_princomp::direct_princomp
   (
-         Mat<typename T1::elem_type>&     coeff_out,
-         Mat<typename T1::elem_type>&     score_out,
-         Col<typename T1::elem_type>&     latent_out,
-         Col<typename T1::elem_type>&     tsquared_out,
-  const Base<typename T1::elem_type, T1>& X,
-  const typename arma_not_cx<typename T1::elem_type>::result* junk
+        Mat<eT>& coeff_out,
+        Mat<eT>& score_out,
+        Col<eT>& latent_out, 
+        Col<eT>& tsquared_out,
+  const Mat<eT>& in
   )
   {
   arma_extra_debug_sigprint();
-  arma_ignore(junk);
-  
-  typedef typename T1::elem_type eT;
-  
-  const unwrap_check<T1> Y( X.get_ref(), score_out );
-  const Mat<eT>& in    = Y.M;
 
   const uword n_rows = in.n_rows;
   const uword n_cols = in.n_cols;
@@ -121,25 +119,18 @@ op_princomp::direct_princomp
 //! coeff_out    -> principal component coefficients
 //! score_out    -> projected samples
 //! latent_out   -> eigenvalues of principal vectors
-template<typename T1>
+template<typename eT>
 inline
 bool
 op_princomp::direct_princomp
   (
-         Mat<typename T1::elem_type>&     coeff_out,
-         Mat<typename T1::elem_type>&     score_out,
-         Col<typename T1::elem_type>&     latent_out,
-  const Base<typename T1::elem_type, T1>& X,
-  const typename arma_not_cx<typename T1::elem_type>::result* junk
+        Mat<eT>& coeff_out,
+        Mat<eT>& score_out,
+        Col<eT>& latent_out,
+  const Mat<eT>& in
   )
   {
   arma_extra_debug_sigprint();
-  arma_ignore(junk);
-  
-  typedef typename T1::elem_type eT;
-  
-  const unwrap_check<T1> Y( X.get_ref(), score_out );
-  const Mat<eT>& in    = Y.M;
   
   const uword n_rows = in.n_rows;
   const uword n_cols = in.n_cols;
@@ -203,24 +194,17 @@ op_princomp::direct_princomp
 //! computation is done via singular value decomposition
 //! coeff_out    -> principal component coefficients
 //! score_out    -> projected samples
-template<typename T1>
+template<typename eT>
 inline
 bool
 op_princomp::direct_princomp
   (
-         Mat<typename T1::elem_type>&     coeff_out,
-         Mat<typename T1::elem_type>&     score_out,
-  const Base<typename T1::elem_type, T1>& X,
-  const typename arma_not_cx<typename T1::elem_type>::result* junk
+        Mat<eT>& coeff_out,
+        Mat<eT>& score_out,
+  const Mat<eT>& in
   )
   {
   arma_extra_debug_sigprint();
-  arma_ignore(junk);
-  
-  typedef typename T1::elem_type eT;
-  
-  const unwrap_check<T1> Y( X.get_ref(), score_out );
-  const Mat<eT>& in    = Y.M;
   
   const uword n_rows = in.n_rows;
   const uword n_cols = in.n_cols;
@@ -274,23 +258,16 @@ op_princomp::direct_princomp
 //! principal component analysis -- 1 argument version
 //! computation is done via singular value decomposition
 //! coeff_out    -> principal component coefficients
-template<typename T1>
+template<typename eT>
 inline
 bool
 op_princomp::direct_princomp
   (
-         Mat<typename T1::elem_type>&     coeff_out,
-  const Base<typename T1::elem_type, T1>& X,
-  const typename arma_not_cx<typename T1::elem_type>::result* junk
+        Mat<eT>& coeff_out,
+  const Mat<eT>& in
   )
   {
   arma_extra_debug_sigprint();
-  arma_ignore(junk);
-  
-  typedef typename T1::elem_type eT;
-  
-  const unwrap<T1>    Y( X.get_ref() );
-  const Mat<eT>& in = Y.M;
   
   if(in.n_elem != 0)
     {
@@ -324,27 +301,21 @@ op_princomp::direct_princomp
 //! score_out    -> projected samples
 //! latent_out   -> eigenvalues of principal vectors
 //! tsquared_out -> Hotelling's T^2 statistic
-template<typename T1>
+template<typename T>
 inline
 bool
 op_princomp::direct_princomp
   (
-         Mat< std::complex<typename T1::pod_type> >&     coeff_out,
-         Mat< std::complex<typename T1::pod_type> >&     score_out,
-         Col<              typename T1::pod_type  >&     latent_out,
-         Col< std::complex<typename T1::pod_type> >&     tsquared_out,
-  const Base< std::complex<typename T1::pod_type>, T1 >& X,
-  const typename arma_cx_only<typename T1::elem_type>::result* junk
+        Mat< std::complex<T> >& coeff_out,
+        Mat< std::complex<T> >& score_out,
+        Col<T>&                 latent_out,
+        Col< std::complex<T> >& tsquared_out,
+  const Mat< std::complex<T> >& in
   )
   {
   arma_extra_debug_sigprint();
-  arma_ignore(junk);
   
-  typedef typename T1::pod_type     T;
-  typedef          std::complex<T> eT;
-  
-  const unwrap_check<T1> Y( X.get_ref(), score_out );
-  const Mat<eT>& in    = Y.M;
+  typedef std::complex<T> eT;
   
   const uword n_rows = in.n_rows;
   const uword n_cols = in.n_cols;
@@ -423,26 +394,20 @@ op_princomp::direct_princomp
 //! coeff_out    -> principal component coefficients
 //! score_out    -> projected samples
 //! latent_out   -> eigenvalues of principal vectors
-template<typename T1>
+template<typename T>
 inline
 bool
 op_princomp::direct_princomp
   (
-         Mat< std::complex<typename T1::pod_type> >&     coeff_out,
-         Mat< std::complex<typename T1::pod_type> >&     score_out,
-         Col<              typename T1::pod_type  >&     latent_out,
-  const Base< std::complex<typename T1::pod_type>, T1 >& X,
-  const typename arma_cx_only<typename T1::elem_type>::result* junk
+        Mat< std::complex<T> >& coeff_out,
+        Mat< std::complex<T> >& score_out,
+        Col<T>&                 latent_out,
+  const Mat< std::complex<T> >& in
   )
   {
   arma_extra_debug_sigprint();
-  arma_ignore(junk);
   
-  typedef typename T1::pod_type     T;
-  typedef          std::complex<T> eT;
-  
-  const unwrap_check<T1> Y( X.get_ref(), score_out );
-  const Mat<eT>& in    = Y.M;
+  typedef std::complex<T> eT;
   
   const uword n_rows = in.n_rows;
   const uword n_cols = in.n_cols;
@@ -506,25 +471,19 @@ op_princomp::direct_princomp
 //! computation is done via singular value decomposition
 //! coeff_out    -> principal component coefficients
 //! score_out    -> projected samples
-template<typename T1>
+template<typename T>
 inline
 bool
 op_princomp::direct_princomp
   (
-         Mat< std::complex<typename T1::pod_type> >&     coeff_out,
-         Mat< std::complex<typename T1::pod_type> >&     score_out,
-  const Base< std::complex<typename T1::pod_type>, T1 >& X,
-  const typename arma_cx_only<typename T1::elem_type>::result* junk
+        Mat< std::complex<T> >& coeff_out,
+        Mat< std::complex<T> >& score_out,
+  const Mat< std::complex<T> >& in
   )
   {
   arma_extra_debug_sigprint();
-  arma_ignore(junk);
   
-  typedef typename T1::pod_type     T;
-  typedef          std::complex<T> eT;
-  
-  const unwrap_check<T1> Y( X.get_ref(), score_out );
-  const Mat<eT>& in    = Y.M;
+  typedef std::complex<T> eT;
   
   const uword n_rows = in.n_rows;
   const uword n_cols = in.n_cols;
@@ -576,24 +535,18 @@ op_princomp::direct_princomp
 //! principal component analysis -- 1 argument complex version
 //! computation is done via singular value decomposition
 //! coeff_out    -> principal component coefficients
-template<typename T1>
+template<typename T>
 inline
 bool
 op_princomp::direct_princomp
   (
-         Mat< std::complex<typename T1::pod_type> >&     coeff_out,
-  const Base< std::complex<typename T1::pod_type>, T1 >& X,
-  const typename arma_cx_only<typename T1::elem_type>::result* junk
+        Mat< std::complex<T> >& coeff_out,
+  const Mat< std::complex<T> >& in
   )
   {
   arma_extra_debug_sigprint();
-  arma_ignore(junk);
   
-  typedef typename T1::pod_type     T;
-  typedef          std::complex<T> eT;
-  
-  const unwrap<T1>    Y( X.get_ref() );
-  const Mat<eT>& in = Y.M;
+  typedef typename std::complex<T> eT;
   
   if(in.n_elem != 0)
     {

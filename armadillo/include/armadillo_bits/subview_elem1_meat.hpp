@@ -1,9 +1,14 @@
-// Copyright (C) 2010-2013 NICTA (www.nicta.com.au)
-// Copyright (C) 2010-2013 Conrad Sanderson
+// Copyright (C) 2010-2011 NICTA (www.nicta.com.au)
+// Copyright (C) 2010-2011 Conrad Sanderson
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup subview_elem1
@@ -22,6 +27,19 @@ template<typename eT, typename T1>
 arma_inline
 subview_elem1<eT,T1>::subview_elem1(const Mat<eT>& in_m, const Base<uword,T1>& in_a)
   : m(in_m)
+  , m_ptr(0)
+  , a(in_a)
+  {
+  arma_extra_debug_sigprint();
+  }
+
+
+
+template<typename eT, typename T1>
+arma_inline
+subview_elem1<eT,T1>::subview_elem1(Mat<eT>& in_m, const Base<uword,T1>& in_a)
+  : m(in_m)
+  , m_ptr(&in_m)
   , a(in_a)
   {
   arma_extra_debug_sigprint();
@@ -35,9 +53,7 @@ inline
 void
 subview_elem1<eT,T1>::inplace_op(const eT val)
   {
-  arma_extra_debug_sigprint();
-  
-  Mat<eT>& m_local = const_cast< Mat<eT>& >(m);
+  Mat<eT>& m_local = *m_ptr;
   
         eT*   m_mem    = m_local.memptr();
   const uword m_n_elem = m_local.n_elem;
@@ -47,18 +63,18 @@ subview_elem1<eT,T1>::inplace_op(const eT val)
   
   arma_debug_check
     (
-    ( (aa.is_vec() == false) && (aa.is_empty() == false) ),
+    ( aa.is_vec() == false ),
     "Mat::elem(): given object is not a vector"
     );
   
   const uword* aa_mem    = aa.memptr();
   const uword  aa_n_elem = aa.n_elem;
   
-  uword iq,jq;
-  for(iq=0, jq=1; jq < aa_n_elem; iq+=2, jq+=2)
+  uword i,j;
+  for(i=0, j=1; j<aa_n_elem; i+=2, j+=2)
     {
-    const uword ii = aa_mem[iq];
-    const uword jj = aa_mem[jq];
+    const uword ii = aa_mem[i];
+    const uword jj = aa_mem[j];
     
     arma_debug_check( ( (ii >= m_n_elem) || (jj >= m_n_elem) ), "Mat::elem(): index out of bounds" );
     
@@ -69,9 +85,9 @@ subview_elem1<eT,T1>::inplace_op(const eT val)
     else if(is_same_type<op_type, op_subview_elem_inplace_div  >::value == true) { m_mem[ii] /= val; m_mem[jj] /= val; }
     }
   
-  if(iq < aa_n_elem)
+  if(i < aa_n_elem)
     {
-    const uword ii = aa_mem[iq];
+    const uword ii = aa_mem[i];
     
     arma_debug_check( (ii >= m_n_elem) , "Mat::elem(): index out of bounds" ); 
     
@@ -91,91 +107,89 @@ inline
 void
 subview_elem1<eT,T1>::inplace_op(const subview_elem1<eT,T2>& x)
   {
-  arma_extra_debug_sigprint();
+  subview_elem1<eT,T1>& t = *this;
   
-  subview_elem1<eT,T1>& s = *this;
-  
-  if(&(s.m) == &(x.m))
+  if(&(t.m) == &(x.m))
     {
     arma_extra_debug_print("subview_elem1::inplace_op(): aliasing detected");
     
     const Mat<eT> tmp(x);
     
-         if(is_same_type<op_type, op_subview_elem_equ          >::value == true) { s.operator= (tmp); }
-    else if(is_same_type<op_type, op_subview_elem_inplace_plus >::value == true) { s.operator+=(tmp); }
-    else if(is_same_type<op_type, op_subview_elem_inplace_minus>::value == true) { s.operator-=(tmp); }
-    else if(is_same_type<op_type, op_subview_elem_inplace_schur>::value == true) { s.operator%=(tmp); }
-    else if(is_same_type<op_type, op_subview_elem_inplace_div  >::value == true) { s.operator/=(tmp); }
+         if(is_same_type<op_type, op_subview_elem_equ          >::value == true) { t.operator= (tmp); }
+    else if(is_same_type<op_type, op_subview_elem_inplace_plus >::value == true) { t.operator+=(tmp); }
+    else if(is_same_type<op_type, op_subview_elem_inplace_minus>::value == true) { t.operator-=(tmp); }
+    else if(is_same_type<op_type, op_subview_elem_inplace_schur>::value == true) { t.operator%=(tmp); }
+    else if(is_same_type<op_type, op_subview_elem_inplace_div  >::value == true) { t.operator/=(tmp); }
     }
   else
     {
-          Mat<eT>& s_m_local = const_cast< Mat<eT>& >(s.m);
+          Mat<eT>& t_m_local = *(t.m_ptr);
     const Mat<eT>& x_m_local = x.m;
     
-    const unwrap_check_mixed<T1> s_tmp(s.a.get_ref(), s_m_local);
-    const unwrap_check_mixed<T2> x_tmp(x.a.get_ref(), s_m_local);
+    const unwrap_check_mixed<T1> t_tmp(t.a.get_ref(), t_m_local);
+    const unwrap_check_mixed<T2> x_tmp(x.a.get_ref(), t_m_local);
     
-    const umat& s_aa = s_tmp.M;
+    const umat& t_aa = t_tmp.M;
     const umat& x_aa = x_tmp.M;
     
     arma_debug_check
       (
-      ( ((s_aa.is_vec() == false) && (s_aa.is_empty() == false)) || ((x_aa.is_vec() == false) && (x_aa.is_empty() == false)) ),
+      ( (t_aa.is_vec() == false) || (x_aa.is_vec() == false) ),
       "Mat::elem(): given object is not a vector"
       );
     
-    const uword* s_aa_mem = s_aa.memptr();
+    const uword* t_aa_mem = t_aa.memptr();
     const uword* x_aa_mem = x_aa.memptr();
     
-    const uword s_aa_n_elem = s_aa.n_elem;
+    const uword t_aa_n_elem = t_aa.n_elem;
     
-    arma_debug_check( (s_aa_n_elem != x_aa.n_elem), "Mat::elem(): size mismatch" );
+    arma_debug_check( (t_aa_n_elem != x_aa.n_elem), "Mat::elem(): size mismatch" );
     
     
-          eT*   s_m_mem    = s_m_local.memptr();
-    const uword s_m_n_elem = s_m_local.n_elem;
+          eT*   t_m_mem    = t_m_local.memptr();
+    const uword t_m_n_elem = t_m_local.n_elem;
     
     const eT*   x_m_mem    = x_m_local.memptr();
     const uword x_m_n_elem = x_m_local.n_elem;
     
-    uword iq,jq;
-    for(iq=0, jq=1; jq < s_aa_n_elem; iq+=2, jq+=2)
+    uword i,j;
+    for(i=0, j=1; j<t_aa_n_elem; i+=2, j+=2)
       {
-      const uword s_ii = s_aa_mem[iq];
-      const uword s_jj = s_aa_mem[jq];
+      const uword t_ii = t_aa_mem[i];
+      const uword t_jj = t_aa_mem[j];
       
-      const uword x_ii = x_aa_mem[iq];
-      const uword x_jj = x_aa_mem[jq];
+      const uword x_ii = x_aa_mem[i];
+      const uword x_jj = x_aa_mem[j];
       
       arma_debug_check
         (
-        (s_ii >= s_m_n_elem) || (s_jj >= s_m_n_elem) || (x_ii >= x_m_n_elem) || (x_jj >= x_m_n_elem),
+        (t_ii >= t_m_n_elem) || (t_jj >= t_m_n_elem) || (x_ii >= x_m_n_elem) || (x_jj >= x_m_n_elem),
         "Mat::elem(): index out of bounds"
         );
       
-           if(is_same_type<op_type, op_subview_elem_equ          >::value == true) { s_m_mem[s_ii]  = x_m_mem[x_ii]; s_m_mem[s_jj]  = x_m_mem[x_jj]; }
-      else if(is_same_type<op_type, op_subview_elem_inplace_plus >::value == true) { s_m_mem[s_ii] += x_m_mem[x_ii]; s_m_mem[s_jj] += x_m_mem[x_jj]; }
-      else if(is_same_type<op_type, op_subview_elem_inplace_minus>::value == true) { s_m_mem[s_ii] -= x_m_mem[x_ii]; s_m_mem[s_jj] -= x_m_mem[x_jj]; }
-      else if(is_same_type<op_type, op_subview_elem_inplace_schur>::value == true) { s_m_mem[s_ii] *= x_m_mem[x_ii]; s_m_mem[s_jj] *= x_m_mem[x_jj]; }
-      else if(is_same_type<op_type, op_subview_elem_inplace_div  >::value == true) { s_m_mem[s_ii] /= x_m_mem[x_ii]; s_m_mem[s_jj] /= x_m_mem[x_jj]; }
+           if(is_same_type<op_type, op_subview_elem_equ          >::value == true) { t_m_mem[t_ii]  = x_m_mem[x_ii]; t_m_mem[t_jj]  = x_m_mem[x_jj]; }
+      else if(is_same_type<op_type, op_subview_elem_inplace_plus >::value == true) { t_m_mem[t_ii] += x_m_mem[x_ii]; t_m_mem[t_jj] += x_m_mem[x_jj]; }
+      else if(is_same_type<op_type, op_subview_elem_inplace_minus>::value == true) { t_m_mem[t_ii] -= x_m_mem[x_ii]; t_m_mem[t_jj] -= x_m_mem[x_jj]; }
+      else if(is_same_type<op_type, op_subview_elem_inplace_schur>::value == true) { t_m_mem[t_ii] *= x_m_mem[x_ii]; t_m_mem[t_jj] *= x_m_mem[x_jj]; }
+      else if(is_same_type<op_type, op_subview_elem_inplace_div  >::value == true) { t_m_mem[t_ii] /= x_m_mem[x_ii]; t_m_mem[t_jj] /= x_m_mem[x_jj]; }
       }
     
-    if(iq < s_aa_n_elem)
+    if(i < t_aa_n_elem)
       {
-      const uword s_ii = s_aa_mem[iq];
-      const uword x_ii = x_aa_mem[iq];
+      const uword t_ii = t_aa_mem[i];
+      const uword x_ii = x_aa_mem[i];
       
       arma_debug_check
         (
-        ( (s_ii >= s_m_n_elem) || (x_ii >= x_m_n_elem) ),
+        ( (t_ii >= t_m_n_elem) || (x_ii >= x_m_n_elem) ),
         "Mat::elem(): index out of bounds"
         );
       
-           if(is_same_type<op_type, op_subview_elem_equ          >::value == true) { s_m_mem[s_ii]  = x_m_mem[x_ii]; }
-      else if(is_same_type<op_type, op_subview_elem_inplace_plus >::value == true) { s_m_mem[s_ii] += x_m_mem[x_ii]; }
-      else if(is_same_type<op_type, op_subview_elem_inplace_minus>::value == true) { s_m_mem[s_ii] -= x_m_mem[x_ii]; }
-      else if(is_same_type<op_type, op_subview_elem_inplace_schur>::value == true) { s_m_mem[s_ii] *= x_m_mem[x_ii]; }
-      else if(is_same_type<op_type, op_subview_elem_inplace_div  >::value == true) { s_m_mem[s_ii] /= x_m_mem[x_ii]; }
+           if(is_same_type<op_type, op_subview_elem_equ          >::value == true) { t_m_mem[t_ii]  = x_m_mem[x_ii]; }
+      else if(is_same_type<op_type, op_subview_elem_inplace_plus >::value == true) { t_m_mem[t_ii] += x_m_mem[x_ii]; }
+      else if(is_same_type<op_type, op_subview_elem_inplace_minus>::value == true) { t_m_mem[t_ii] -= x_m_mem[x_ii]; }
+      else if(is_same_type<op_type, op_subview_elem_inplace_schur>::value == true) { t_m_mem[t_ii] *= x_m_mem[x_ii]; }
+      else if(is_same_type<op_type, op_subview_elem_inplace_div  >::value == true) { t_m_mem[t_ii] /= x_m_mem[x_ii]; }
       }
     }
   }
@@ -190,17 +204,17 @@ subview_elem1<eT,T1>::inplace_op(const Base<eT,T2>& x)
   {
   arma_extra_debug_sigprint();
   
-  Mat<eT>& m_local = const_cast< Mat<eT>& >(m);
+  Mat<eT>& m_local = *m_ptr;
   
         eT*   m_mem    = m_local.memptr();
   const uword m_n_elem = m_local.n_elem;
   
-  const unwrap_check_mixed<T1> aa_tmp(a.get_ref(), m_local);
-  const umat& aa = aa_tmp.M;
+  const unwrap_check_mixed<T1> tmp(a.get_ref(), m_local);
+  const umat& aa = tmp.M;
   
   arma_debug_check
     (
-    ( (aa.is_vec() == false) && (aa.is_empty() == false) ),
+    ( aa.is_vec() == false ),
     "Mat::elem(): given object is not a vector"
     );
   
@@ -211,75 +225,73 @@ subview_elem1<eT,T1>::inplace_op(const Base<eT,T2>& x)
   
   arma_debug_check( (aa_n_elem != P.get_n_elem()), "Mat::elem(): size mismatch" );
   
-  const bool is_alias = P.is_alias(m);
-  
-  if( (is_alias == false) && (Proxy<T2>::prefer_at_accessor == false) )
+  if( (P.is_alias(m) == false) && (Proxy<T2>::prefer_at_accessor == false) )
     {
     typename Proxy<T2>::ea_type X = P.get_ea();
     
-    uword iq,jq;
-    for(iq=0, jq=1; jq < aa_n_elem; iq+=2, jq+=2)
+    uword i,j;
+    for(i=0, j=1; j<aa_n_elem; i+=2, j+=2)
       {
-      const uword ii = aa_mem[iq];
-      const uword jj = aa_mem[jq];
+      const uword ii = aa_mem[i];
+      const uword jj = aa_mem[j];
       
       arma_debug_check( ( (ii >= m_n_elem) || (jj >= m_n_elem) ), "Mat::elem(): index out of bounds" );
       
-           if(is_same_type<op_type, op_subview_elem_equ          >::value == true) { m_mem[ii] =  X[iq]; m_mem[jj]  = X[jq]; }
-      else if(is_same_type<op_type, op_subview_elem_inplace_plus >::value == true) { m_mem[ii] += X[iq]; m_mem[jj] += X[jq]; }
-      else if(is_same_type<op_type, op_subview_elem_inplace_minus>::value == true) { m_mem[ii] -= X[iq]; m_mem[jj] -= X[jq]; }
-      else if(is_same_type<op_type, op_subview_elem_inplace_schur>::value == true) { m_mem[ii] *= X[iq]; m_mem[jj] *= X[jq]; }
-      else if(is_same_type<op_type, op_subview_elem_inplace_div  >::value == true) { m_mem[ii] /= X[iq]; m_mem[jj] /= X[jq]; }
+           if(is_same_type<op_type, op_subview_elem_equ          >::value == true) { m_mem[ii] =  X[i]; m_mem[jj]  = X[j]; }
+      else if(is_same_type<op_type, op_subview_elem_inplace_plus >::value == true) { m_mem[ii] += X[i]; m_mem[jj] += X[j]; }
+      else if(is_same_type<op_type, op_subview_elem_inplace_minus>::value == true) { m_mem[ii] -= X[i]; m_mem[jj] -= X[j]; }
+      else if(is_same_type<op_type, op_subview_elem_inplace_schur>::value == true) { m_mem[ii] *= X[i]; m_mem[jj] *= X[j]; }
+      else if(is_same_type<op_type, op_subview_elem_inplace_div  >::value == true) { m_mem[ii] /= X[i]; m_mem[jj] /= X[j]; }
       }
     
-    if(iq < aa_n_elem)
+    if(i < aa_n_elem)
       {
-      const uword ii = aa_mem[iq];
+      const uword ii = aa_mem[i];
       
       arma_debug_check( (ii >= m_n_elem) , "Mat::elem(): index out of bounds" );
       
-           if(is_same_type<op_type, op_subview_elem_equ          >::value == true) { m_mem[ii] =  X[iq]; }
-      else if(is_same_type<op_type, op_subview_elem_inplace_plus >::value == true) { m_mem[ii] += X[iq]; }
-      else if(is_same_type<op_type, op_subview_elem_inplace_minus>::value == true) { m_mem[ii] -= X[iq]; }
-      else if(is_same_type<op_type, op_subview_elem_inplace_schur>::value == true) { m_mem[ii] *= X[iq]; }
-      else if(is_same_type<op_type, op_subview_elem_inplace_div  >::value == true) { m_mem[ii] /= X[iq]; }
+           if(is_same_type<op_type, op_subview_elem_equ          >::value == true) { m_mem[ii] =  X[i]; }
+      else if(is_same_type<op_type, op_subview_elem_inplace_plus >::value == true) { m_mem[ii] += X[i]; }
+      else if(is_same_type<op_type, op_subview_elem_inplace_minus>::value == true) { m_mem[ii] -= X[i]; }
+      else if(is_same_type<op_type, op_subview_elem_inplace_schur>::value == true) { m_mem[ii] *= X[i]; }
+      else if(is_same_type<op_type, op_subview_elem_inplace_div  >::value == true) { m_mem[ii] /= X[i]; }
       }
     }
   else
     {
     arma_extra_debug_print("subview_elem1::inplace_op(): aliasing or prefer_at_accessor detected");
     
-    const unwrap_check<typename Proxy<T2>::stored_type> tmp(P.Q, is_alias);
+    const unwrap_check<typename Proxy<T2>::stored_type> tmp(P.Q, m_local);
     const Mat<eT>& M = tmp.M;
     
     const eT* X = M.memptr();
     
-    uword iq,jq;
-    for(iq=0, jq=1; jq < aa_n_elem; iq+=2, jq+=2)
+    uword i,j;
+    for(i=0, j=1; j<aa_n_elem; i+=2, j+=2)
       {
-      const uword ii = aa_mem[iq];
-      const uword jj = aa_mem[jq];
+      const uword ii = aa_mem[i];
+      const uword jj = aa_mem[j];
       
       arma_debug_check( ( (ii >= m_n_elem) || (jj >= m_n_elem) ), "Mat::elem(): index out of bounds" );
       
-           if(is_same_type<op_type, op_subview_elem_equ          >::value == true) { m_mem[ii] =  X[iq]; m_mem[jj]  = X[jq]; }
-      else if(is_same_type<op_type, op_subview_elem_inplace_plus >::value == true) { m_mem[ii] += X[iq]; m_mem[jj] += X[jq]; }
-      else if(is_same_type<op_type, op_subview_elem_inplace_minus>::value == true) { m_mem[ii] -= X[iq]; m_mem[jj] -= X[jq]; }
-      else if(is_same_type<op_type, op_subview_elem_inplace_schur>::value == true) { m_mem[ii] *= X[iq]; m_mem[jj] *= X[jq]; }
-      else if(is_same_type<op_type, op_subview_elem_inplace_div  >::value == true) { m_mem[ii] /= X[iq]; m_mem[jj] /= X[jq]; }
+           if(is_same_type<op_type, op_subview_elem_equ          >::value == true) { m_mem[ii] =  X[i]; m_mem[jj]  = X[j]; }
+      else if(is_same_type<op_type, op_subview_elem_inplace_plus >::value == true) { m_mem[ii] += X[i]; m_mem[jj] += X[j]; }
+      else if(is_same_type<op_type, op_subview_elem_inplace_minus>::value == true) { m_mem[ii] -= X[i]; m_mem[jj] -= X[j]; }
+      else if(is_same_type<op_type, op_subview_elem_inplace_schur>::value == true) { m_mem[ii] *= X[i]; m_mem[jj] *= X[j]; }
+      else if(is_same_type<op_type, op_subview_elem_inplace_div  >::value == true) { m_mem[ii] /= X[i]; m_mem[jj] /= X[j]; }
       }
     
-    if(iq < aa_n_elem)
+    if(i < aa_n_elem)
       {
-      const uword ii = aa_mem[iq];
+      const uword ii = aa_mem[i];
       
       arma_debug_check( (ii >= m_n_elem) , "Mat::elem(): index out of bounds" );
       
-           if(is_same_type<op_type, op_subview_elem_equ          >::value == true) { m_mem[ii] =  X[iq]; }
-      else if(is_same_type<op_type, op_subview_elem_inplace_plus >::value == true) { m_mem[ii] += X[iq]; }
-      else if(is_same_type<op_type, op_subview_elem_inplace_minus>::value == true) { m_mem[ii] -= X[iq]; }
-      else if(is_same_type<op_type, op_subview_elem_inplace_schur>::value == true) { m_mem[ii] *= X[iq]; }
-      else if(is_same_type<op_type, op_subview_elem_inplace_div  >::value == true) { m_mem[ii] /= X[iq]; }
+           if(is_same_type<op_type, op_subview_elem_equ          >::value == true) { m_mem[ii] =  X[i]; }
+      else if(is_same_type<op_type, op_subview_elem_inplace_plus >::value == true) { m_mem[ii] += X[i]; }
+      else if(is_same_type<op_type, op_subview_elem_inplace_minus>::value == true) { m_mem[ii] -= X[i]; }
+      else if(is_same_type<op_type, op_subview_elem_inplace_schur>::value == true) { m_mem[ii] *= X[i]; }
+      else if(is_same_type<op_type, op_subview_elem_inplace_div  >::value == true) { m_mem[ii] /= X[i]; }
       }
     }
   }
@@ -288,36 +300,6 @@ subview_elem1<eT,T1>::inplace_op(const Base<eT,T2>& x)
 
 //
 //
-
-
-
-template<typename eT, typename T1>
-arma_inline
-const Op<subview_elem1<eT,T1>,op_htrans>
-subview_elem1<eT,T1>::t() const
-  {
-  return Op<subview_elem1<eT,T1>,op_htrans>(*this);
-  }
-
-
-
-template<typename eT, typename T1>
-arma_inline
-const Op<subview_elem1<eT,T1>,op_htrans>
-subview_elem1<eT,T1>::ht() const
-  {
-  return Op<subview_elem1<eT,T1>,op_htrans>(*this);
-  }
-
-
-
-template<typename eT, typename T1>
-arma_inline
-const Op<subview_elem1<eT,T1>,op_strans>
-subview_elem1<eT,T1>::st() const
-  {
-  return Op<subview_elem1<eT,T1>,op_strans>(*this);
-  }
 
 
 
@@ -584,7 +566,7 @@ subview_elem1<eT,T1>::extract(Mat<eT>& actual_out, const subview_elem1<eT,T1>& i
   
   arma_debug_check
     (
-    ( (aa.is_vec() == false) && (aa.is_empty() == false) ),
+    ( aa.is_vec() == false ),
     "Mat::elem(): given object is not a vector"
     );
   
@@ -630,7 +612,7 @@ subview_elem1<eT,T1>::extract(Mat<eT>& actual_out, const subview_elem1<eT,T1>& i
   
   if(alias == true)
     {
-    actual_out.steal_mem(out);
+    actual_out = out;
     delete tmp_out;
     }
   }
@@ -650,7 +632,7 @@ subview_elem1<eT,T1>::mat_inplace_op(Mat<eT>& out, const subview_elem1& in)
   
   arma_debug_check
     (
-    ( (aa.is_vec() == false) && (aa.is_empty() == false) ),
+    ( aa.is_vec() == false ),
     "Mat::elem(): given object is not a vector"
     );
   

@@ -1,13 +1,54 @@
-// Copyright (C) 2010-2012 NICTA (www.nicta.com.au)
-// Copyright (C) 2010-2012 Conrad Sanderson
+// Copyright (C) 2010-2011 NICTA (www.nicta.com.au)
+// Copyright (C) 2010-2011 Conrad Sanderson
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup eglue_core
 //! @{
+
+
+
+class eglue_plus : public eglue_core<eglue_plus>
+  {
+  public:
+  
+  inline static const char* text() { return "addition"; }
+  };
+
+
+
+class eglue_minus : public eglue_core<eglue_minus>
+  {
+  public:
+  
+  inline static const char* text() { return "subtraction"; }
+  };
+
+
+
+class eglue_div : public eglue_core<eglue_div>
+  {
+  public:
+  
+  inline static const char* text() { return "element-wise division"; }
+  };
+
+
+
+class eglue_schur : public eglue_core<eglue_schur>
+  {
+  public:
+  
+  inline static const char* text() { return "element-wise multiplication"; }
+  };
 
 
 
@@ -43,48 +84,28 @@
 
 #define arma_applier_2(operatorA, operatorB) \
   {\
-  if(n_rows != 1)\
-    {\
-    for(uword col=0; col<n_cols; ++col)\
-      {\
-      uword i,j;\
-      \
-      for(i=0, j=1; j<n_rows; i+=2, j+=2)\
-        {\
-        eT tmp_i = P1.at(i,col);\
-        eT tmp_j = P1.at(j,col);\
-        \
-        tmp_i operatorB##= P2.at(i,col);\
-        tmp_j operatorB##= P2.at(j,col);\
-        \
-        *out_mem operatorA tmp_i; out_mem++; \
-        *out_mem operatorA tmp_j; out_mem++; \
-        }\
-      \
-      if(i < n_rows)\
-        {\
-        *out_mem operatorA P1.at(i,col) operatorB P2.at(i,col); out_mem++; \
-        }\
-      }\
-    }\
-  else\
+  uword count = 0;\
+  \
+  for(uword col=0; col<n_cols; ++col)\
     {\
     uword i,j;\
-    for(i=0, j=1; j < n_cols; i+=2, j+=2)\
+    \
+    for(i=0, j=1; j<n_rows; i+=2, j+=2, count+=2)\
       {\
-      eT tmp_i = P1.at(0,i);\
-      eT tmp_j = P1.at(0,j);\
+      eT tmp_i = P1.at(i,col);\
+      eT tmp_j = P1.at(j,col);\
       \
-      tmp_i operatorB##= P2.at(0,i);\
-      tmp_j operatorB##= P2.at(0,j);\
+      tmp_i operatorB##= P2.at(i,col);\
+      tmp_j operatorB##= P2.at(j,col);\
       \
-      out_mem[i] operatorA tmp_i;\
-      out_mem[j] operatorA tmp_j;\
+      out_mem[count  ] operatorA tmp_i;\
+      out_mem[count+1] operatorA tmp_j;\
       }\
     \
-    if(i < n_cols)\
+    if(i < n_rows)\
       {\
-      out_mem[i] operatorA P1.at(0,i) operatorB P2.at(0,i);\
+      out_mem[count] operatorA P1.at(i,col) operatorB P2.at(i,col);\
+      ++count;\
       }\
     }\
   }
@@ -93,13 +114,15 @@
 
 #define arma_applier_3(operatorA, operatorB) \
   {\
+  uword count = 0;\
+  \
   for(uword slice=0; slice<n_slices; ++slice)\
     {\
     for(uword col=0; col<n_cols; ++col)\
       {\
       uword i,j;\
       \
-      for(i=0, j=1; j<n_rows; i+=2, j+=2)\
+      for(i=0, j=1; j<n_rows; i+=2, j+=2, count+=2)\
         {\
         eT tmp_i = P1.at(i,col,slice);\
         eT tmp_j = P1.at(j,col,slice);\
@@ -107,13 +130,14 @@
         tmp_i operatorB##= P2.at(i,col,slice);\
         tmp_j operatorB##= P2.at(j,col,slice);\
         \
-        *out_mem operatorA tmp_i; out_mem++; \
-        *out_mem operatorA tmp_j; out_mem++; \
+        out_mem[count  ] operatorA tmp_i;\
+        out_mem[count+1] operatorA tmp_j;\
         }\
       \
       if(i < n_rows)\
         {\
-        *out_mem operatorA P1.at(i,col,slice) operatorB P2.at(i,col,slice); out_mem++; \
+        out_mem[count] operatorA P1.at(i,col,slice) operatorB P2.at(i,col,slice);\
+        ++count;\
         }\
       }\
     }\
@@ -142,17 +166,15 @@ eglue_core<eglue_type>::apply(Mat<typename T1::elem_type>& out, const eGlue<T1, 
   // NOTE: we're assuming that the matrix has already been set to the correct size and there is no aliasing;
   // size setting and alias checking is done by either the Mat contructor or operator=()
   
-  
   eT* out_mem = out.memptr();
   
   if(prefer_at_accessor == false)
     {
-    // for fixed-sized vectors with n_elem >= 6, using x.get_n_elem() directly causes a mis-optimisation (slowdown) of the loop under GCC 4.4
-    const uword n_elem = (Proxy<T1>::is_fixed || Proxy<T2>::is_fixed) ? ( (x.get_n_elem() <= 4) ? x.get_n_elem() : out.n_elem ) : out.n_elem;
+    const uword n_elem = out.n_elem;
     
     typename Proxy<T1>::ea_type P1 = x.P1.get_ea();
     typename Proxy<T2>::ea_type P2 = x.P2.get_ea();
-    
+  
          if(is_same_type<eglue_type, eglue_plus >::value == true) { arma_applier_1(=, +); }
     else if(is_same_type<eglue_type, eglue_minus>::value == true) { arma_applier_1(=, -); }
     else if(is_same_type<eglue_type, eglue_div  >::value == true) { arma_applier_1(=, /); }
@@ -160,9 +182,9 @@ eglue_core<eglue_type>::apply(Mat<typename T1::elem_type>& out, const eGlue<T1, 
     }
   else
     {
-    const uword n_rows = x.get_n_rows();
-    const uword n_cols = x.get_n_cols();
-    
+    const uword n_rows = out.n_rows;
+    const uword n_cols = out.n_cols;
+  
     const Proxy<T1>& P1 = x.P1;
     const Proxy<T2>& P2 = x.P2;
     
@@ -184,10 +206,7 @@ eglue_core<eglue_type>::apply_inplace_plus(Mat<typename T1::elem_type>& out, con
   {
   arma_extra_debug_sigprint();
   
-  const uword n_rows = x.get_n_rows();
-  const uword n_cols = x.get_n_cols();
-    
-  arma_debug_assert_same_size(out.n_rows, out.n_cols, n_rows, n_cols, "addition");
+  arma_debug_assert_same_size(out, x.P1, "addition");
   
   typedef typename T1::elem_type eT;
   
@@ -197,8 +216,7 @@ eglue_core<eglue_type>::apply_inplace_plus(Mat<typename T1::elem_type>& out, con
   
   if(prefer_at_accessor == false)
     {
-    // for fixed-sized vectors with n_elem >= 6, using x.get_n_elem() directly causes a mis-optimisation (slowdown) of the loop under GCC 4.4
-    const uword n_elem = (Proxy<T1>::is_fixed || Proxy<T2>::is_fixed) ? ( (x.get_n_elem() <= 4) ? x.get_n_elem() : out.n_elem ) : out.n_elem;
+    const uword n_elem = out.n_elem;
     
     typename Proxy<T1>::ea_type P1 = x.P1.get_ea();
     typename Proxy<T2>::ea_type P2 = x.P2.get_ea();
@@ -210,6 +228,9 @@ eglue_core<eglue_type>::apply_inplace_plus(Mat<typename T1::elem_type>& out, con
     }
   else
     {
+    const uword n_rows = out.n_rows;
+    const uword n_cols = out.n_cols;
+    
     const Proxy<T1>& P1 = x.P1;
     const Proxy<T2>& P2 = x.P2;
     
@@ -231,10 +252,7 @@ eglue_core<eglue_type>::apply_inplace_minus(Mat<typename T1::elem_type>& out, co
   {
   arma_extra_debug_sigprint();
   
-  const uword n_rows = x.get_n_rows();
-  const uword n_cols = x.get_n_cols();
-  
-  arma_debug_assert_same_size(out.n_rows, out.n_cols, n_rows, n_cols, "subtraction");
+  arma_debug_assert_same_size(out, x.P1, "subtraction");
   
   typedef typename T1::elem_type eT;
   
@@ -244,8 +262,7 @@ eglue_core<eglue_type>::apply_inplace_minus(Mat<typename T1::elem_type>& out, co
   
   if(prefer_at_accessor == false)
     {
-    // for fixed-sized vectors with n_elem >= 6, using x.get_n_elem() directly causes a mis-optimisation (slowdown) of the loop under GCC 4.4
-    const uword n_elem = (Proxy<T1>::is_fixed || Proxy<T2>::is_fixed) ? ( (x.get_n_elem() <= 4) ? x.get_n_elem() : out.n_elem ) : out.n_elem;
+    const uword n_elem = out.n_elem;
     
     typename Proxy<T1>::ea_type P1 = x.P1.get_ea();
     typename Proxy<T2>::ea_type P2 = x.P2.get_ea();
@@ -257,6 +274,9 @@ eglue_core<eglue_type>::apply_inplace_minus(Mat<typename T1::elem_type>& out, co
     }
   else
     {
+    const uword n_rows = out.n_rows;
+    const uword n_cols = out.n_cols;
+    
     const Proxy<T1>& P1 = x.P1;
     const Proxy<T2>& P2 = x.P2;
     
@@ -278,10 +298,7 @@ eglue_core<eglue_type>::apply_inplace_schur(Mat<typename T1::elem_type>& out, co
   {
   arma_extra_debug_sigprint();
   
-  const uword n_rows = x.get_n_rows();
-  const uword n_cols = x.get_n_cols();
-  
-  arma_debug_assert_same_size(out.n_rows, out.n_cols, n_rows, n_cols, "element-wise multiplication");
+  arma_debug_assert_same_size(out, x.P1, "element-wise multiplication");
   
   typedef typename T1::elem_type eT;
   
@@ -291,8 +308,7 @@ eglue_core<eglue_type>::apply_inplace_schur(Mat<typename T1::elem_type>& out, co
   
   if(prefer_at_accessor == false)
     {
-    // for fixed-sized vectors with n_elem >= 6, using x.get_n_elem() directly causes a mis-optimisation (slowdown) of the loop under GCC 4.4
-    const uword n_elem = (Proxy<T1>::is_fixed || Proxy<T2>::is_fixed) ? ( (x.get_n_elem() <= 4) ? x.get_n_elem() : out.n_elem ) : out.n_elem;
+    const uword n_elem = out.n_elem;
     
     typename Proxy<T1>::ea_type P1 = x.P1.get_ea();
     typename Proxy<T2>::ea_type P2 = x.P2.get_ea();
@@ -304,6 +320,9 @@ eglue_core<eglue_type>::apply_inplace_schur(Mat<typename T1::elem_type>& out, co
     }
   else
     {
+    const uword n_rows = out.n_rows;
+    const uword n_cols = out.n_cols;
+    
     const Proxy<T1>& P1 = x.P1;
     const Proxy<T2>& P2 = x.P2;
     
@@ -325,10 +344,7 @@ eglue_core<eglue_type>::apply_inplace_div(Mat<typename T1::elem_type>& out, cons
   {
   arma_extra_debug_sigprint();
   
-  const uword n_rows = x.get_n_rows();
-  const uword n_cols = x.get_n_cols();
-  
-  arma_debug_assert_same_size(out.n_rows, out.n_cols, n_rows, n_cols, "element-wise division");
+  arma_debug_assert_same_size(out, x.P1, "element-wise division");
   
   typedef typename T1::elem_type eT;
   
@@ -338,8 +354,7 @@ eglue_core<eglue_type>::apply_inplace_div(Mat<typename T1::elem_type>& out, cons
   
   if(prefer_at_accessor == false)
     {
-    // for fixed-sized vectors with n_elem >= 6, using x.get_n_elem() directly causes a mis-optimisation (slowdown) of the loop under GCC 4.4
-    const uword n_elem = (Proxy<T1>::is_fixed || Proxy<T2>::is_fixed) ? ( (x.get_n_elem() <= 4) ? x.get_n_elem() : out.n_elem ) : out.n_elem;
+    const uword n_elem = out.n_elem;
     
     typename Proxy<T1>::ea_type P1 = x.P1.get_ea();
     typename Proxy<T2>::ea_type P2 = x.P2.get_ea();
@@ -351,6 +366,9 @@ eglue_core<eglue_type>::apply_inplace_div(Mat<typename T1::elem_type>& out, cons
     }
   else
     {
+    const uword n_rows = out.n_rows;
+    const uword n_cols = out.n_cols;
+    
     const Proxy<T1>& P1 = x.P1;
     const Proxy<T2>& P2 = x.P2;
     
@@ -393,7 +411,7 @@ eglue_core<eglue_type>::apply(Cube<typename T1::elem_type>& out, const eGlueCube
     
     typename ProxyCube<T1>::ea_type P1 = x.P1.get_ea();
     typename ProxyCube<T2>::ea_type P2 = x.P2.get_ea();
-    
+  
          if(is_same_type<eglue_type, eglue_plus >::value == true) { arma_applier_1(=, +); }
     else if(is_same_type<eglue_type, eglue_minus>::value == true) { arma_applier_1(=, -); }
     else if(is_same_type<eglue_type, eglue_div  >::value == true) { arma_applier_1(=, /); }
@@ -440,7 +458,7 @@ eglue_core<eglue_type>::apply_inplace_plus(Cube<typename T1::elem_type>& out, co
   
   if(prefer_at_accessor == false)
     {
-    const uword n_elem = out.n_elem;
+    const uword n_elem  = out.n_elem;
     
     typename ProxyCube<T1>::ea_type P1 = x.P1.get_ea();
     typename ProxyCube<T2>::ea_type P2 = x.P2.get_ea();
@@ -487,7 +505,7 @@ eglue_core<eglue_type>::apply_inplace_minus(Cube<typename T1::elem_type>& out, c
   
   if(prefer_at_accessor == false)
     {
-    const uword n_elem = out.n_elem;
+    const uword n_elem  = out.n_elem;
     
     typename ProxyCube<T1>::ea_type P1 = x.P1.get_ea();
     typename ProxyCube<T2>::ea_type P2 = x.P2.get_ea();
@@ -534,7 +552,7 @@ eglue_core<eglue_type>::apply_inplace_schur(Cube<typename T1::elem_type>& out, c
   
   if(prefer_at_accessor == false)
     {
-    const uword n_elem = out.n_elem;
+    const uword n_elem  = out.n_elem;
     
     typename ProxyCube<T1>::ea_type P1 = x.P1.get_ea();
     typename ProxyCube<T2>::ea_type P2 = x.P2.get_ea();
@@ -581,7 +599,7 @@ eglue_core<eglue_type>::apply_inplace_div(Cube<typename T1::elem_type>& out, con
   
   if(prefer_at_accessor == false)
     {
-    const uword n_elem = out.n_elem;
+    const uword n_elem  = out.n_elem;
     
     typename ProxyCube<T1>::ea_type P1 = x.P1.get_ea();
     typename ProxyCube<T2>::ea_type P2 = x.P2.get_ea();

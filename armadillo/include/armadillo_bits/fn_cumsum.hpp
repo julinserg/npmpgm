@@ -1,9 +1,14 @@
-// Copyright (C) 2010-2012 NICTA (www.nicta.com.au)
-// Copyright (C) 2010-2012 Conrad Sanderson
+// Copyright (C) 2010 NICTA (www.nicta.com.au)
+// Copyright (C) 2010 Conrad Sanderson
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup fn_cumsum
@@ -14,104 +19,83 @@
 template<typename T1>
 arma_inline
 const Op<T1, op_cumsum_mat>
-cumsum
-  (
-  const T1& X,
-  const uword dim = 0,
-  const typename enable_if< is_arma_type<T1>::value       == true  >::result* junk1 = 0,
-  const typename enable_if< resolves_to_vector<T1>::value == false >::result* junk2 = 0
-  )
+cumsum(const Base<typename T1::elem_type,T1>& X, const uword dim = 0)
   {
   arma_extra_debug_sigprint();
-  arma_ignore(junk1);
-  arma_ignore(junk2);
-  
-  return Op<T1, op_cumsum_mat>(X, dim, 0);
+
+  return Op<T1, op_cumsum_mat>(X.get_ref(), dim, 0);
   }
 
 
 
-template<typename T1>
+template<typename eT>
 arma_inline
-const Op<T1, op_cumsum_mat>
-cumsum
-  (
-  const T1& X,
-  const uword dim,
-  const typename enable_if<resolves_to_vector<T1>::value == true>::result* junk = 0
-  )
+const Op<Row<eT>, op_cumsum_vec>
+cumsum(const Row<eT>& A)
   {
   arma_extra_debug_sigprint();
-  arma_ignore(junk);
   
-  return Op<T1, op_cumsum_mat>(X, dim, 0);
+  return Op<Row<eT>, op_cumsum_vec>(A);
   }
 
 
 
-template<typename T1>
+template<typename eT>
 arma_inline
-const Op<T1, op_cumsum_vec>
-cumsum
-  (
-  const T1& X,
-  const arma_empty_class junk1 = arma_empty_class(),
-  const typename enable_if<resolves_to_vector<T1>::value == true>::result* junk2 = 0
-  )
+const Op<Col<eT>, op_cumsum_vec>
+cumsum(const Col<eT>& A)
   {
   arma_extra_debug_sigprint();
-  arma_ignore(junk1);
-  arma_ignore(junk2);
   
-  return Op<T1, op_cumsum_vec>(X);
+  return Op<Col<eT>, op_cumsum_vec>(A);
   }
 
 
 
-template<typename T1>
+template<typename eT>
 arma_inline
-const Op<Op<T1, op_cumsum_vec>, op_cumsum_mat>
-cumsum
-  (
-  const Op<T1, op_cumsum_vec>& X,
-  const uword dim,
-  const typename enable_if<resolves_to_vector<T1>::value == true>::result* junk = 0
-  )
+const Op<subview_row<eT>, op_cumsum_vec>
+cumsum(const subview_row<eT>& A)
   {
   arma_extra_debug_sigprint();
-  arma_ignore(junk);
   
-  return Op<Op<T1, op_cumsum_vec>, op_cumsum_mat>(X, dim, 0);
+  return Op<subview_row<eT>, op_cumsum_vec>(A);
   }
 
 
 
-template<typename T1>
+template<typename eT>
 arma_inline
-const Op<Op<T1, op_cumsum_vec>, op_cumsum_vec>
-cumsum
-  (
-  const Op<T1, op_cumsum_vec>& X,
-  const arma_empty_class junk1 = arma_empty_class(),
-  const typename enable_if<resolves_to_vector<T1>::value == true>::result* junk2 = 0
-  )
+const Op<subview_col<eT>, op_cumsum_vec>
+cumsum(const subview_col<eT>& A)
   {
   arma_extra_debug_sigprint();
-  arma_ignore(junk1);
-  arma_ignore(junk2);
   
-  return Op<Op<T1, op_cumsum_vec>, op_cumsum_vec>(X);
+  return Op<subview_col<eT>, op_cumsum_vec>(A);
   }
 
 
 
-template<typename T>
+template<typename eT>
 arma_inline
-arma_warn_unused
-const typename arma_scalar_only<T>::result &
-cumsum(const T& x)
+const Op<diagview<eT>, op_cumsum_vec>
+cumsum(const diagview<eT>& A)
   {
-  return x;
+  arma_extra_debug_sigprint();
+  
+  return Op<diagview<eT>, op_cumsum_vec>(A);
+  }
+
+
+
+template<typename eT, typename T1>
+arma_inline
+const Op<subview_elem1<eT,T1>, op_cumsum_vec>
+cumsum(const subview_elem1<eT,T1>& A)
+  {
+  arma_extra_debug_sigprint();
+  
+  return Op<subview_elem1<eT,T1>, op_cumsum_vec>(A);
   }
 
 

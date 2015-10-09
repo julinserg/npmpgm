@@ -1,9 +1,14 @@
-// Copyright (C) 2010-2013 NICTA (www.nicta.com.au)
-// Copyright (C) 2010-2013 Conrad Sanderson
+// Copyright (C) 2010-2011 NICTA (www.nicta.com.au)
+// Copyright (C) 2010-2011 Conrad Sanderson
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup eop_core
@@ -78,7 +83,6 @@ class eop_conj              : public eop_core<eop_conj>              {};
 class eop_pow               : public eop_core<eop_pow>               {};
 class eop_floor             : public eop_core<eop_floor>             {};
 class eop_ceil              : public eop_core<eop_ceil>              {};
-class eop_round             : public eop_core<eop_round>             {};
 
 
 

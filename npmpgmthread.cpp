@@ -292,7 +292,10 @@ void class_npmpgm_model::test()
               mat R1;
               R1.set_size(SizeSEQ,R0.n_elem);
               R1.zeros();
-              R1.each_row() += R0;
+              for (uint hh=0; hh < R1.n_rows;++hh)
+              {
+                   R1(hh,span::all) += R0;
+              }
               mat R2 = R1-SEQ;
               mat R3 = square(R2);
               mat R4 = sum(R3,1);
@@ -732,7 +735,8 @@ double class_npmpgm_model::hmm_filter(mat initDist, mat transmat, mat softev)
         alpha = R2;
         scale(t) = z;
     }
-    double loglike = sum(log(scale+datum::eps));
+    colvec log1 = log(scale+math::eps());
+    double loglike = sum(log1);
     return loglike;
 
 }

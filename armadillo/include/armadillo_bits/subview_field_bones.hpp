@@ -1,9 +1,14 @@
-// Copyright (C) 2008-2012 NICTA (www.nicta.com.au)
-// Copyright (C) 2008-2012 Conrad Sanderson
+// Copyright (C) 2008-2011 NICTA (www.nicta.com.au)
+// Copyright (C) 2008-2011 Conrad Sanderson
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup subview_field
@@ -15,11 +20,12 @@
 template<typename oT>
 class subview_field
   {
-  public:  
+  public:  const field<oT>& f;
+  protected:     field<oT>* f_ptr;
+  
+  public:
   
   typedef oT object_type;
-  
-  const field<oT>& f;
   
   const uword aux_row1;
   const uword aux_col1;
@@ -32,6 +38,7 @@ class subview_field
   protected:
   
   arma_inline subview_field(const field<oT>& in_f, const uword in_row1, const uword in_col1, const uword in_n_rows, const uword in_n_cols);
+  arma_inline subview_field(      field<oT>& in_f, const uword in_row1, const uword in_col1, const uword in_n_rows, const uword in_n_cols);
   
   
   public:

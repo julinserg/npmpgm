@@ -1,12 +1,16 @@
-// Copyright (C) 2008-2012 NICTA (www.nicta.com.au)
-// Copyright (C) 2008-2012 Conrad Sanderson
-// Copyright (C) 2009 Edmund Highcock
-// Copyright (C) 2011 James Sanders
-// Copyright (C) 2012 Eric Jon Sundstrom
+// Copyright (C) 2008-2011 NICTA (www.nicta.com.au)
+// Copyright (C) 2008-2011 Conrad Sanderson
+// Copyright (C)      2009 Edmund Highcock
+// Copyright (C)      2011 James Sanders
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup auxlib
@@ -116,12 +120,6 @@ class auxlib
   template<typename T, typename T1>
   inline static bool eig_sym(Col<T>& eigval, Mat< std::complex<T> >& eigvec, const Base<std::complex<T>,T1>& X);
   
-  template<typename eT, typename T1>
-  inline static bool eig_sym_dc(Col<eT>& eigval, Mat<eT>& eigvec, const Base<eT,T1>& X);
-  
-  template<typename T, typename T1>
-  inline static bool eig_sym_dc(Col<T>& eigval, Mat< std::complex<T> >& eigvec, const Base<std::complex<T>,T1>& X);
-  
   template<typename T, typename T1>
   inline static bool eig_gen(Col< std::complex<T> >& eigval, Mat<T>& l_eigvec, Mat<T>& r_eigvec, const Base<T,T1>& X, const char side);
   
@@ -141,9 +139,6 @@ class auxlib
   
   template<typename eT, typename T1>
   inline static bool qr(Mat<eT>& Q, Mat<eT>& R, const Base<eT,T1>& X);
-  
-  template<typename eT, typename T1>
-  inline static bool qr_econ(Mat<eT>& Q, Mat<eT>& R, const Base<eT,T1>& X);
   
   
   //
@@ -173,24 +168,18 @@ class auxlib
   template<typename T, typename T1>
   inline static bool svd_econ(Mat< std::complex<T> >& U, Col<T>& S, Mat< std::complex<T> >& V, const Base< std::complex<T>, T1>& X, const char mode);
   
-  template<typename eT, typename T1>
-  inline static bool svd_dc(Mat<eT>& U, Col<eT>& S, Mat<eT>& V, const Base<eT,T1>& X);
-  
-  template<typename T, typename T1>
-  inline static bool svd_dc(Mat< std::complex<T> >& U, Col<T>& S, Mat< std::complex<T> >& V, const Base< std::complex<T>, T1>& X);
-  
   
   //
   // solve
   
-  template<typename eT, typename T1>
-  inline static bool solve   (Mat<eT>& out, Mat<eT>& A, const Base<eT,T1>& X, const bool slow = false);
+  template<typename eT>
+  inline static bool solve   (Mat<eT>& out, Mat<eT>& A, const Mat<eT>& B, const bool slow = false);
   
-  template<typename eT, typename T1>
-  inline static bool solve_od(Mat<eT>& out, Mat<eT>& A, const Base<eT,T1>& X);
+  template<typename eT>
+  inline static bool solve_od(Mat<eT>& out, Mat<eT>& A, const Mat<eT>& B);
   
-  template<typename eT, typename T1>
-  inline static bool solve_ud(Mat<eT>& out, Mat<eT>& A, const Base<eT,T1>& X);
+  template<typename eT>
+  inline static bool solve_ud(Mat<eT>& out, Mat<eT>& A, const Mat<eT>& B);
   
   
   //

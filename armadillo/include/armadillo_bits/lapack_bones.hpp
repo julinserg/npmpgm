@@ -1,12 +1,16 @@
-// Copyright (C) 2008-2012 NICTA (www.nicta.com.au)
-// Copyright (C) 2008-2012 Conrad Sanderson
-// Copyright (C) 2009 Edmund Highcock
-// Copyright (C) 2011 James Sanders
-// Copyright (C) 2012 Eric Jon Sundstrom
+// Copyright (C) 2008-2011 NICTA (www.nicta.com.au)
+// Copyright (C) 2008-2011 Conrad Sanderson
+// Copyright (C)      2009 Edmund Highcock
+// Copyright (C)      2011 James Sanders
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 
@@ -32,15 +36,9 @@
   
   #define arma_ssyev  ssyev
   #define arma_dsyev  dsyev
-
+  
   #define arma_cheev  cheev
   #define arma_zheev  zheev
-  
-  #define arma_ssyevd ssyevd
-  #define arma_dsyevd dsyevd
-  
-  #define arma_cheevd cheevd
-  #define arma_zheevd zheevd
   
   #define arma_sgeev  sgeev
   #define arma_dgeev  dgeev
@@ -74,11 +72,6 @@
   
   #define arma_cgesvd cgesvd
   #define arma_zgesvd zgesvd
-  
-  #define arma_sgesdd sgesdd
-  #define arma_dgesdd dgesdd
-  #define arma_cgesdd cgesdd
-  #define arma_zgesdd zgesdd
   
   #define arma_sgesv  sgesv
   #define arma_dgesv  dgesv
@@ -138,12 +131,6 @@
   #define arma_cheev  CHEEV
   #define arma_zheev  ZHEEV
   
-  #define arma_ssyevd SSYEVD
-  #define arma_dsyevd DSYEVD
-  
-  #define arma_cheevd CHEEVD
-  #define arma_zheevd ZHEEVD
-  
   #define arma_sgeev  SGEEV
   #define arma_dgeev  DGEEV
   
@@ -176,11 +163,6 @@
   
   #define arma_cgesvd CGESVD
   #define arma_zgesvd ZGESVD
-  
-  #define arma_sgesdd SGESDD
-  #define arma_dgesdd DGESDD
-  #define arma_cgesdd CGESDD
-  #define arma_zgesdd ZGESDD
   
   #define arma_sgesv  SGESV
   #define arma_dgesv  DGESV
@@ -244,18 +226,10 @@ extern "C"
   // eigenvector decomposition of symmetric real matrices
   void arma_fortran(arma_ssyev)(char* jobz, char* uplo, blas_int* n,  float* a, blas_int* lda,  float* w,  float* work, blas_int* lwork, blas_int* info);
   void arma_fortran(arma_dsyev)(char* jobz, char* uplo, blas_int* n, double* a, blas_int* lda, double* w, double* work, blas_int* lwork, blas_int* info);
-    
+  
   // eigenvector decomposition of hermitian matrices (complex)
   void arma_fortran(arma_cheev)(char* jobz, char* uplo, blas_int* n,   void* a, blas_int* lda,  float* w,   void* work, blas_int* lwork,  float* rwork, blas_int* info);
   void arma_fortran(arma_zheev)(char* jobz, char* uplo, blas_int* n,   void* a, blas_int* lda, double* w,   void* work, blas_int* lwork, double* rwork, blas_int* info);
-  
-  // eigenvector decomposition of symmetric real matrices by divide and conquer
-  void arma_fortran(arma_ssyevd)(char* jobz, char* uplo, blas_int* n,  float* a, blas_int* lda,  float* w,  float* work, blas_int* lwork, blas_int* iwork, blas_int* liwork, blas_int* info);
-  void arma_fortran(arma_dsyevd)(char* jobz, char* uplo, blas_int* n, double* a, blas_int* lda, double* w, double* work, blas_int* lwork, blas_int* iwork, blas_int* liwork, blas_int* info);
-  
-  // eigenvector decomposition of hermitian matrices (complex) by divide and conquer
-  void arma_fortran(arma_cheevd)(char* jobz, char* uplo, blas_int* n,   void* a, blas_int* lda,  float* w,   void* work, blas_int* lwork,  float* rwork, blas_int* lrwork, blas_int* iwork, blas_int* liwork, blas_int* info);
-  void arma_fortran(arma_zheevd)(char* jobz, char* uplo, blas_int* n,   void* a, blas_int* lda, double* w,   void* work, blas_int* lwork, double* rwork, blas_int* lrwork, blas_int* iwork, blas_int* liwork, blas_int* info);
   
   // eigenvector decomposition of general real matrices
   void arma_fortran(arma_sgeev)(char* jobvl, char* jobvr, blas_int* n,  float* a, blas_int* lda,  float* wr,  float* wi,  float* vl, blas_int* ldvl,  float* vr, blas_int* ldvr,  float* work, blas_int* lwork, blas_int* info);
@@ -298,14 +272,6 @@ extern "C"
   // SVD (complex matrices)
   void arma_fortran(arma_cgesvd)(char* jobu, char* jobvt, blas_int* m, blas_int* n, void*   a, blas_int* lda, float*  s, void*   u, blas_int* ldu, void*   vt, blas_int* ldvt, void*   work, blas_int* lwork, float*  rwork, blas_int* info);
   void arma_fortran(arma_zgesvd)(char* jobu, char* jobvt, blas_int* m, blas_int* n, void*   a, blas_int* lda, double* s, void*   u, blas_int* ldu, void*   vt, blas_int* ldvt, void*   work, blas_int* lwork, double* rwork, blas_int* info);
-  
-  // SVD (real matrices) by divide and conquer
-  void arma_fortran(arma_sgesdd)(char* jobz, blas_int* m, blas_int* n, float*  a, blas_int* lda, float*  s, float*  u, blas_int* ldu, float*  vt, blas_int* ldvt, float*  work, blas_int* lwork, blas_int* iwork, blas_int* info);
-  void arma_fortran(arma_dgesdd)(char* jobz, blas_int* m, blas_int* n, double* a, blas_int* lda, double* s, double* u, blas_int* ldu, double* vt, blas_int* ldvt, double* work, blas_int* lwork, blas_int* iwork, blas_int* info);
-  
-  // SVD (complex matrices) by divide and conquer
-  void arma_fortran(arma_cgesdd)(char* jobz, blas_int* m, blas_int* n, void* a, blas_int* lda, float*  s, void* u, blas_int* ldu, void* vt, blas_int* ldvt, void* work, blas_int* lwork, float*  rwork, blas_int* iwork, blas_int* info);
-  void arma_fortran(arma_zgesdd)(char* jobz, blas_int* m, blas_int* n, void* a, blas_int* lda, double* s, void* u, blas_int* ldu, void* vt, blas_int* ldvt, void* work, blas_int* lwork, double* rwork, blas_int* iwork, blas_int* info);
   
   // solve system of linear equations, using LU decomposition
   void arma_fortran(arma_sgesv)(blas_int* n, blas_int* nrhs, float*  a, blas_int* lda, blas_int* ipiv, float*  b, blas_int* ldb, blas_int* info);

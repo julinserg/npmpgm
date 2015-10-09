@@ -1,10 +1,15 @@
-// Copyright (C) 2009-2012 NICTA (www.nicta.com.au)
-// Copyright (C) 2009-2012 Conrad Sanderson
+// Copyright (C) 2009-2011 NICTA (www.nicta.com.au)
+// Copyright (C) 2009-2011 Conrad Sanderson
 // Copyright (C) 2009-2010 Dimitrios Bouzas
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup glue_cor
@@ -63,7 +68,7 @@ glue_cor::direct_cor(Mat<eT>& out, const Mat<eT>& A, const Mat<eT>& B, const uwo
     }
   else
     {
-    arma_debug_assert_mul_size(A, B, true, false, "cor()");
+    arma_debug_assert_same_size(A, B, "cor()");
     
     const uword N = A.n_rows;
     const eT norm_val = (norm_type == 0) ? ( (N > 1) ? eT(N-1) : eT(1) ) : eT(N);
@@ -130,7 +135,7 @@ glue_cor::direct_cor(Mat< std::complex<T> >& out, const Mat< std::complex<T> >& 
     }
   else
     {
-    arma_debug_assert_mul_size(A, B, true, false, "cor()");
+    arma_debug_assert_same_size(A, B, "cor()");
     
     const uword N = A.n_rows;
     const eT norm_val = (norm_type == 0) ? ( (N > 1) ? eT(N-1) : eT(1) ) : eT(N);

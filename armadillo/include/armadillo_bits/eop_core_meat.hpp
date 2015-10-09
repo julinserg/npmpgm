@@ -1,9 +1,14 @@
-// Copyright (C) 2010-2013 NICTA (www.nicta.com.au)
-// Copyright (C) 2010-2013 Conrad Sanderson
+// Copyright (C) 2010-2011 NICTA (www.nicta.com.au)
+// Copyright (C) 2010-2011 Conrad Sanderson
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup eop_core
@@ -40,35 +45,28 @@
 
 #define arma_applier_2(operatorA) \
   {\
-  if(n_rows != 1)\
+  uword count = 0;\
+  \
+  for(uword col=0; col<n_cols; ++col)\
     {\
-    for(uword col=0; col<n_cols; ++col)\
+    uword i,j;\
+    \
+    for(i=0, j=1; j<n_rows; i+=2, j+=2, count+=2)\
       {\
-      uword i,j;\
+      eT tmp_i = P.at(i,col);\
+      eT tmp_j = P.at(j,col);\
       \
-      for(i=0, j=1; j<n_rows; i+=2, j+=2)\
-        {\
-        eT tmp_i = P.at(i,col);\
-        eT tmp_j = P.at(j,col);\
-        \
-        tmp_i = eop_core<eop_type>::process(tmp_i, k);\
-        tmp_j = eop_core<eop_type>::process(tmp_j, k);\
-        \
-        *out_mem operatorA tmp_i;  out_mem++;\
-        *out_mem operatorA tmp_j;  out_mem++;\
-        }\
+      tmp_i = eop_core<eop_type>::process(tmp_i, k);\
+      tmp_j = eop_core<eop_type>::process(tmp_j, k);\
       \
-      if(i < n_rows)\
-        {\
-        *out_mem operatorA eop_core<eop_type>::process(P.at(i,col), k);  out_mem++;\
-        }\
+      out_mem[count  ] operatorA tmp_i;\
+      out_mem[count+1] operatorA tmp_j;\
       }\
-    }\
-  else\
-    {\
-    for(uword count=0; count < n_cols; ++count)\
+    \
+    if(i < n_rows)\
       {\
-      out_mem[count] operatorA eop_core<eop_type>::process(P.at(0,count), k);\
+      out_mem[count] operatorA eop_core<eop_type>::process(P.at(i,col), k);\
+      ++count;\
       }\
     }\
   }
@@ -77,13 +75,15 @@
 
 #define arma_applier_3(operatorA) \
   {\
+  uword count = 0;\
+  \
   for(uword slice=0; slice<n_slices; ++slice)\
     {\
     for(uword col=0; col<n_cols; ++col)\
       {\
       uword i,j;\
       \
-      for(i=0, j=1; j<n_rows; i+=2, j+=2)\
+      for(i=0, j=1; j<n_rows; i+=2, j+=2, count+=2)\
         {\
         eT tmp_i = P.at(i,col,slice);\
         eT tmp_j = P.at(j,col,slice);\
@@ -91,13 +91,14 @@
         tmp_i = eop_core<eop_type>::process(tmp_i, k);\
         tmp_j = eop_core<eop_type>::process(tmp_j, k);\
         \
-        *out_mem operatorA tmp_i; out_mem++; \
-        *out_mem operatorA tmp_j; out_mem++; \
+        out_mem[count  ] operatorA tmp_i;\
+        out_mem[count+1] operatorA tmp_j;\
         }\
       \
       if(i < n_rows)\
         {\
-        *out_mem operatorA eop_core<eop_type>::process(P.at(i,col,slice), k); out_mem++; \
+        out_mem[count] operatorA eop_core<eop_type>::process(P.at(i,col,slice), k);\
+        ++count;\
         }\
       }\
     }\
@@ -121,6 +122,10 @@ eop_core<eop_type>::apply(Mat<typename T1::elem_type>& out, const eOp<T1, eop_ty
   
   typedef typename T1::elem_type eT;
   
+  const uword n_rows = out.n_rows;
+  const uword n_cols = out.n_cols;
+  const uword n_elem = out.n_elem;
+  
   // NOTE: we're assuming that the matrix has already been set to the correct size and there is no aliasing;
   // size setting and alias checking is done by either the Mat contructor or operator=()
   
@@ -129,18 +134,12 @@ eop_core<eop_type>::apply(Mat<typename T1::elem_type>& out, const eOp<T1, eop_ty
   
   if(Proxy<T1>::prefer_at_accessor == false)
     {
-    // for fixed-sized vectors with n_elem >= 6, using x.get_n_elem() directly can cause a mis-optimisation (slowdown) of the loop under GCC 4.4
-    const uword n_elem = (Proxy<T1>::is_fixed) ? ( (x.get_n_elem() <= 4) ? x.get_n_elem() : out.n_elem ) : out.n_elem;
-    
     typename Proxy<T1>::ea_type P = x.P.get_ea();
     
     arma_applier_1(=);
     }
   else
     {
-    const uword n_rows = x.get_n_rows();
-    const uword n_cols = x.get_n_cols();
-    
     const Proxy<T1>& P = x.P;
     
     arma_applier_2(=);
@@ -165,14 +164,13 @@ eop_core<eop_type>::apply_inplace_plus(Mat<typename T1::elem_type>& out, const e
   
   arma_debug_assert_same_size(out.n_rows, out.n_cols, n_rows, n_cols, "addition");
   
-  const eT  k       = x.aux;
-        eT* out_mem = out.memptr();
+        eT*   out_mem = out.memptr();
+  const uword n_elem  = out.n_elem;
+  
+  const eT k = x.aux;
   
   if(Proxy<T1>::prefer_at_accessor == false)
     {
-    // for fixed-sized vectors with n_elem >= 6, using x.get_n_elem() directly can cause a mis-optimisation (slowdown) of the loop under GCC 4.4
-    const uword n_elem = (Proxy<T1>::is_fixed) ? ( (x.get_n_elem() <= 4) ? x.get_n_elem() : out.n_elem ) : out.n_elem;
-    
     typename Proxy<T1>::ea_type P = x.P.get_ea();
     
     arma_applier_1(+=);
@@ -203,14 +201,13 @@ eop_core<eop_type>::apply_inplace_minus(Mat<typename T1::elem_type>& out, const 
   
   arma_debug_assert_same_size(out.n_rows, out.n_cols, n_rows, n_cols, "subtraction");
   
-  const eT  k       = x.aux;
-        eT* out_mem = out.memptr();
+        eT*   out_mem = out.memptr();
+  const uword n_elem  = out.n_elem;
+  
+  const eT k = x.aux;
   
   if(Proxy<T1>::prefer_at_accessor == false)
     {
-    // for fixed-sized vectors with n_elem >= 6, using x.get_n_elem() directly can cause a mis-optimisation (slowdown) of the loop under GCC 4.4
-    const uword n_elem = (Proxy<T1>::is_fixed) ? ( (x.get_n_elem() <= 4) ? x.get_n_elem() : out.n_elem ) : out.n_elem;
-    
     typename Proxy<T1>::ea_type P = x.P.get_ea();
     
     arma_applier_1(-=);
@@ -241,14 +238,13 @@ eop_core<eop_type>::apply_inplace_schur(Mat<typename T1::elem_type>& out, const 
   
   arma_debug_assert_same_size(out.n_rows, out.n_cols, n_rows, n_cols, "element-wise multiplication");
   
-  const eT  k       = x.aux;
-        eT* out_mem = out.memptr();
+        eT*   out_mem = out.memptr();
+  const uword n_elem  = out.n_elem;
+  
+  const eT k = x.aux;
   
   if(Proxy<T1>::prefer_at_accessor == false)
     {
-    // for fixed-sized vectors with n_elem >= 6, using x.get_n_elem() directly can cause a mis-optimisation (slowdown) of the loop under GCC 4.4
-    const uword n_elem = (Proxy<T1>::is_fixed) ? ( (x.get_n_elem() <= 4) ? x.get_n_elem() : out.n_elem ) : out.n_elem;
-    
     typename Proxy<T1>::ea_type P = x.P.get_ea();
     
     arma_applier_1(*=);
@@ -279,14 +275,13 @@ eop_core<eop_type>::apply_inplace_div(Mat<typename T1::elem_type>& out, const eO
   
   arma_debug_assert_same_size(out.n_rows, out.n_cols, n_rows, n_cols, "element-wise division");
   
-  const eT  k       = x.aux;
         eT* out_mem = out.memptr();
+  const uword n_elem  = out.n_elem;
+  
+  const eT k = x.aux;
   
   if(Proxy<T1>::prefer_at_accessor == false)
     {
-    // for fixed-sized vectors with n_elem >= 6, using x.get_n_elem() directly can cause a mis-optimisation (slowdown) of the loop under GCC 4.4
-    const uword n_elem = (Proxy<T1>::is_fixed) ? ( (x.get_n_elem() <= 4) ? x.get_n_elem() : out.n_elem ) : out.n_elem;
-    
     typename Proxy<T1>::ea_type P = x.P.get_ea();
     
     arma_applier_1(/=);
@@ -317,6 +312,11 @@ eop_core<eop_type>::apply(Cube<typename T1::elem_type>& out, const eOpCube<T1, e
   
   typedef typename T1::elem_type eT;
   
+  const uword n_rows   = out.n_rows;
+  const uword n_cols   = out.n_cols;
+  const uword n_slices = out.n_slices;
+  const uword n_elem   = out.n_elem;
+  
   // NOTE: we're assuming that the matrix has already been set to the correct size and there is no aliasing;
   // size setting and alias checking is done by either the Mat contructor or operator=()
   
@@ -325,18 +325,12 @@ eop_core<eop_type>::apply(Cube<typename T1::elem_type>& out, const eOpCube<T1, e
   
   if(ProxyCube<T1>::prefer_at_accessor == false)
     {
-    const uword n_elem = out.n_elem;
-    
     typename ProxyCube<T1>::ea_type P = x.P.get_ea();
     
     arma_applier_1(=);
     }
   else
     {
-    const uword n_rows   = x.get_n_rows();
-    const uword n_cols   = x.get_n_cols();
-    const uword n_slices = x.get_n_slices();
-    
     const ProxyCube<T1>& P = x.P;
     
     arma_applier_3(=);
@@ -362,15 +356,15 @@ eop_core<eop_type>::apply_inplace_plus(Cube<typename T1::elem_type>& out, const 
   
   arma_debug_assert_same_size(out.n_rows, out.n_cols, out.n_slices, n_rows, n_cols, n_slices, "addition");
   
-  const eT  k       = x.aux;
-        eT* out_mem = out.memptr();
+        eT*   out_mem = out.memptr();
+  const uword n_elem  = out.n_elem;
+  
+  const eT k = x.aux;
   
   if(ProxyCube<T1>::prefer_at_accessor == false)
     {
-    const uword n_elem = out.n_elem;
-    
     typename ProxyCube<T1>::ea_type P = x.P.get_ea();
-    
+  
     arma_applier_1(+=);
     }
   else
@@ -400,15 +394,15 @@ eop_core<eop_type>::apply_inplace_minus(Cube<typename T1::elem_type>& out, const
   
   arma_debug_assert_same_size(out.n_rows, out.n_cols, out.n_slices, n_rows, n_cols, n_slices, "subtraction");
   
-  const eT  k       = x.aux;
-        eT* out_mem = out.memptr();
+        eT*   out_mem = out.memptr();
+  const uword n_elem  = out.n_elem;
+  
+  const eT k = x.aux;
   
   if(ProxyCube<T1>::prefer_at_accessor == false)
     {
-    const uword n_elem = out.n_elem;
-    
     typename ProxyCube<T1>::ea_type P = x.P.get_ea();
-    
+  
     arma_applier_1(-=);
     }
   else
@@ -438,15 +432,15 @@ eop_core<eop_type>::apply_inplace_schur(Cube<typename T1::elem_type>& out, const
   
   arma_debug_assert_same_size(out.n_rows, out.n_cols, out.n_slices, n_rows, n_cols, n_slices, "element-wise multiplication");
   
-  const eT  k       = x.aux;
-        eT* out_mem = out.memptr();
+        eT*   out_mem = out.memptr();
+  const uword n_elem  = out.n_elem;
+  
+  const eT k = x.aux;
   
   if(ProxyCube<T1>::prefer_at_accessor == false)
     {
-    const uword n_elem = out.n_elem;
-    
     typename ProxyCube<T1>::ea_type P = x.P.get_ea();
-    
+  
     arma_applier_1(*=);
     }
   else
@@ -476,15 +470,15 @@ eop_core<eop_type>::apply_inplace_div(Cube<typename T1::elem_type>& out, const e
   
   arma_debug_assert_same_size(out.n_rows, out.n_cols, out.n_slices, n_rows, n_cols, n_slices, "element-wise division");
   
-  const eT  k       = x.aux;
         eT* out_mem = out.memptr();
+  const uword n_elem  = out.n_elem;
+    
+  const eT k = x.aux;
   
   if(ProxyCube<T1>::prefer_at_accessor == false)
     {
-    const uword n_elem = out.n_elem;
-    
     typename ProxyCube<T1>::ea_type P = x.P.get_ea();
-    
+  
     arma_applier_1(/=);
     }
   else
@@ -508,8 +502,11 @@ arma_hot
 arma_pure
 arma_inline
 eT
-eop_core<eop_type>::process(const eT, const eT)
+eop_core<eop_type>::process(const eT val, const eT k)
   {
+  arma_ignore(val);
+  arma_ignore(k);
+  
   arma_stop("eop_core::process(): unhandled eop_type");
   return eT(0);
   }
@@ -621,8 +618,6 @@ eop_core<eop_floor            >::process(const eT val, const eT  ) { return eop_
 template<> template<typename eT> arma_hot arma_pure arma_inline eT
 eop_core<eop_ceil             >::process(const eT val, const eT  ) { return eop_aux::ceil(val);       }
 
-template<> template<typename eT> arma_hot arma_pure arma_inline eT
-eop_core<eop_round            >::process(const eT val, const eT  ) { return eop_aux::round(val);      }
 
 
 #undef arma_applier_1

@@ -1,9 +1,14 @@
-// Copyright (C) 2008-2013 NICTA (www.nicta.com.au)
-// Copyright (C) 2008-2013 Conrad Sanderson
+// Copyright (C) 2008-2011 NICTA (www.nicta.com.au)
+// Copyright (C) 2008-2011 Conrad Sanderson
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup traits
@@ -21,77 +26,21 @@ struct get_pod_type< std::complex<T2> >
 
 
 template<typename T>
-struct is_Mat_fixed_only
-  {
-  typedef char yes[1];
-  typedef char no[2];
-  
-  template<typename X> static yes& check(typename X::Mat_fixed_type*);
-  template<typename>   static no&  check(...);
-  
-  static const bool value = ( sizeof(check<T>(0)) == sizeof(yes) );
-  };
-
-
-
-template<typename T>
-struct is_Row_fixed_only
-  {
-  typedef char yes[1];
-  typedef char no[2];
-  
-  template<typename X> static yes& check(typename X::Row_fixed_type*);
-  template<typename>   static no&  check(...);
-  
-  static const bool value = ( sizeof(check<T>(0)) == sizeof(yes) );
-  };
-
-
-
-template<typename T>
-struct is_Col_fixed_only
-  {
-  typedef char yes[1];
-  typedef char no[2];
-  
-  template<typename X> static yes& check(typename X::Col_fixed_type*);
-  template<typename>   static no&  check(...);
-  
-  static const bool value = ( sizeof(check<T>(0)) == sizeof(yes) );
-  };
-
-
-
-template<typename T>
-struct is_Mat_fixed
-  { static const bool value = ( is_Mat_fixed_only<T>::value || is_Row_fixed_only<T>::value || is_Col_fixed_only<T>::value ); };
-
-
-
-template<typename T>
 struct is_Mat_only
-  { static const bool value = is_Mat_fixed_only<T>::value; };
+  { static const bool value = false; };
 
 template<typename eT>
 struct is_Mat_only< Mat<eT> >
-  { static const bool value = true; };
-
-template<typename eT>
-struct is_Mat_only< const Mat<eT> >
   { static const bool value = true; };
 
 
 
 template<typename T>
 struct is_Mat
-  { static const bool value = ( is_Mat_fixed_only<T>::value || is_Row_fixed_only<T>::value || is_Col_fixed_only<T>::value ); };
+  { static const bool value = false; };
 
 template<typename eT>
 struct is_Mat< Mat<eT> >
-  { static const bool value = true; };
-
-template<typename eT>
-struct is_Mat< const Mat<eT> >
   { static const bool value = true; };
 
 template<typename eT>
@@ -99,58 +48,32 @@ struct is_Mat< Row<eT> >
   { static const bool value = true; };
 
 template<typename eT>
-struct is_Mat< const Row<eT> >
-  { static const bool value = true; };
-
-template<typename eT>
 struct is_Mat< Col<eT> >
-  { static const bool value = true; };
-
-template<typename eT>
-struct is_Mat< const Col<eT> >
   { static const bool value = true; };
 
 
 
 template<typename T>
 struct is_Row
-  { static const bool value = is_Row_fixed_only<T>::value; };
+  { static const bool value = false; };
 
 template<typename eT>
 struct is_Row< Row<eT> >
-  { static const bool value = true; };
-
-template<typename eT>
-struct is_Row< const Row<eT> >
   { static const bool value = true; };
 
 
 
 template<typename T>
 struct is_Col
-  { static const bool value = is_Col_fixed_only<T>::value; };
+  { static const bool value = false; };
 
 template<typename eT>
 struct is_Col< Col<eT> >
   { static const bool value = true; };
 
-template<typename eT>
-struct is_Col< const Col<eT> >
-  { static const bool value = true; };
 
 
 
-template<typename T>
-struct is_diagview
-  { static const bool value = false; };
-
-template<typename eT>
-struct is_diagview< diagview<eT> >
-  { static const bool value = true; };
-
-template<typename eT>
-struct is_diagview< const diagview<eT> >
-  { static const bool value = true; };
 
 
 template<typename T>
@@ -161,62 +84,14 @@ template<typename eT>
 struct is_subview< subview<eT> >
   { static const bool value = true; };
 
-template<typename eT>
-struct is_subview< const subview<eT> >
-  { static const bool value = true; };
-
 
 template<typename T>
-struct is_subview_row
+struct is_diagview
   { static const bool value = false; };
 
 template<typename eT>
-struct is_subview_row< subview_row<eT> >
+struct is_diagview< diagview<eT> >
   { static const bool value = true; };
-
-template<typename eT>
-struct is_subview_row< const subview_row<eT> >
-  { static const bool value = true; };
-
-
-template<typename T>
-struct is_subview_col
-  { static const bool value = false; };
-
-template<typename eT>
-struct is_subview_col< subview_col<eT> >
-  { static const bool value = true; };
-
-template<typename eT>
-struct is_subview_col< const subview_col<eT> >
-  { static const bool value = true; };
-
-
-template<typename T>
-struct is_subview_elem1
-  { static const bool value = false; };
-
-template<typename eT, typename T1>
-struct is_subview_elem1< subview_elem1<eT, T1> >
-  { static const bool value = true; };
-
-template<typename eT, typename T1>
-struct is_subview_elem1< const subview_elem1<eT, T1> >
-  { static const bool value = true; };
-
-
-template<typename T>
-struct is_subview_elem2
-  { static const bool value = false; };
-
-template<typename eT, typename T1, typename T2>
-struct is_subview_elem2< subview_elem2<eT, T1, T2> >
-  { static const bool value = true; };
-
-template<typename eT, typename T1, typename T2>
-struct is_subview_elem2< const subview_elem2<eT, T1, T2> >
-  { static const bool value = true; };
-
 
 
 //
@@ -252,14 +127,10 @@ template<typename T>
 struct is_Gen
   { static const bool value = false; };
  
-template<typename T1, typename gen_type>
-struct is_Gen< Gen<T1,gen_type> >
+template<typename eT, typename gen_type>
+struct is_Gen< Gen<eT,gen_type> >
   { static const bool value = true; };
  
-template<typename T1, typename gen_type>
-struct is_Gen< const Gen<T1,gen_type> >
-  { static const bool value = true; };
-
 
 template<typename T>
 struct is_Op
@@ -269,9 +140,6 @@ template<typename T1, typename op_type>
 struct is_Op< Op<T1,op_type> >
   { static const bool value = true; };
  
-template<typename T1, typename op_type>
-struct is_Op< const Op<T1,op_type> >
-  { static const bool value = true; };
 
 template<typename T>
 struct is_eOp
@@ -281,10 +149,6 @@ template<typename T1, typename eop_type>
 struct is_eOp< eOp<T1,eop_type> >
   { static const bool value = true; };
  
-template<typename T1, typename eop_type>
-struct is_eOp< const eOp<T1,eop_type> >
-  { static const bool value = true; };
-
 
 template<typename T>
 struct is_mtOp
@@ -294,10 +158,6 @@ template<typename eT, typename T1, typename op_type>
 struct is_mtOp< mtOp<eT, T1, op_type> >
   { static const bool value = true; };
  
-template<typename eT, typename T1, typename op_type>
-struct is_mtOp< const mtOp<eT, T1, op_type> >
-  { static const bool value = true; };
-
 
 template<typename T>
 struct is_Glue
@@ -305,10 +165,6 @@ struct is_Glue
  
 template<typename T1, typename T2, typename glue_type>
 struct is_Glue< Glue<T1,T2,glue_type> >
-  { static const bool value = true; };
-
-template<typename T1, typename T2, typename glue_type>
-struct is_Glue< const Glue<T1,T2,glue_type> >
   { static const bool value = true; };
 
 
@@ -320,10 +176,6 @@ template<typename T1, typename T2, typename eglue_type>
 struct is_eGlue< eGlue<T1,T2,eglue_type> >
   { static const bool value = true; };
 
-template<typename T1, typename T2, typename eglue_type>
-struct is_eGlue< const eGlue<T1,T2,eglue_type> >
-  { static const bool value = true; };
-
 
 template<typename T>
 struct is_mtGlue
@@ -331,10 +183,6 @@ struct is_mtGlue
  
 template<typename eT, typename T1, typename T2, typename glue_type>
 struct is_mtGlue< mtGlue<eT, T1, T2, glue_type> >
-  { static const bool value = true; };
-
-template<typename eT, typename T1, typename T2, typename glue_type>
-struct is_mtGlue< const mtGlue<eT, T1, T2, glue_type> >
   { static const bool value = true; };
 
 
@@ -350,10 +198,6 @@ template<typename T1, typename T2>
 struct is_glue_times< Glue<T1,T2,glue_times> >
   { static const bool value = true; };
 
-template<typename T1, typename T2>
-struct is_glue_times< const Glue<T1,T2,glue_times> >
-  { static const bool value = true; };
-
 
 template<typename T>
 struct is_glue_times_diag
@@ -363,10 +207,6 @@ template<typename T1, typename T2>
 struct is_glue_times_diag< Glue<T1,T2,glue_times_diag> >
   { static const bool value = true; };
 
-template<typename T1, typename T2>
-struct is_glue_times_diag< const Glue<T1,T2,glue_times_diag> >
-  { static const bool value = true; };
-
 
 template<typename T>
 struct is_op_diagmat
@@ -374,10 +214,6 @@ struct is_op_diagmat
  
 template<typename T1>
 struct is_op_diagmat< Op<T1,op_diagmat> >
-  { static const bool value = true; };
-
-template<typename T1>
-struct is_op_diagmat< const Op<T1,op_diagmat> >
   { static const bool value = true; };
 
 
@@ -505,65 +341,6 @@ struct is_op_rel< mtOp<out_eT, T1, op_rel_noteq> >
 
 
 
-template<typename T>
-struct is_basevec
-  { static const bool value = ( is_Row_fixed_only<T>::value || is_Col_fixed_only<T>::value ); };
-
-template<typename eT>
-struct is_basevec< Row<eT> >
-  { static const bool value = true; };
-
-template<typename eT>
-struct is_basevec< const Row<eT> >
-  { static const bool value = true; };
-
-template<typename eT>
-struct is_basevec< Col<eT> >
-  { static const bool value = true; };
-
-template<typename eT>
-struct is_basevec< const Col<eT> >
-  { static const bool value = true; };
-  
-template<typename eT>
-struct is_basevec< subview_row<eT> >
-  { static const bool value = true; };
-
-template<typename eT>
-struct is_basevec< const subview_row<eT> >
-  { static const bool value = true; };
-
-template<typename eT>
-struct is_basevec< subview_col<eT> >
-  { static const bool value = true; };
-
-template<typename eT>
-struct is_basevec< const subview_col<eT> >
-  { static const bool value = true; };
-
-template<typename eT>
-struct is_basevec< diagview<eT> >
-  { static const bool value = true; };
-
-template<typename eT>
-struct is_basevec< const diagview<eT> >
-  { static const bool value = true; };
-  
-template<typename eT, typename T1>
-struct is_basevec< subview_elem1<eT,T1> >
-  { static const bool value = true; };
-
-template<typename eT, typename T1>
-struct is_basevec< const subview_elem1<eT,T1> >
-  { static const bool value = true; };
-
-
-//
-//
-//
-
-
-
 template<typename T1>
 struct is_arma_type
   {
@@ -571,17 +348,13 @@ struct is_arma_type
   =  is_Mat<T1>::value
   || is_Gen<T1>::value
   || is_Op<T1>::value
-  || is_Glue<T1>::value
   || is_eOp<T1>::value
-  || is_eGlue<T1>::value
   || is_mtOp<T1>::value
+  || is_Glue<T1>::value
+  || is_eGlue<T1>::value
   || is_mtGlue<T1>::value
-  || is_diagview<T1>::value
   || is_subview<T1>::value
-  || is_subview_row<T1>::value
-  || is_subview_col<T1>::value
-  || is_subview_elem1<T1>::value
-  || is_subview_elem2<T1>::value
+  || is_diagview<T1>::value
   ;
   };
 
@@ -600,101 +373,6 @@ struct is_arma_cube_type
   || is_eGlueCube<T1>::value
   || is_mtGlueCube<T1>::value
   || is_subview_cube<T1>::value
-  ;
-  };
-
-
-
-//
-//
-//
-
-
-
-template<typename T>
-struct is_SpMat
-  { static const bool value = false; };
-
-template<typename eT>
-struct is_SpMat< SpMat<eT> >
-  { static const bool value = true; };
-
-template<typename eT>
-struct is_SpMat< SpCol<eT> >
-  { static const bool value = true; };
-
-template<typename eT>
-struct is_SpMat< SpRow<eT> >
-  { static const bool value = true; };
-
-
-
-template<typename T>
-struct is_SpRow
-  { static const bool value = false; };
-
-template<typename eT>
-struct is_SpRow< SpRow<eT> >
-  { static const bool value = true; };
-
-
-
-template<typename T>
-struct is_SpCol
-  { static const bool value = false; };
-
-template<typename eT>
-struct is_SpCol< SpCol<eT> >
-  { static const bool value = true; };
-
-
-
-template<typename T>
-struct is_SpSubview
-  { static const bool value = false; };
-
-template<typename eT>
-struct is_SpSubview< SpSubview<eT> >
-  { static const bool value = true; };
-
-
-template<typename T>
-struct is_SpOp
-  { static const bool value = false; };
- 
-template<typename T1, typename op_type>
-struct is_SpOp< SpOp<T1,op_type> >
-  { static const bool value = true; };
-
-
-template<typename T>
-struct is_SpGlue
-  { static const bool value = false; };
- 
-template<typename T1, typename T2, typename glue_type>
-struct is_SpGlue< SpGlue<T1,T2,glue_type> >
-  { static const bool value = true; };
- 
-
-template<typename T>
-struct is_mtSpOp
-  { static const bool value = false; };
- 
-template<typename eT, typename T1, typename spop_type>
-struct is_mtSpOp< mtSpOp<eT, T1, spop_type> >
-  { static const bool value = true; };
- 
-
-
-template<typename T1>
-struct is_arma_sparse_type
-  {
-  static const bool value
-  =  is_SpMat<T1>::value
-  || is_SpSubview<T1>::value
-  || is_SpOp<T1>::value
-  || is_SpGlue<T1>::value
-  || is_mtSpOp<T1>::value
   ;
   };
 
@@ -781,7 +459,7 @@ struct is_s32<s32>
 
 
 
-#if defined(ARMA_USE_U64S64)
+#if defined(ARMA_64BIT_WORD)
   template<typename T1>
   struct is_u64
     { static const bool value = false; };
@@ -799,66 +477,6 @@ struct is_s32<s32>
   struct is_s64<s64>
     { static const bool value = true; };
 #endif
-
-
-
-template<typename T1>
-struct is_ulng_t
-  { static const bool value = false; };
-
-template<>
-struct is_ulng_t<ulng_t>
-  { static const bool value = true; };
-
-
-
-template<typename T1>
-struct is_slng_t
-  { static const bool value = false; };
-
-template<>
-struct is_slng_t<slng_t>
-  { static const bool value = true; };
-
-
-
-template<typename T1>
-struct is_ulng_t_32
-  { static const bool value = false; };
-
-template<>
-struct is_ulng_t_32<ulng_t>
-  { static const bool value = (sizeof(ulng_t) == 4); };
-
-
-
-template<typename T1>
-struct is_slng_t_32
-  { static const bool value = false; };
-
-template<>
-struct is_slng_t_32<slng_t>
-  { static const bool value = (sizeof(slng_t) == 4); };
-
-
-
-template<typename T1>
-struct is_ulng_t_64
-  { static const bool value = false; };
-
-template<>
-struct is_ulng_t_64<ulng_t>
-  { static const bool value = (sizeof(ulng_t) == 8); };
-
-
-
-template<typename T1>
-struct is_slng_t_64
-  { static const bool value = false; };
-
-template<>
-struct is_slng_t_64<slng_t>
-  { static const bool value = (sizeof(slng_t) == 8); };
 
 
 
@@ -903,31 +521,6 @@ struct is_double<double>
 
 
 template<typename T1>
-struct is_real
-  { static const bool value = false; };
-
-template<>
-struct is_real<float>
-  { static const bool value = true; };
-  
-template<>
-struct is_real<double>
-  { static const bool value = true; };
-
-
-
-
-template<typename T1>
-struct is_not_complex
-  { static const bool value = true; };
-
-template<typename eT>
-struct is_not_complex< std::complex<eT> >
-  { static const bool value = false; };
-
-
-
-template<typename T1>
 struct is_complex
   { static const bool value = false; };
 
@@ -956,19 +549,6 @@ template<>
 struct is_complex_double< std::complex<double> >
   { static const bool value = true; };
 
-
-
-template<typename T1>
-struct is_complex_strict
-  { static const bool value = false; };
-
-template<>
-struct is_complex_strict< std::complex<float> >
-  { static const bool value = true; };
-
-template<>
-struct is_complex_strict< std::complex<double> >
-  { static const bool value = true; };
 
 
 
@@ -1014,13 +594,9 @@ struct is_supported_elem_type
     is_s16<T1>::value ||
     is_u32<T1>::value ||
     is_s32<T1>::value ||
-#if defined(ARMA_USE_U64S64)
+#if defined(ARMA_64BIT_WORD)
     is_u64<T1>::value ||
     is_s64<T1>::value ||
-#endif
-#if defined(ARMA_ALLOW_LONG)
-    is_ulng_t<T1>::value ||
-    is_slng_t<T1>::value ||
 #endif
     is_float<T1>::value ||
     is_double<T1>::value ||
@@ -1049,14 +625,11 @@ struct is_signed
   };
 
 
-template<> struct is_signed<u8>     { static const bool value = false; };
-template<> struct is_signed<u16>    { static const bool value = false; };
-template<> struct is_signed<u32>    { static const bool value = false; };
-#if defined(ARMA_USE_U64S64)
-template<> struct is_signed<u64>    { static const bool value = false; };
-#endif
-#if defined(ARMA_ALLOW_LONG)
-template<> struct is_signed<ulng_t> { static const bool value = false; };
+template<> struct is_signed<u8>  { static const bool value = false; };
+template<> struct is_signed<u16> { static const bool value = false; };
+template<> struct is_signed<u32> { static const bool value = false; };
+#if defined(ARMA_64BIT_WORD)
+template<> struct is_signed<u64> { static const bool value = false; };
 #endif
 
 
@@ -1095,96 +668,5 @@ struct force_different_type<T1,T1>
   };
   
   
-
-//
-
-
-template<typename T1>
-struct resolves_to_vector_default { static const bool value = false;                    };
-
-template<typename T1>
-struct resolves_to_vector_test    { static const bool value = T1::is_col || T1::is_row; };
-
-
-template<typename T1, bool condition>
-struct resolves_to_vector_redirect {};
-
-template<typename T1>
-struct resolves_to_vector_redirect<T1, false> { typedef resolves_to_vector_default<T1> result; };
-
-template<typename T1>
-struct resolves_to_vector_redirect<T1, true>  { typedef resolves_to_vector_test<T1>    result; };
-
-
-template<typename T1>
-struct resolves_to_vector : public resolves_to_vector_redirect<T1, is_arma_type<T1>::value>::result {};
-
-template<typename T1>
-struct resolves_to_sparse_vector : public resolves_to_vector_redirect<T1, is_arma_sparse_type<T1>::value>::result {};
-
-
-
-template<typename glue_type> struct is_glue_mixed_times                   { static const bool value = false; };
-template<>                   struct is_glue_mixed_times<glue_mixed_times> { static const bool value = true;  };
-
-
-
-template<typename glue_type> struct is_glue_mixed_elem { static const bool value = false; };
-
-template<>                   struct is_glue_mixed_elem<glue_mixed_plus>  { static const bool value = true;  };
-template<>                   struct is_glue_mixed_elem<glue_mixed_minus> { static const bool value = true;  };
-template<>                   struct is_glue_mixed_elem<glue_mixed_div>   { static const bool value = true;  };
-template<>                   struct is_glue_mixed_elem<glue_mixed_schur> { static const bool value = true;  };
-
-template<>                   struct is_glue_mixed_elem<glue_rel_lt>    { static const bool value = true; };
-template<>                   struct is_glue_mixed_elem<glue_rel_gt>    { static const bool value = true; };
-template<>                   struct is_glue_mixed_elem<glue_rel_lteq>  { static const bool value = true; };
-template<>                   struct is_glue_mixed_elem<glue_rel_gteq>  { static const bool value = true; };
-template<>                   struct is_glue_mixed_elem<glue_rel_eq>    { static const bool value = true; };
-template<>                   struct is_glue_mixed_elem<glue_rel_noteq> { static const bool value = true; };
-
-
-
-template<typename op_type> struct is_op_mixed_elem { static const bool value = false; };
-
-template<>                 struct is_op_mixed_elem<op_cx_scalar_times>      { static const bool value = true; };
-template<>                 struct is_op_mixed_elem<op_cx_scalar_plus>       { static const bool value = true; };
-template<>                 struct is_op_mixed_elem<op_cx_scalar_minus_pre>  { static const bool value = true; };
-template<>                 struct is_op_mixed_elem<op_cx_scalar_minus_post> { static const bool value = true; };
-template<>                 struct is_op_mixed_elem<op_cx_scalar_div_pre>    { static const bool value = true; };
-template<>                 struct is_op_mixed_elem<op_cx_scalar_div_post>   { static const bool value = true; };
-
-template<>                 struct is_op_mixed_elem<op_rel_lt_pre>    { static const bool value = true; };
-template<>                 struct is_op_mixed_elem<op_rel_lt_post>   { static const bool value = true; };
-template<>                 struct is_op_mixed_elem<op_rel_gt_pre>    { static const bool value = true; };
-template<>                 struct is_op_mixed_elem<op_rel_gt_post>   { static const bool value = true; };
-template<>                 struct is_op_mixed_elem<op_rel_lteq_pre>  { static const bool value = true; };
-template<>                 struct is_op_mixed_elem<op_rel_lteq_post> { static const bool value = true; };
-template<>                 struct is_op_mixed_elem<op_rel_gteq_pre>  { static const bool value = true; };
-template<>                 struct is_op_mixed_elem<op_rel_gteq_post> { static const bool value = true; };
-template<>                 struct is_op_mixed_elem<op_rel_eq>        { static const bool value = true; };
-template<>                 struct is_op_mixed_elem<op_rel_noteq>     { static const bool value = true; };
-
-
-
-template<typename spop_type> struct is_spop_elem                    { static const bool value = false; };
-template<>                   struct is_spop_elem<spop_scalar_times> { static const bool value = true;  };
-
-
-template<typename spglue_type> struct is_spglue_elem                { static const bool value = false; };
-template<>                     struct is_spglue_elem<spglue_plus>   { static const bool value = true;  };
-template<>                     struct is_spglue_elem<spglue_plus2>  { static const bool value = true;  };
-template<>                     struct is_spglue_elem<spglue_minus>  { static const bool value = true;  };
-template<>                     struct is_spglue_elem<spglue_minus2> { static const bool value = true;  };
-
-
-template<typename spglue_type> struct is_spglue_times               { static const bool value = false; };
-template<>                     struct is_spglue_times<spglue_times> { static const bool value = true;  };
-
-
-template<typename spglue_type> struct is_spglue_times2               { static const bool value = false; };
-template<>                     struct is_spglue_times<spglue_times2> { static const bool value = true;  };
-
-
 
 //! @}

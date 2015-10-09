@@ -1,9 +1,14 @@
-// Copyright (C) 2010-2012 NICTA (www.nicta.com.au)
-// Copyright (C) 2010-2012 Conrad Sanderson
+// Copyright (C) 2010 NICTA (www.nicta.com.au)
+// Copyright (C) 2010 Conrad Sanderson
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup eglue_core
@@ -37,39 +42,10 @@ struct eglue_core
 
 
 
-class eglue_plus : public eglue_core<eglue_plus>
-  {
-  public:
-  
-  inline static const char* text() { return "addition"; }
-  };
-
-
-
-class eglue_minus : public eglue_core<eglue_minus>
-  {
-  public:
-  
-  inline static const char* text() { return "subtraction"; }
-  };
-
-
-
-class eglue_div : public eglue_core<eglue_div>
-  {
-  public:
-  
-  inline static const char* text() { return "element-wise division"; }
-  };
-
-
-
-class eglue_schur : public eglue_core<eglue_schur>
-  {
-  public:
-  
-  inline static const char* text() { return "element-wise multiplication"; }
-  };
+class eglue_plus;
+class eglue_minus;
+class eglue_div;
+class eglue_schur;
 
 
 

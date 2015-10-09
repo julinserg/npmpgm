@@ -1,9 +1,14 @@
-// Copyright (C) 2008-2012 NICTA (www.nicta.com.au)
-// Copyright (C) 2008-2012 Conrad Sanderson
+// Copyright (C) 2008-2011 NICTA (www.nicta.com.au)
+// Copyright (C) 2008-2011 Conrad Sanderson
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup fn_min
@@ -19,56 +24,46 @@
 template<typename T1>
 arma_inline
 const Op<T1, op_min>
-min
-  (
-  const T1& X,
-  const uword dim = 0,
-  const typename enable_if< is_arma_type<T1>::value       == true  >::result* junk1 = 0,
-  const typename enable_if< resolves_to_vector<T1>::value == false >::result* junk2 = 0
-  )
+min(const Base<typename T1::elem_type,T1>& X, const uword dim = 0)
   {
   arma_extra_debug_sigprint();
-  arma_ignore(junk1);
-  arma_ignore(junk2);
   
-  return Op<T1, op_min>(X, dim, 0);
+  return Op<T1, op_min>(X.get_ref(), dim, 0);
   }
 
 
-template<typename T1>
-arma_inline
-const Op<T1, op_min>
-min
-  (
-  const T1& X,
-  const uword dim,
-  const typename enable_if<resolves_to_vector<T1>::value == true>::result* junk = 0
-  )
-  {
-  arma_extra_debug_sigprint();
-  arma_ignore(junk);
-  
-  return Op<T1, op_min>(X, dim, 0);
-  }
-
-
-
-template<typename T1>
+//! Immediate 'find the minimum value in a row vector' operation
+template<typename eT>
 inline
 arma_warn_unused
-typename T1::elem_type
-min
-  (
-  const T1& X,
-  const arma_empty_class junk1 = arma_empty_class(),
-  const typename enable_if<resolves_to_vector<T1>::value == true>::result* junk2 = 0
-  )
+eT
+min(const Row<eT>& A)
   {
   arma_extra_debug_sigprint();
-  arma_ignore(junk1);
-  arma_ignore(junk2);
   
-  return op_min::min(X);
+  const uword A_n_elem = A.n_elem;
+  
+  arma_debug_check( (A_n_elem == 0), "min(): given object has no elements" );
+  
+  return op_min::direct_min(A.mem, A_n_elem);
+  }
+
+
+
+//! Immediate 'find the minimum value in a column vector'
+template<typename eT>
+inline
+arma_warn_unused
+eT
+min(const Col<eT>& A)
+  {
+  arma_extra_debug_sigprint();
+  
+  const uword A_n_elem = A.n_elem;
+  
+  arma_debug_check( (A_n_elem == 0), "min(): given object has no elements" );
+  
+  return op_min::direct_min(A.mem, A_n_elem);
   }
 
 
@@ -85,13 +80,22 @@ min(const Op<T1, op_min>& in)
   arma_extra_debug_sigprint();
   arma_extra_debug_print("min(): two consecutive min() calls detected");
   
-  return op_min::min(in.m);
+  typedef typename T1::elem_type eT;
+  
+  const unwrap<T1> tmp1(in.m);
+  const Mat<eT>& X = tmp1.M;
+  
+  const uword X_n_elem = X.n_elem;
+  
+  arma_debug_check( (X_n_elem == 0), "min(): given object has no elements" );
+  
+  return op_min::direct_min(X.mem, X_n_elem);
   }
 
 
 
 template<typename T1>
-arma_inline
+inline
 const Op< Op<T1, op_min>, op_min>
 min(const Op<T1, op_min>& in, const uword dim)
   {
@@ -102,74 +106,84 @@ min(const Op<T1, op_min>& in, const uword dim)
 
 
 
-template<typename T>
-arma_inline
-arma_warn_unused
-const typename arma_scalar_only<T>::result &
-min(const T& x)
-  {
-  return x;
-  }
-
-
-
-template<typename T1>
+template<typename eT>
 inline
 arma_warn_unused
-typename
-enable_if2
-  <
-  (is_arma_sparse_type<T1>::value == true) && (resolves_to_sparse_vector<T1>::value == true),
-  typename T1::elem_type
-  >::result
-min(const T1& x)
+eT
+min(const subview_row<eT>& A)
   {
   arma_extra_debug_sigprint();
   
-  return spop_min::vector_min(x);
+  arma_debug_check( (A.n_elem == 0), "min(): given object has no elements" );
+  
+  return op_min::direct_min(A);
   }
 
 
 
-template<typename T1>
+template<typename eT>
 inline
-typename
-enable_if2
-  <
-  (is_arma_sparse_type<T1>::value == true) && (resolves_to_sparse_vector<T1>::value == false),
-  const SpOp<T1, spop_min>
-  >::result
-min(const T1& X, const uword dim = 0)
+arma_warn_unused
+eT
+min(const subview_col<eT>& A)
   {
   arma_extra_debug_sigprint();
   
-  return SpOp<T1, spop_min>(X, dim, 0);
+  arma_debug_check( (A.n_elem == 0), "min(): given object has no elements" );
+  
+  return op_min::direct_min(A.colptr(0), A.n_rows);
   }
 
 
 
-template<typename T1>
+template<typename eT>
 inline
 arma_warn_unused
-typename T1::elem_type
-min(const SpOp<T1, spop_min>& X)
+eT
+min(const diagview<eT>& A)
+  {
+  arma_extra_debug_sigprint();
+  
+  arma_debug_check( (A.n_elem == 0), "min(): given object has no elements" );
+  
+  return op_min::direct_min(A);
+  }
+
+
+
+template<typename eT>
+inline
+arma_warn_unused
+eT
+min(const Op<subview<eT>, op_min>& in)
   {
   arma_extra_debug_sigprint();
   arma_extra_debug_print("min(): two consecutive min() calls detected");
   
-  return spop_min::vector_min(X.m);
+  const subview<eT>& X = in.m;
+  
+  arma_debug_check( (X.n_elem == 0), "min(): given object has no elements" );
+  
+  return op_min::direct_min(X);
   }
 
 
 
-template<typename T1>
+template<typename eT, typename T1>
 inline
-const SpOp< SpOp<T1, spop_min>, spop_min>
-min(const SpOp<T1, spop_min>& in, const uword dim)
+arma_warn_unused
+eT
+min(const subview_elem1<eT,T1>& A)
   {
   arma_extra_debug_sigprint();
   
-  return SpOp< SpOp<T1, spop_min>, spop_min>(in, dim, 0);
+  const Mat<eT> X(A);
+  
+  const uword X_n_elem = X.n_elem;
+  
+  arma_debug_check( (X_n_elem == 0), "min(): given object has no elements" );
+  
+  return op_min::direct_min(X.mem, X_n_elem);
   }
 
 

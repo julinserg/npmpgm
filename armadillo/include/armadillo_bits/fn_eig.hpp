@@ -1,11 +1,16 @@
-// Copyright (C) 2008-2012 NICTA (www.nicta.com.au)
-// Copyright (C) 2008-2012 Conrad Sanderson
+// Copyright (C) 2008-2011 NICTA (www.nicta.com.au)
+// Copyright (C) 2008-2011 Conrad Sanderson
 // Copyright (C) 2009 Edmund Highcock
 // Copyright (C) 2011 Stanislav Funiak
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup fn_eig
@@ -83,37 +88,15 @@ eig_sym
          Col<typename T1::pod_type>&     eigval,
          Mat<typename T1::elem_type>&    eigvec,
   const Base<typename T1::elem_type,T1>& X,
-  const char* method =                   "",
   const typename arma_blas_type_only<typename T1::elem_type>::result* junk = 0
   )
   {
   arma_extra_debug_sigprint();
   arma_ignore(junk);
   
-  arma_debug_check( void_ptr(&eigval) == void_ptr(&eigvec), "eig_sym(): eigval is an alias of eigvec" );
+  arma_debug_check( ( ((void*)(&eigval)) == ((void*)(&eigvec)) ), "eig_sym(): eigval is an alias of eigvec" );
   
-  bool use_divide_and_conquer = false;
-  
-  const char sig = method[0];
-  
-  switch(sig)
-    {
-    case '\0':
-    case 's':
-      break;
-      
-    case 'd':
-      use_divide_and_conquer = true;
-      break;
-    
-    default:
-      {
-      arma_stop("eig_sym(): unknown method specified");
-      return false;
-      }
-    }
-  
-  const bool status = (use_divide_and_conquer == false) ? auxlib::eig_sym(eigval, eigvec, X) : auxlib::eig_sym_dc(eigval, eigvec, X);
+  const bool status = auxlib::eig_sym(eigval, eigvec, X);
   
   if(status == false)
     {

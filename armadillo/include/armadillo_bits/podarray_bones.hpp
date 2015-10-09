@@ -1,9 +1,14 @@
-// Copyright (C) 2008-2012 NICTA (www.nicta.com.au)
-// Copyright (C) 2008-2012 Conrad Sanderson
+// Copyright (C) 2008-2010 NICTA (www.nicta.com.au)
+// Copyright (C) 2008-2010 Conrad Sanderson
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup podarray
@@ -18,14 +23,15 @@ struct podarray_prealloc_n_elem
 
 
 
-//! A lightweight array for POD types. For internal use only!
+//! A lightweight array for POD types. If the amount of memory requested is small, the stack is used.
+
 template<typename eT>
 class podarray
   {
   public:
   
-  arma_aligned const uword n_elem; //!< number of elements held
-  arma_aligned       eT*   mem;    //!< pointer to memory used by the object
+  arma_aligned const uword       n_elem; //!< number of elements held
+  arma_aligned const eT* const mem;    //!< pointer to memory used by the object
   
   
   protected:
@@ -45,20 +51,14 @@ class podarray
   
   arma_inline explicit podarray(const eT* X, const uword new_N);
   
-  template<typename T1>
-  inline explicit podarray(const Proxy<T1>& P);
-  
   arma_inline eT& operator[] (const uword i);
   arma_inline eT  operator[] (const uword i) const;
   
   arma_inline eT& operator() (const uword i);
   arma_inline eT  operator() (const uword i) const;
   
-  inline void set_min_size(const uword min_n_elem);
-  
   inline void set_size(const uword new_n_elem);
   inline void reset();
-  
   
   inline void fill(const eT val);
   
@@ -70,11 +70,10 @@ class podarray
   
   arma_hot inline void copy_row(const Mat<eT>& A, const uword row);
   
-  
   protected:
   
-  inline void init_cold(const uword new_n_elem);
-  inline void init_warm(const uword new_n_elem);
+  inline void init(const uword new_n_elem);
+  
   };
 
 

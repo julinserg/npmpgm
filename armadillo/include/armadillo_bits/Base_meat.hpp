@@ -1,9 +1,14 @@
 // Copyright (C) 2008-2012 NICTA (www.nicta.com.au)
 // Copyright (C) 2008-2012 Conrad Sanderson
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup Base
@@ -51,15 +56,12 @@ Base<elem_type,derived>::st() const
 
 
 
-
 template<typename elem_type, typename derived>
 inline
 void
 Base<elem_type,derived>::print(const std::string extra_text) const
   {
-  const Proxy<derived> P( (*this).get_ref() );
-  
-  const quasi_unwrap< typename Proxy<derived>::stored_type > tmp(P.Q);
+  const unwrap<derived> tmp( (*this).get_ref() );
   
   tmp.M.impl_print(extra_text);
   }
@@ -71,9 +73,7 @@ inline
 void
 Base<elem_type,derived>::print(std::ostream& user_stream, const std::string extra_text) const
   {
-  const Proxy<derived> P( (*this).get_ref() );
-  
-  const quasi_unwrap< typename Proxy<derived>::stored_type > tmp(P.Q);
+  const unwrap<derived> tmp( (*this).get_ref() );
   
   tmp.M.impl_print(user_stream, extra_text);
   }
@@ -83,11 +83,33 @@ Base<elem_type,derived>::print(std::ostream& user_stream, const std::string extr
 template<typename elem_type, typename derived>
 inline
 void
+Base<elem_type,derived>::print_trans(const std::string extra_text) const
+  {
+  const unwrap<derived> tmp( (*this).get_ref() );
+  
+  tmp.M.impl_print_trans(extra_text);
+  }
+
+
+
+template<typename elem_type, typename derived>
+inline
+void
+Base<elem_type,derived>::print_trans(std::ostream& user_stream, const std::string extra_text) const
+  {
+  const unwrap<derived> tmp( (*this).get_ref() );
+  
+  tmp.M.impl_print_trans(user_stream, extra_text);
+  }
+  
+
+
+template<typename elem_type, typename derived>
+inline
+void
 Base<elem_type,derived>::raw_print(const std::string extra_text) const
   {
-  const Proxy<derived> P( (*this).get_ref() );
-  
-  const quasi_unwrap< typename Proxy<derived>::stored_type > tmp(P.Q);
+  const unwrap<derived> tmp( (*this).get_ref() );
   
   tmp.M.impl_raw_print(extra_text);
   }
@@ -99,54 +121,33 @@ inline
 void
 Base<elem_type,derived>::raw_print(std::ostream& user_stream, const std::string extra_text) const
   {
-  const Proxy<derived> P( (*this).get_ref() );
-  
-  const quasi_unwrap< typename Proxy<derived>::stored_type > tmp(P.Q);
+  const unwrap<derived> tmp( (*this).get_ref() );
   
   tmp.M.impl_raw_print(user_stream, extra_text);
   }
+  
 
 
-
-//
-// extra functions defined in Base_blas_elem_type
-
-template<typename derived>
-arma_inline
-const Op<derived,op_inv>
-Base_blas_elem_type<derived>::i(const bool slow) const
+template<typename elem_type, typename derived>
+inline
+void
+Base<elem_type,derived>::raw_print_trans(const std::string extra_text) const
   {
-  return Op<derived,op_inv>( static_cast<const derived&>(*this), ((slow == false) ? 0 : 1), 0 );
+  const unwrap<derived> tmp( (*this).get_ref() );
+  
+  tmp.M.impl_raw_print_trans(extra_text);
   }
 
 
 
-//
-// extra functions defined in Base_eval_Mat
-
 template<typename elem_type, typename derived>
-arma_inline
-const derived&
-Base_eval_Mat<elem_type, derived>::eval() const
+inline
+void
+Base<elem_type,derived>::raw_print_trans(std::ostream& user_stream, const std::string extra_text) const
   {
-  arma_extra_debug_sigprint();
+  const unwrap<derived> tmp( (*this).get_ref() );
   
-  return static_cast<const derived&>(*this);
-  }
-
-
-
-//
-// extra functions defined in Base_eval_expr
-
-template<typename elem_type, typename derived>
-arma_inline
-Mat<elem_type>
-Base_eval_expr<elem_type, derived>::eval() const
-  {
-  arma_extra_debug_sigprint();
-  
-  return Mat<elem_type>( static_cast<const derived&>(*this) );
+  tmp.M.impl_raw_print_trans(user_stream, extra_text);
   }
 
 

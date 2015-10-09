@@ -1,9 +1,14 @@
-// Copyright (C) 2009-2012 NICTA (www.nicta.com.au)
-// Copyright (C) 2009-2012 Conrad Sanderson
+// Copyright (C) 2009-2011 NICTA (www.nicta.com.au)
+// Copyright (C) 2009-2011 Conrad Sanderson
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup fn_prod
@@ -21,57 +26,41 @@
 template<typename T1>
 arma_inline
 const Op<T1, op_prod>
-prod
-  (
-  const T1& X,
-  const uword dim = 0,
-  const typename enable_if< is_arma_type<T1>::value       == true  >::result* junk1 = 0,
-  const typename enable_if< resolves_to_vector<T1>::value == false >::result* junk2 = 0
-  )
+prod(const Base<typename T1::elem_type,T1>& X, const uword dim = 0)
   {
   arma_extra_debug_sigprint();
-  arma_ignore(junk1);
-  arma_ignore(junk2);
   
-  return Op<T1, op_prod>(X, dim, 0);
+  return Op<T1, op_prod>(X.get_ref(), dim, 0);
   }
 
 
 
-template<typename T1>
-arma_inline
-const Op<T1, op_prod>
-prod
-  (
-  const T1& X,
-  const uword dim,
-  const typename enable_if<resolves_to_vector<T1>::value == true>::result* junk = 0
-  )
-  {
-  arma_extra_debug_sigprint();
-  arma_ignore(junk);
-  
-  return Op<T1, op_prod>(X, dim, 0);
-  }
-
-
-
-template<typename T1>
+//! \brief
+//! Immediate 'product of all values' operation for a row vector
+template<typename eT>
 inline
 arma_warn_unused
-typename T1::elem_type
-prod
-  (
-  const T1& X,
-  const arma_empty_class junk1 = arma_empty_class(),
-  const typename enable_if<resolves_to_vector<T1>::value == true>::result* junk2 = 0
-  )
+eT
+prod(const Row<eT>& X)
   {
   arma_extra_debug_sigprint();
-  arma_ignore(junk1);
-  arma_ignore(junk2);
   
-  return op_prod::prod( X );
+  return arrayops::product(X.memptr(), X.n_elem);
+  }
+
+
+
+//! \brief
+//! Immediate 'product of all values' operation for a column vector
+template<typename eT>
+inline
+arma_warn_unused
+eT
+prod(const Col<eT>& X)
+  {
+  arma_extra_debug_sigprint();
+  
+  return arrayops::product(X.memptr(), X.n_elem);
   }
 
 
@@ -82,14 +71,18 @@ prod
 
 template<typename T1>
 inline
-arma_warn_unused
 typename T1::elem_type
 prod(const Op<T1, op_prod>& in)
   {
   arma_extra_debug_sigprint();
   arma_extra_debug_print("prod(): two consecutive prod() calls detected");
   
-  return op_prod::prod( in.m );
+  typedef typename T1::elem_type eT;
+  
+  const unwrap<T1>   tmp(in.m);
+  const Mat<eT>& X = tmp.M;
+  
+  return arrayops::product( X.memptr(), X.n_elem );
   }
 
 
@@ -106,13 +99,85 @@ prod(const Op<T1, op_prod>& in, const uword dim)
 
 
 
-template<typename T>
-arma_inline
+//! product of all values of a subview_row
+template<typename eT>
+inline
 arma_warn_unused
-const typename arma_scalar_only<T>::result &
-prod(const T& x)
+eT
+prod(const subview_row<eT>& S)
   {
-  return x;
+  arma_extra_debug_sigprint();
+  
+  const Mat<eT>& X = S.m;
+  
+  const uword n_elem         = S.n_elem;
+  const uword row            = S.aux_row1;
+  const uword start_col      = S.aux_col1;
+  const uword end_col_plus_1 = start_col + S.n_cols;
+  
+  eT val = eT(1);
+  
+  if(n_elem > 0)
+    {
+    for(uword col=start_col; col<end_col_plus_1; ++col)
+      {
+      val *= X.at(row,col);
+      }
+    }
+  
+  return val;
+  }
+
+
+
+//! product of all values of a subview_col
+template<typename eT>
+inline
+arma_warn_unused
+eT
+prod(const subview_col<eT>& S)
+  {
+  arma_extra_debug_sigprint();
+  
+  return (S.n_elem > 0) ? arrayops::product( S.colptr(0), S.n_rows ) : eT(1);
+  }
+
+
+
+//! product of all values of a diagview
+template<typename eT>
+arma_warn_unused
+inline
+eT
+prod(const diagview<eT>& X)
+  {
+  arma_extra_debug_sigprint();
+  
+  const uword X_n_elem = X.n_elem;
+  
+  eT val = eT(1);
+  
+  for(uword i=0; i<X_n_elem; ++i)
+    {
+    val *= X[i];
+    }
+  
+  return val;
+  }
+
+
+
+template<typename eT, typename T1>
+inline
+arma_warn_unused
+eT
+prod(const subview_elem1<eT,T1>& A)
+  {
+  arma_extra_debug_sigprint();
+  
+  const Col<eT> X(A);
+  
+  return prod(X);
   }
 
 

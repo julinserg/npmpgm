@@ -1,9 +1,14 @@
 // Copyright (C) 2010 NICTA (www.nicta.com.au)
 // Copyright (C) 2010 Conrad Sanderson
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup injector
@@ -86,7 +91,7 @@ mat_injector<T1>::mat_injector(T1& in_X, const typename mat_injector<T1>::elem_t
 
 template<typename T1>
 inline
-mat_injector<T1>::mat_injector(T1& in_X, const injector_end_of_row<>& x)
+mat_injector<T1>::mat_injector(T1& in_X, const injector_end_of_row& x)
   : X(in_X)
   , n_rows(1)
   {
@@ -272,7 +277,7 @@ operator<<(const mat_injector<T1>& ref, const typename mat_injector<T1>::elem_ty
 template<typename T1>
 arma_inline
 const mat_injector<T1>&
-operator<<(const mat_injector<T1>& ref, const injector_end_of_row<>& x)
+operator<<(const mat_injector<T1>& ref, const injector_end_of_row& x)
   {
   arma_extra_debug_sigprint();
   arma_ignore(x);
@@ -306,7 +311,7 @@ operator<<(const mat_injector<T1>& ref, const injector_end_of_row<>& x)
 // template<typename T1>
 // arma_inline
 // const mat_injector<T1>&
-// operator,(const mat_injector<T1>& ref, const injector_end_of_row<>& x)
+// operator,(const mat_injector<T1>& ref, const injector_end_of_row& x)
 //   {
 //   arma_extra_debug_sigprint();
 //   arma_ignore(x);
@@ -421,7 +426,7 @@ field_injector<T1>::field_injector(T1& in_X, const typename field_injector<T1>::
 
 template<typename T1>
 inline
-field_injector<T1>::field_injector(T1& in_X, const injector_end_of_row<>& x)
+field_injector<T1>::field_injector(T1& in_X, const injector_end_of_row& x)
   : X(in_X)
   , n_rows(1)
   {
@@ -569,7 +574,7 @@ operator<<(const field_injector<T1>& ref, const typename field_injector<T1>::obj
 template<typename T1>
 arma_inline
 const field_injector<T1>&
-operator<<(const field_injector<T1>& ref, const injector_end_of_row<>& x)
+operator<<(const field_injector<T1>& ref, const injector_end_of_row& x)
   {
   arma_extra_debug_sigprint();
   arma_ignore(x);

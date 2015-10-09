@@ -1,9 +1,14 @@
-// Copyright (C) 2008-2013 NICTA (www.nicta.com.au)
-// Copyright (C) 2008-2013 Conrad Sanderson
+// Copyright (C) 2008-2011 NICTA (www.nicta.com.au)
+// Copyright (C) 2008-2011 Conrad Sanderson
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup Cube
@@ -210,14 +215,6 @@ class Cube : public BaseCube< eT, Cube<eT> >
   
   template<typename eT2> inline void copy_size(const Cube<eT2>& m);
   
-  
-  template<typename functor>
-  inline const Cube& transform(functor F);
-  
-  template<typename functor>
-  inline const Cube& imbue(functor F);
-  
-  
   inline const Cube& fill(const eT val);
   
   inline const Cube& zeros();
@@ -281,16 +278,36 @@ class Cube : public BaseCube< eT, Cube<eT> >
   
   inline       slice_iterator end_slice(const uword slice_num);
   inline const_slice_iterator end_slice(const uword slice_num)   const;
-  
-  inline void  clear();
-  inline bool  empty() const;
-  inline uword size()  const;
-  
-  // inline void swap(Cube& B); // TODO
-  
-  inline void steal_mem(Cube& X);  //!< don't use this unless you're writing code internal to Armadillo
-  
-  template<uword fixed_n_rows, uword fixed_n_cols, uword fixed_n_slices> class fixed;
+
+
+  template<uword fixed_n_rows, uword fixed_n_cols, uword fixed_n_slices>
+  class fixed : public Cube<eT>
+    {
+    private:
+    
+    static const uword fixed_n_elem = fixed_n_rows * fixed_n_cols * fixed_n_slices;
+    
+    arma_aligned Mat<eT>* mat_ptrs_local_extra[ (fixed_n_slices > Cube_prealloc::mat_ptrs_size) ? fixed_n_slices : 1 ];
+    arma_aligned eT       mem_local_extra     [ (fixed_n_elem   > Cube_prealloc::mem_n_elem)    ? fixed_n_elem   : 1 ];
+    
+    arma_inline void mem_setup();
+    
+    
+    public:
+    
+    inline fixed() { mem_setup(); }
+    
+    inline const Cube& operator=(const eT val) { mem_setup(); Cube<eT>::operator=(val); return *this; }
+    
+    template<typename T1>
+    inline fixed(const BaseCube<eT,T1>& A) { mem_setup(); Cube<eT>::operator=(A.get_ref()); }
+    
+    template<typename T1>
+    inline const Cube& operator=(const BaseCube<eT,T1>& A) { Cube<eT>::operator=(A.get_ref()); return *this; }
+    
+    template<typename T1, typename T2>
+    inline explicit fixed(const BaseCube<pod_type,T1>& A, const BaseCube<pod_type,T2>& B) { mem_setup(); Cube<eT>::init(A,B); }
+    };
   
   
   protected:
@@ -300,6 +317,8 @@ class Cube : public BaseCube< eT, Cube<eT> >
   
   template<typename T1, typename T2>
   inline void init(const BaseCube<pod_type,T1>& A, const BaseCube<pod_type,T2>& B);
+  
+  inline void steal_mem(Cube& X);
   
   inline void delete_mat();
   inline void create_mat();
@@ -314,42 +333,6 @@ class Cube : public BaseCube< eT, Cube<eT> >
   #ifdef ARMA_EXTRA_CUBE_PROTO
     #include ARMA_INCFILE_WRAP(ARMA_EXTRA_CUBE_PROTO)
   #endif
-  };
-
-
-
-template<typename eT>
-template<uword fixed_n_rows, uword fixed_n_cols, uword fixed_n_slices>
-class Cube<eT>::fixed : public Cube<eT>
-  {
-  private:
-  
-  static const uword fixed_n_elem = fixed_n_rows * fixed_n_cols * fixed_n_slices;
-  
-  arma_aligned Mat<eT>* mat_ptrs_local_extra[ (fixed_n_slices > Cube_prealloc::mat_ptrs_size) ? fixed_n_slices : 1 ];
-  arma_aligned eT       mem_local_extra     [ (fixed_n_elem   > Cube_prealloc::mem_n_elem)    ? fixed_n_elem   : 1 ];
-  
-  arma_inline void mem_setup();
-  
-  
-  public:
-  
-  inline fixed() { mem_setup(); }
-  
-  inline const Cube& operator=(const eT val) { mem_setup(); Cube<eT>::operator=(val); return *this; }
-  
-  template<typename T1>
-  inline fixed(const BaseCube<eT,T1>& A) { mem_setup(); Cube<eT>::operator=(A.get_ref()); }
-  
-  template<typename T1>
-  inline const Cube& operator=(const BaseCube<eT,T1>& A) { Cube<eT>::operator=(A.get_ref()); return *this; }
-  
-  template<typename T1, typename T2>
-  inline explicit fixed(const BaseCube<pod_type,T1>& A, const BaseCube<pod_type,T2>& B) { mem_setup(); Cube<eT>::init(A,B); }
-  
-  
-  // using Cube<eT>::operator();
-  // TODO: overload operator(), operator[] and .at() to allow faster element access
   };
 
 

@@ -1,9 +1,14 @@
-// Copyright (C) 2008-2013 NICTA (www.nicta.com.au)
-// Copyright (C) 2008-2013 Conrad Sanderson
+// Copyright (C) 2008-2011 NICTA (www.nicta.com.au)
+// Copyright (C) 2008-2011 Conrad Sanderson
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup subview_cube
@@ -32,6 +37,35 @@ subview_cube<eT>::subview_cube
   const uword       in_n_slices
   )
   : m           (in_m)
+  , m_ptr       (0)
+  , aux_row1    (in_row1)
+  , aux_col1    (in_col1)
+  , aux_slice1  (in_slice1)
+  , n_rows      (in_n_rows)
+  , n_cols      (in_n_cols)
+  , n_elem_slice(in_n_rows * in_n_cols)
+  , n_slices    (in_n_slices)
+  , n_elem      (n_elem_slice * in_n_slices)
+  {
+  arma_extra_debug_sigprint();
+  }
+
+
+
+template<typename eT>
+arma_inline
+subview_cube<eT>::subview_cube
+  (
+        Cube<eT>& in_m,
+  const uword       in_row1,
+  const uword       in_col1,
+  const uword       in_slice1,
+  const uword       in_n_rows,
+  const uword       in_n_cols,
+  const uword       in_n_slices
+  )
+  : m           (in_m)
+  , m_ptr       (&in_m)
   , aux_row1    (in_row1)
   , aux_col1    (in_col1)
   , aux_slice1  (in_slice1)
@@ -520,7 +554,7 @@ subview_cube<eT>::operator= (const Base<eT,T1>& in)
   else
   if( (t_n_rows == 1) && (t_n_cols == x_n_rows) && (t_n_slices == x_n_cols) )
     {
-    Cube<eT>& Q = const_cast< Cube<eT>& >(t.m);
+    Cube<eT>& Q = *(t.m_ptr);
     
     const uword t_aux_row1   = t.aux_row1;
     const uword t_aux_col1   = t.aux_col1;
@@ -597,7 +631,7 @@ subview_cube<eT>::operator+= (const Base<eT,T1>& in)
   else
   if( (t_n_rows == 1) && (t_n_cols == x_n_rows) && (t_n_slices == x_n_cols) )
     {
-    Cube<eT>& Q = const_cast< Cube<eT>& >(t.m);
+    Cube<eT>& Q = *(t.m_ptr);
     
     const uword t_aux_row1   = t.aux_row1;
     const uword t_aux_col1   = t.aux_col1;
@@ -674,7 +708,7 @@ subview_cube<eT>::operator-= (const Base<eT,T1>& in)
   else
   if( (t_n_rows == 1) && (t_n_cols == x_n_rows) && (t_n_slices == x_n_cols) )
     {
-    Cube<eT>& Q = const_cast< Cube<eT>& >(t.m);
+    Cube<eT>& Q = *(t.m_ptr);
     
     const uword t_aux_row1   = t.aux_row1;
     const uword t_aux_col1   = t.aux_col1;
@@ -751,7 +785,7 @@ subview_cube<eT>::operator%= (const Base<eT,T1>& in)
   else
   if( (t_n_rows == 1) && (t_n_cols == x_n_rows) && (t_n_slices == x_n_cols) )
     {
-    Cube<eT>& Q = const_cast< Cube<eT>& >(t.m);
+    Cube<eT>& Q = *(t.m_ptr);
     
     const uword t_aux_row1   = t.aux_row1;
     const uword t_aux_col1   = t.aux_col1;
@@ -828,7 +862,7 @@ subview_cube<eT>::operator/= (const Base<eT,T1>& in)
   else
   if( (t_n_rows == 1) && (t_n_cols == x_n_rows) && (t_n_slices == x_n_cols) )
     {
-    Cube<eT>& Q = const_cast< Cube<eT>& >(t.m);
+    Cube<eT>& Q = *(t.m_ptr);
     
     const uword t_aux_row1   = t.aux_row1;
     const uword t_aux_col1   = t.aux_col1;
@@ -862,64 +896,6 @@ subview_cube<eT>::operator/= (const Base<eT,T1>& in)
       {
       arma_stop( arma_incompat_size_string(t, x, "element-wise division") );
       }
-    }
-  }
-
-
-
-//! transform each element in the subview using a functor
-template<typename eT>
-template<typename functor>
-inline
-void
-subview_cube<eT>::transform(functor F)
-  {
-  arma_extra_debug_sigprint();
-  
-  Cube<eT>& Q = const_cast< Cube<eT>& >(m);
-  
-  const uword start_col   = aux_col1;
-  const uword start_row   = aux_row1;
-  const uword start_slice = aux_slice1;
-  
-  const uword end_col_plus1   = start_col   + n_cols;
-  const uword end_row_plus1   = start_row   + n_rows;
-  const uword end_slice_plus1 = start_slice + n_slices;
-  
-  for(uword uslice = start_slice; uslice < end_slice_plus1; ++uslice)
-  for(uword ucol   = start_col;     ucol < end_col_plus1;   ++ucol  )
-  for(uword urow   = start_row;     urow < end_row_plus1;   ++urow  )
-    {
-    Q.at(urow, ucol, uslice) = eT( F( Q.at(urow, ucol, uslice) ) );
-    }
-  }
-
-
-
-//! imbue (fill) the subview with values provided by a functor
-template<typename eT>
-template<typename functor>
-inline
-void
-subview_cube<eT>::imbue(functor F)
-  {
-  arma_extra_debug_sigprint();
-  
-  Cube<eT>& Q = const_cast< Cube<eT>& >(m);
-  
-  const uword start_col   = aux_col1;
-  const uword start_row   = aux_row1;
-  const uword start_slice = aux_slice1;
-  
-  const uword end_col_plus1   = start_col   + n_cols;
-  const uword end_row_plus1   = start_row   + n_rows;
-  const uword end_slice_plus1 = start_slice + n_slices;
-  
-  for(uword uslice = start_slice; uslice < end_slice_plus1; ++uslice)
-  for(uword ucol   = start_col;     ucol < end_col_plus1;   ++ucol  )
-  for(uword urow   = start_row;     urow < end_row_plus1;   ++urow  )
-    {
-    Q.at(urow, ucol, uslice) = eT( F() );
     }
   }
 
@@ -985,8 +961,7 @@ subview_cube<eT>::operator[](const uword i)
   const uword in_row   = j % n_rows;
 
   const uword index = (in_slice + aux_slice1)*m.n_elem_slice + (in_col + aux_col1)*m.n_rows + aux_row1 + in_row;
-  
-  return access::rw( (const_cast< Cube<eT>& >(m)).mem[index] );
+  return access::rw( (*m_ptr).mem[index] );
   }
 
 
@@ -1004,7 +979,6 @@ subview_cube<eT>::operator[](const uword i) const
   const uword in_row   = j % n_rows;
 
   const uword index = (in_slice + aux_slice1)*m.n_elem_slice + (in_col + aux_col1)*m.n_rows + aux_row1 + in_row;
-  
   return m.mem[index];
   }
 
@@ -1025,8 +999,7 @@ subview_cube<eT>::operator()(const uword i)
   const uword in_row   = j % n_rows;
 
   const uword index = (in_slice + aux_slice1)*m.n_elem_slice + (in_col + aux_col1)*m.n_rows + aux_row1 + in_row;
-  
-  return access::rw( (const_cast< Cube<eT>& >(m)).mem[index] );
+  return access::rw( (*m_ptr).mem[index] );
   }
 
 
@@ -1046,7 +1019,6 @@ subview_cube<eT>::operator()(const uword i) const
   const uword in_row   = j % n_rows;
 
   const uword index = (in_slice + aux_slice1)*m.n_elem_slice + (in_col + aux_col1)*m.n_rows + aux_row1 + in_row;
-  
   return m.mem[index];
   }
 
@@ -1060,8 +1032,7 @@ subview_cube<eT>::operator()(const uword in_row, const uword in_col, const uword
   arma_debug_check( ( (in_row >= n_rows) || (in_col >= n_cols) || (in_slice >= n_slices) ), "subview_cube::operator(): location out of bounds");
   
   const uword index = (in_slice + aux_slice1)*m.n_elem_slice + (in_col + aux_col1)*m.n_rows + aux_row1 + in_row;
-  
-  return access::rw( (const_cast< Cube<eT>& >(m)).mem[index] );
+  return access::rw( (*m_ptr).mem[index] );
   }
 
 
@@ -1074,7 +1045,6 @@ subview_cube<eT>::operator()(const uword in_row, const uword in_col, const uword
   arma_debug_check( ( (in_row >= n_rows) || (in_col >= n_cols) || (in_slice >= n_slices) ), "subview_cube::operator(): location out of bounds");
   
   const uword index = (in_slice + aux_slice1)*m.n_elem_slice + (in_col + aux_col1)*m.n_rows + aux_row1 + in_row;
-  
   return m.mem[index];
   }
 
@@ -1086,8 +1056,7 @@ eT&
 subview_cube<eT>::at(const uword in_row, const uword in_col, const uword in_slice)
   {
   const uword index = (in_slice + aux_slice1)*m.n_elem_slice + (in_col + aux_col1)*m.n_rows + aux_row1 + in_row;
-  
-  return access::rw( (const_cast< Cube<eT>& >(m)).mem[index] );
+  return access::rw( (*m_ptr).mem[index] );
   }
 
 
@@ -1098,7 +1067,6 @@ eT
 subview_cube<eT>::at(const uword in_row, const uword in_col, const uword in_slice) const
   {
   const uword index = (in_slice + aux_slice1)*m.n_elem_slice + (in_col + aux_col1)*m.n_rows + aux_row1 + in_row;
-  
   return m.mem[index];
   }
 
@@ -1109,7 +1077,7 @@ arma_inline
 eT*
 subview_cube<eT>::slice_colptr(const uword in_slice, const uword in_col)
   {
-  return & access::rw((const_cast< Cube<eT>& >(m)).mem[  (in_slice + aux_slice1)*m.n_elem_slice + (in_col + aux_col1)*m.n_rows + aux_row1  ]);
+  return & access::rw((*m_ptr).mem[  (in_slice + aux_slice1)*m.n_elem_slice + (in_col + aux_col1)*m.n_rows + aux_row1  ]);
   }
 
 

@@ -1,9 +1,14 @@
 // Copyright (C) 2009-2011 NICTA (www.nicta.com.au)
 // Copyright (C) 2009-2011 Conrad Sanderson
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup running_stat
@@ -23,7 +28,7 @@ arma_counter<eT>::~arma_counter()
 template<typename eT>
 inline
 arma_counter<eT>::arma_counter()
-  : d_count(   eT(0))
+  : d_count( eT(0))
   , i_count(uword(0))
   {
   arma_extra_debug_sigprint_this(this);
@@ -43,7 +48,7 @@ arma_counter<eT>::operator++()
   else
     {
     d_count += eT(ARMA_MAX_UWORD);
-    i_count  = 1;
+    i_count  = 0;
     }
   
   return *this;
@@ -66,7 +71,7 @@ inline
 void
 arma_counter<eT>::reset()
   {
-  d_count =    eT(0);
+  d_count =  eT(0);
   i_count = uword(0);
   }
 
@@ -190,7 +195,7 @@ running_stat<eT>::reset()
   {
   arma_extra_debug_sigprint();
   
-  // typedef typename running_stat<eT>::T T;
+  typedef typename running_stat<eT>::T T;
   
   counter.reset();
   
@@ -373,6 +378,8 @@ void
 running_stat_aux::update_stats(running_stat< std::complex<T> >& x, const std::complex<T>& sample)
   {
   arma_extra_debug_sigprint();
+  
+  typedef typename std::complex<T> eT;
   
   const T sample_norm = std::norm(sample);
   const T N           = x.counter.value();

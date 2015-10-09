@@ -1,9 +1,14 @@
 // Copyright (C) 2008-2010 NICTA (www.nicta.com.au)
-// Copyright (C) 2008-2012 Conrad Sanderson
+// Copyright (C) 2008-2010 Conrad Sanderson
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup fn_trunc_log
@@ -12,9 +17,9 @@
 
 
 template<typename eT>
-inline
+inline 
 static
-typename arma_real_only<eT>::result
+typename arma_float_only<eT>::result
 trunc_log(const eT x)
   {
   if(std::numeric_limits<eT>::is_iec559)
@@ -37,7 +42,7 @@ trunc_log(const eT x)
 
 
 template<typename eT>
-inline
+inline 
 static
 typename arma_integral_only<eT>::result
 trunc_log(const eT x)
@@ -48,12 +53,12 @@ trunc_log(const eT x)
 
 
 template<typename T>
-inline
+inline 
 static
 std::complex<T>
 trunc_log(const std::complex<T>& x)
   {
-  return std::complex<T>( trunc_log( std::abs(x) ), std::arg(x) );
+  return std::log(x);
   }
 
 

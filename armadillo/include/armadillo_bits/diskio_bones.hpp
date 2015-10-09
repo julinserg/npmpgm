@@ -1,10 +1,15 @@
-// Copyright (C) 2008-2012 NICTA (www.nicta.com.au)
-// Copyright (C) 2008-2012 Conrad Sanderson
+// Copyright (C) 2008-2011 NICTA (www.nicta.com.au)
+// Copyright (C) 2008-2011 Conrad Sanderson
 // Copyright (C) 2009-2010 Ian Cullinan
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup diskio
@@ -19,8 +24,6 @@ class diskio
   template<typename eT> inline static std::string gen_txt_header(const Mat<eT>& x);
   template<typename eT> inline static std::string gen_bin_header(const Mat<eT>& x);
   
-  template<typename eT> inline static std::string gen_bin_header(const SpMat<eT>& x);
-
   template<typename eT> inline static std::string gen_txt_header(const Cube<eT>& x);
   template<typename eT> inline static std::string gen_bin_header(const Cube<eT>& x);
   
@@ -33,8 +36,6 @@ class diskio
   
   inline static bool safe_rename(const std::string& old_name, const std::string& new_name);
   
-  template<typename eT> inline static bool convert_naninf(eT&              val, const std::string& token);
-  template<typename  T> inline static bool convert_naninf(std::complex<T>& val, const std::string& token);
   
   //
   // matrix saving
@@ -46,7 +47,6 @@ class diskio
   template<typename eT> inline static bool save_arma_binary(const Mat<eT>&                x, const std::string& final_name);
   template<typename eT> inline static bool save_pgm_binary (const Mat<eT>&                x, const std::string& final_name);
   template<typename  T> inline static bool save_pgm_binary (const Mat< std::complex<T> >& x, const std::string& final_name);
-  template<typename eT> inline static bool save_hdf5_binary(const Mat<eT>&                x, const std::string& final_name);
   
   template<typename eT> inline static bool save_raw_ascii  (const Mat<eT>&                x, std::ostream& f);
   template<typename eT> inline static bool save_raw_binary (const Mat<eT>&                x, std::ostream& f);
@@ -67,7 +67,6 @@ class diskio
   template<typename eT> inline static bool load_arma_binary(Mat<eT>&                x, const std::string& name, std::string& err_msg);
   template<typename eT> inline static bool load_pgm_binary (Mat<eT>&                x, const std::string& name, std::string& err_msg);
   template<typename  T> inline static bool load_pgm_binary (Mat< std::complex<T> >& x, const std::string& name, std::string& err_msg);
-  template<typename eT> inline static bool load_hdf5_binary(Mat<eT>&                x, const std::string& name, std::string& err_msg);
   template<typename eT> inline static bool load_auto_detect(Mat<eT>&                x, const std::string& name, std::string& err_msg);
   
   template<typename eT> inline static bool load_raw_ascii  (Mat<eT>&                x, std::istream& f,  std::string& err_msg);
@@ -80,29 +79,6 @@ class diskio
   template<typename eT> inline static bool load_auto_detect(Mat<eT>&                x, std::istream& f,  std::string& err_msg);
   
   inline static void pnm_skip_comments(std::istream& f);
-  
-  
-  //
-  // sparse matrix saving
-  
-  template<typename eT> inline static bool save_coord_ascii(const SpMat<eT>& x, const std::string& final_name);
-  template<typename eT> inline static bool save_arma_binary(const SpMat<eT>& x, const std::string& final_name);
-  
-  template<typename eT> inline static bool save_coord_ascii(const SpMat<eT>& x,                std::ostream& f);
-  template<typename  T> inline static bool save_coord_ascii(const SpMat< std::complex<T> >& x, std::ostream& f);
-  template<typename eT> inline static bool save_arma_binary(const SpMat<eT>& x,                std::ostream& f);
-  
-  
-  //
-  // sparse matrix loading
-  
-  template<typename eT> inline static bool load_coord_ascii(SpMat<eT>& x, const std::string& name, std::string& err_msg);
-  template<typename eT> inline static bool load_arma_binary(SpMat<eT>& x, const std::string& name, std::string& err_msg);
-  
-  template<typename eT> inline static bool load_coord_ascii(SpMat<eT>& x,                std::istream& f, std::string& err_msg);
-  template<typename  T> inline static bool load_coord_ascii(SpMat< std::complex<T> >& x, std::istream& f, std::string& err_msg);
-  template<typename eT> inline static bool load_arma_binary(SpMat<eT>& x,                std::istream& f, std::string& err_msg);
-  
   
   
   //

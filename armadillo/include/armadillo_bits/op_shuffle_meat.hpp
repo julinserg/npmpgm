@@ -1,10 +1,15 @@
-// Copyright (C) 2009-2012 NICTA (www.nicta.com.au)
-// Copyright (C) 2009-2012 Conrad Sanderson
+// Copyright (C) 2009-2011 NICTA (www.nicta.com.au)
+// Copyright (C) 2009-2011 Conrad Sanderson
 // Copyright (C) 2009-2010 Dimitrios Bouzas
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 
@@ -25,14 +30,18 @@ op_shuffle::apply(Mat<typename T1::elem_type>& out, const Op<T1,op_shuffle>& in)
   const unwrap<T1>   tmp(in.m);
   const Mat<eT>& X = tmp.M;
   
-  if(X.is_empty()) { out.copy_size(X); return; }
+  if(X.is_empty())
+    {
+    out.copy_size(X);
+    return;
+    }
   
   const uword dim = in.aux_uword_a;
   const uword N   = (dim == 0) ? X.n_rows : X.n_cols;
   
-  // see "fn_sort_index.hpp" for the definition of "arma_sort_index_packet"
-  // and the associated comparison functor
-  std::vector< arma_sort_index_packet<int,uword> > packet_vec(N);
+  // see "fn_sort_index.hpp" for the definition of "arma_sort_index_packet_ascend"
+  // and the associated "operator<"
+  std::vector< arma_sort_index_packet_ascend<int,uword> > packet_vec(N);
   
   for(uword i=0; i<N; ++i)
     {
@@ -40,15 +49,11 @@ op_shuffle::apply(Mat<typename T1::elem_type>& out, const Op<T1,op_shuffle>& in)
     packet_vec[i].index = i;
     }
   
-  arma_sort_index_helper_ascend comparator;
-
-  std::sort( packet_vec.begin(), packet_vec.end(), comparator );
-  
-  const bool is_alias = (&out == &X);
+  std::sort( packet_vec.begin(), packet_vec.end() );
   
   if(X.is_vec() == false)
     {
-    if(is_alias == false)
+    if(&out != &X)
       {
       arma_extra_debug_print("op_shuffle::apply(): matrix");
       
@@ -56,11 +61,17 @@ op_shuffle::apply(Mat<typename T1::elem_type>& out, const Op<T1,op_shuffle>& in)
       
       if(dim == 0)
         {
-        for(uword i=0; i<N; ++i) { out.row(i) = X.row(packet_vec[i].index); }
+        for(uword i=0; i<N; ++i)
+          {
+          out.row(i) = X.row(packet_vec[i].index);
+          }
         }
       else
         {
-        for(uword i=0; i<N; ++i) { out.col(i) = X.col(packet_vec[i].index); }
+        for(uword i=0; i<N; ++i)
+          {
+          out.col(i) = X.col(packet_vec[i].index);
+          }
         }
       }
     else  // in-place shuffle
@@ -108,7 +119,7 @@ op_shuffle::apply(Mat<typename T1::elem_type>& out, const Op<T1,op_shuffle>& in)
     }
   else  // we're dealing with a vector
     {
-    if(is_alias == false)
+    if(&out != &X)
       {
       arma_extra_debug_print("op_shuffle::apply(): vector");
       
@@ -118,7 +129,10 @@ op_shuffle::apply(Mat<typename T1::elem_type>& out, const Op<T1,op_shuffle>& in)
         {
         if(X.n_rows > 1)  // i.e. column vector
           {
-          for(uword i=0; i<N; ++i) { out[i] = X[ packet_vec[i].index ]; }
+          for(uword i=0; i<N; ++i)
+            {
+            out[i] = X[ packet_vec[i].index ];
+            }
           }
         else
           {
@@ -129,7 +143,10 @@ op_shuffle::apply(Mat<typename T1::elem_type>& out, const Op<T1,op_shuffle>& in)
         {
         if(X.n_cols > 1)  // i.e. row vector
           {
-          for(uword i=0; i<N; ++i) { out[i] = X[ packet_vec[i].index ]; }
+          for(uword i=0; i<N; ++i)
+            {
+            out[i] = X[ packet_vec[i].index ];
+            }
           }
         else
           {

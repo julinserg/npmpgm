@@ -1,19 +1,22 @@
 
-# Copyright (C) 2008-2013 NICTA (www.nicta.com.au)
-# Copyright (C) 2008-2013 Conrad Sanderson
-# Copyright (C) 2011 Clement Creusot
+# Copyright (C) 2008-2011 NICTA (www.nicta.com.au)
+# Copyright (C) 2008-2011 Conrad Sanderson
+# Copyright (C)      2011 Clement Creusot
 # 
-# This Source Code Form is subject to the terms of the Mozilla Public
-# License, v. 2.0. If a copy of the MPL was not distributed with this
-# file, You can obtain one at http://mozilla.org/MPL/2.0/.
-
-
+# This file is part of the Armadillo C++ library.
+# It is provided without any warranty of fitness
+# for any purpose. You can redistribute this file
+# and/or modify it under the terms of the GNU
+# Lesser General Public License (LGPL) as published
+# by the Free Software Foundation, either version 3
+# of the License or (at your option) any later version.
+# (see http://www.opensource.org/licenses for more info)
 
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 
-set(ARMA_MAJOR 3)
-set(ARMA_MINOR 810)
-set(ARMA_PATCH 3)
+set(ARMA_MAJOR 2)
+set(ARMA_MINOR 4)
+set(ARMA_PATCH 5)
 
 message(STATUS "Configuring Armadillo ${ARMA_MAJOR}.${ARMA_MINOR}.${ARMA_PATCH}")
 
@@ -27,20 +30,16 @@ include(ARMA_CheckMathProto)
 
 project(armadillo CXX)
 
+#CMAKE_REQUIRED_FLAGS = string of compile command line flags
+#CMAKE_REQUIRED_DEFINITIONS = list of macros to define (-DFOO=bar)
+#CMAKE_REQUIRED_LIBRARIES = list of libraries to link
+
+
 set(ARMA_USE_LAPACK  false)
 set(ARMA_USE_BLAS    false)
 set(ARMA_USE_ATLAS   false)
 set(ARMA_USE_BOOST   false)
-set(ARMA_USE_HDF5    false)
 set(ARMA_USE_WRAPPER true )
-
-# NOTE:
-# Set ARMA_USE_WRAPPER to false if you're getting linking errors when compiling your programs,
-# or if you prefer to directly link with LAPACK and/or BLAS.
-# You will then need to link your programs directly with -llapack -lblas instead of -larmadillo
-
-
-message(STATUS "CMAKE_SYSTEM_NAME = ${CMAKE_SYSTEM_NAME}")
 
 
 if(WIN32)
@@ -86,7 +85,7 @@ else()
     set(ARMA_USE_LAPACK true)
     
     message(STATUS "*** If the MKL or ACML libraries are installed in a non-standard location,")
-    message(STATUS "*** such as /opt, make sure the run-time linker can find them.")
+    message(STATUS "*** make sure the run-time linker can find them.")
     message(STATUS "*** On Linux systems this can be done by editing /etc/ld.so.conf")
     message(STATUS "*** or modifying the LD_LIBRARY_PATH environment variable.")
     message(STATUS "*** On systems with SELinux enabled (e.g. Fedora, RHEL),")
@@ -159,12 +158,12 @@ if(MKL_FOUND OR ACMLMP_FOUND OR ACML_FOUND)
   
 else()
   
-  if(ARMA_USE_LAPACK STREQUAL true)
-    set(ARMA_LIBS ${ARMA_LIBS} ${LAPACK_LIBRARIES})
-  endif()
-  
   if(ARMA_USE_BLAS STREQUAL true)
     set(ARMA_LIBS ${ARMA_LIBS} ${BLAS_LIBRARIES})
+  endif()
+  
+  if(ARMA_USE_LAPACK STREQUAL true)
+    set(ARMA_LIBS ${ARMA_LIBS} ${LAPACK_LIBRARIES})
   endif()
   
   if(ARMA_USE_ATLAS STREQUAL true)
@@ -178,24 +177,7 @@ endif()
 if(APPLE)
   set(ARMA_LIBS ${ARMA_LIBS} "-framework Accelerate")  # or "-framework accelerate" ?
   message(STATUS "MacOS X detected. Added '-framework Accelerate' to compiler flags")
-  
-  if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-    add_definitions(
-        -stdlib=libc++
-    )
-  message(STATUS "Clang compiler on MacOS X detected. Added '-stdlib=libc++' to compiler flags")
-  endif()
-
 endif()
-
-# find_package(HDF5)
-# message(STATUS "HDF5_FOUND   = ${HDF5_FOUND}")
-# 
-# if(HDF5_FOUND)
-#   set(ARMA_USE_HDF5 true)
-#   set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES} ${HDF5_INCLUDE_DIRS})
-#   set(ARMA_LIBS ${ARMA_LIBS} ${HDF5_LIBRARIES})
-# endif()
 
 message(STATUS "*** ")
 message(STATUS "*** The Armadillo run-time library component will be an alias for the following libraries:")
@@ -271,27 +253,11 @@ endif()
 #set(CMAKE_INSTALL_RPATH_USE_LINK_PATH  TRUE)
 
 
-# work around a silly limitation in Mac OS X
-if(APPLE)
-  if(${ARMA_MINOR} GREATER 99)
-    math(EXPR ARMA_MINOR_ALT "${ARMA_MINOR} / 10")
-  else()
-    set(ARMA_MINOR_ALT ${ARMA_MINOR})
-  endif()
-else()
-  set(ARMA_MINOR_ALT ${ARMA_MINOR})
-endif()
-
-
-# necessary when linking against Intel MKL on Linux systems
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-as-needed")
-  message(STATUS "CMAKE_SHARED_LINKER_FLAGS = ${CMAKE_SHARED_LINKER_FLAGS}")
-endif()
-
 add_library( armadillo SHARED src/wrap_libs )
 target_link_libraries( armadillo ${ARMA_LIBS} )
-set_target_properties(armadillo PROPERTIES VERSION ${ARMA_MAJOR}.${ARMA_MINOR_ALT}.${ARMA_PATCH} SOVERSION ${ARMA_MAJOR})
+
+set_target_properties(armadillo PROPERTIES VERSION ${ARMA_MAJOR}.${ARMA_MINOR}.${ARMA_PATCH} SOVERSION 2)
+
 
 
 ################################################################################
@@ -303,11 +269,7 @@ set_target_properties(armadillo PROPERTIES VERSION ${ARMA_MAJOR}.${ARMA_MINOR_AL
 # library in either /usr/lib or /usr/lib64
 
 if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-  message(STATUS "*** CMAKE_INSTALL_PREFIX was initalised by cmake to the default value of ${CMAKE_INSTALL_PREFIX}")
-  message(STATUS "*** CMAKE_INSTALL_PREFIX changed to /usr")
-  unset(CMAKE_INSTALL_PREFIX)
   set(CMAKE_INSTALL_PREFIX "/usr")
-  #set(CMAKE_INSTALL_PREFIX "/usr" CACHE PATH "install prefix" FORCE)
 endif()
 
 # Allow for the "lib" directory to be specified on the command line
@@ -315,15 +277,11 @@ if(NOT INSTALL_LIB_DIR)
   set(INSTALL_LIB_DIR "lib")
   if(UNIX AND NOT APPLE)   # I don't know how Mac OS handles 64 bit systems
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-      message(STATUS "*** Detected 64 bit system")
-      # use "lib64" only on systems that have it (eg. Fedora, Red Hat).
-      # if installing in /usr/local/, the use of lib64 might be unreliable on systems which have /usr/local/lib64 but don't use it
-      if(IS_DIRECTORY "${CMAKE_INSTALL_PREFIX}/lib64")
-        unset(INSTALL_LIB_DIR)
-        set(INSTALL_LIB_DIR "lib64")
-        message(STATUS "*** ${CMAKE_INSTALL_PREFIX}/lib64/ exists, so destination directory for the run-time library changed to ${CMAKE_INSTALL_PREFIX}/lib64/")
-        message(STATUS "*** Your system and/or compiler must search ${CMAKE_INSTALL_PREFIX}/lib64/ during linking")
-      endif()
+      message(STATUS "Detected 64 bit system")
+        if(IS_DIRECTORY "${CMAKE_INSTALL_PREFIX}/lib64")
+          unset(INSTALL_LIB_DIR)
+          set(INSTALL_LIB_DIR "lib64")
+        endif()
     endif()
   endif()
 endif()
@@ -361,10 +319,6 @@ PATTERN ".svn" EXCLUDE
 PATTERN "*.cmake" EXCLUDE
 PATTERN "*~" EXCLUDE
 PATTERN "*orig" EXCLUDE
-)
-
-install(FILES ${PROJECT_BINARY_DIR}/include/armadillo_bits/config.hpp
-DESTINATION ${INSTALL_INCLUDE_DIR}/armadillo_bits
 )
 
 install(TARGETS armadillo 

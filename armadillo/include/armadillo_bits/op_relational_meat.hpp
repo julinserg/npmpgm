@@ -1,9 +1,14 @@
 // Copyright (C) 2009-2012 NICTA (www.nicta.com.au)
 // Copyright (C) 2009-2012 Conrad Sanderson
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup op_relational
@@ -51,29 +56,20 @@
       }\
     else\
       {\
-      if(n_rows == 1)\
+      uword count = 0;\
+      \
+      for(uword col=0; col < n_cols; ++col)\
+      for(uword row=0; row < n_rows; ++row, ++count)\
         {\
-        for(uword count=0; count < n_cols; ++count)\
-          {\
-          out_mem[count] = (val operator_rel P.at(0,count)) ? uword(1) : uword(0);\
-          }\
-        }\
-      else\
-        {\
-        for(uword col=0; col < n_cols; ++col)\
-        for(uword row=0; row < n_rows; ++row)\
-          {\
-          *out_mem = (val operator_rel P.at(row,col)) ? uword(1) : uword(0);\
-          out_mem++;\
-          }\
+        out_mem[count] = (val operator_rel P.at(row,col)) ? uword(1) : uword(0);\
         }\
       }\
     }\
   else\
     {\
-    const Mat<eT> tmp(P.Q);\
+    const unwrap<typename Proxy<T1>::stored_type> tmp(P.Q);\
     \
-    out = (val) operator_rel (tmp);\
+    out = (val) operator_rel (tmp.M);\
     }\
   }
 
@@ -111,29 +107,20 @@
       }\
     else\
       {\
-      if(n_rows == 1)\
+      uword count = 0;\
+      \
+      for(uword col=0; col < n_cols; ++col)\
+      for(uword row=0; row < n_rows; ++row, ++count)\
         {\
-        for(uword count=0; count < n_cols; ++count)\
-          {\
-          out_mem[count] = (P.at(0,count) operator_rel val) ? uword(1) : uword(0);\
-          }\
-        }\
-      else\
-        {\
-        for(uword col=0; col < n_cols; ++col)\
-        for(uword row=0; row < n_rows; ++row)\
-          {\
-          *out_mem = (P.at(row,col) operator_rel val) ? uword(1) : uword(0);\
-          out_mem++;\
-          }\
+        out_mem[count] = (P.at(row,col) operator_rel val) ? uword(1) : uword(0);\
         }\
       }\
     }\
   else\
     {\
-    const Mat<eT> tmp(P.Q);\
+    const unwrap<typename Proxy<T1>::stored_type> tmp(P.Q);\
     \
-    out = (tmp) operator_rel (val);\
+    out = (tmp.M) operator_rel (val);\
     }\
   }
 
@@ -172,12 +159,13 @@
       }\
     else\
       {\
+      uword count = 0;\
+      \
       for(uword slice=0; slice < n_slices; ++slice)\
-      for(uword col=0;   col   < n_cols;   ++col  )\
-      for(uword row=0;   row   < n_rows;   ++row  )\
+      for(uword col=0;   col   < n_cols;   ++col)\
+      for(uword row=0;   row   < n_rows;   ++row, ++count)\
         {\
-        *out_mem = (val operator_rel P.at(row,col,slice)) ? uword(1) : uword(0);\
-        out_mem++;\
+        out_mem[count] = (val operator_rel P.at(row,col,slice)) ? uword(1) : uword(0);\
         }\
       }\
     }\
@@ -224,12 +212,13 @@
       }\
     else\
       {\
+      uword count = 0;\
+      \
       for(uword slice=0; slice < n_slices; ++slice)\
-      for(uword col=0;   col   < n_cols;   ++col  )\
-      for(uword row=0;   row   < n_rows;   ++row  )\
+      for(uword col=0;   col   < n_cols;   ++col)\
+      for(uword row=0;   row   < n_rows;   ++row, ++count)\
         {\
-        *out_mem = (P.at(row,col,slice) operator_rel val) ? uword(1) : uword(0);\
-        out_mem++;\
+        out_mem[count] = (P.at(row,col,slice) operator_rel val) ? uword(1) : uword(0);\
         }\
       }\
     }\

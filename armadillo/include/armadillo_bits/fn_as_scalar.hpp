@@ -1,9 +1,14 @@
 // Copyright (C) 2010-2011 NICTA (www.nicta.com.au)
 // Copyright (C) 2010-2011 Conrad Sanderson
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup fn_as_scalar
@@ -345,24 +350,6 @@ const typename arma_scalar_only<T>::result &
 as_scalar(const T& x)
   {
   return x;
-  }
-
-
-
-template<typename T1>
-arma_inline
-arma_warn_unused
-typename T1::elem_type
-as_scalar(const SpBase<typename T1::elem_type, T1>& X)
-  {
-  typedef typename T1::elem_type eT;
-  
-  const unwrap_spmat<T1>  tmp(X.get_ref());
-  const SpMat<eT>& A    = tmp.M;
-  
-  arma_debug_check( (A.n_elem != 1), "as_scalar(): expression doesn't evaluate to exactly one element" );
-  
-  return A.at(0,0);
   }
 
 

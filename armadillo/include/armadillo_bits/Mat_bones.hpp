@@ -1,10 +1,14 @@
-// Copyright (C) 2008-2013 NICTA (www.nicta.com.au)
-// Copyright (C) 2008-2013 Conrad Sanderson
-// Copyright (C) 2012 Ryan Curtin
+// Copyright (C) 2008-2011 NICTA (www.nicta.com.au)
+// Copyright (C) 2008-2011 Conrad Sanderson
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup Mat
@@ -21,10 +25,6 @@ class Mat : public Base< eT, Mat<eT> >
   
   typedef eT                                elem_type;  //!< the type of elements stored in the matrix
   typedef typename get_pod_type<eT>::result pod_type;   //!< if eT is non-complex, pod_type is same as eT. otherwise, pod_type is the underlying type used by std::complex
-  
-  static const bool is_col = false;
-  static const bool is_row = false;
-  
   
   const uword  n_rows;    //!< number of rows in the matrix (read-only)
   const uword  n_cols;    //!< number of columns in the matrix (read-only)
@@ -55,9 +55,6 @@ class Mat : public Base< eT, Mat<eT> >
   
   inline                  Mat(const std::string& text);
   inline const Mat& operator=(const std::string& text);
-  
-  inline                  Mat(const std::vector<eT>& x);
-  inline const Mat& operator=(const std::vector<eT>& x);
   
   #if defined(ARMA_USE_CXX11)
   inline                  Mat(const std::initializer_list<eT>& list);
@@ -126,25 +123,9 @@ class Mat : public Base< eT, Mat<eT> >
   template<typename T1> inline const Mat& operator%=(const subview_elem1<eT,T1>& X);
   template<typename T1> inline const Mat& operator/=(const subview_elem1<eT,T1>& X);
   
-  template<typename T1, typename T2> inline                   Mat(const subview_elem2<eT,T1,T2>& X);
-  template<typename T1, typename T2> inline const Mat& operator= (const subview_elem2<eT,T1,T2>& X);
-  template<typename T1, typename T2> inline const Mat& operator+=(const subview_elem2<eT,T1,T2>& X);
-  template<typename T1, typename T2> inline const Mat& operator-=(const subview_elem2<eT,T1,T2>& X);
-  template<typename T1, typename T2> inline const Mat& operator*=(const subview_elem2<eT,T1,T2>& X);
-  template<typename T1, typename T2> inline const Mat& operator%=(const subview_elem2<eT,T1,T2>& X);
-  template<typename T1, typename T2> inline const Mat& operator/=(const subview_elem2<eT,T1,T2>& X);
-
-  // Operators on sparse matrices (and subviews).
-  template<typename T1> inline explicit          Mat(const SpBase<eT, T1>& m);
-  template<typename T1> inline const Mat&  operator=(const SpBase<eT, T1>& m);
-  template<typename T1> inline const Mat& operator+=(const SpBase<eT, T1>& m);
-  template<typename T1> inline const Mat& operator-=(const SpBase<eT, T1>& m);
-  template<typename T1> inline const Mat& operator*=(const SpBase<eT, T1>& m);
-  template<typename T1> inline const Mat& operator%=(const SpBase<eT, T1>& m);
-  template<typename T1> inline const Mat& operator/=(const SpBase<eT, T1>& m);
   
   inline mat_injector<Mat> operator<<(const eT val);
-  inline mat_injector<Mat> operator<<(const injector_end_of_row<>& x);
+  inline mat_injector<Mat> operator<<(const injector_end_of_row& x);
   
   
   arma_inline       subview_row<eT> row(const uword row_num);
@@ -184,32 +165,9 @@ class Mat : public Base< eT, Mat<eT> >
   template<typename T1> arma_inline       subview_elem1<eT,T1> elem(const Base<uword,T1>& a);
   template<typename T1> arma_inline const subview_elem1<eT,T1> elem(const Base<uword,T1>& a) const;
   
-  template<typename T1> arma_inline       subview_elem1<eT,T1> operator()(const Base<uword,T1>& a);
-  template<typename T1> arma_inline const subview_elem1<eT,T1> operator()(const Base<uword,T1>& a) const;
+  // template<typename T1, typename T2> arma_inline       subview_elem2<eT,T1,T2> submat(const Base<uword,T1>& a, const Base<uword,T2>& b);
+  // template<typename T1, typename T2> arma_inline const subview_elem2<eT,T1,T2> submat(const Base<uword,T1>& a, const Base<uword,T2>& b) const;
   
-  
-  template<typename T1, typename T2> arma_inline       subview_elem2<eT,T1,T2> elem(const Base<uword,T1>& ri, const Base<uword,T2>& ci);
-  template<typename T1, typename T2> arma_inline const subview_elem2<eT,T1,T2> elem(const Base<uword,T1>& ri, const Base<uword,T2>& ci) const;
-  
-  template<typename T1, typename T2> arma_inline       subview_elem2<eT,T1,T2> submat(const Base<uword,T1>& ri, const Base<uword,T2>& ci);
-  template<typename T1, typename T2> arma_inline const subview_elem2<eT,T1,T2> submat(const Base<uword,T1>& ri, const Base<uword,T2>& ci) const;
-  
-  template<typename T1, typename T2> arma_inline       subview_elem2<eT,T1,T2> operator()(const Base<uword,T1>& ri, const Base<uword,T2>& ci);
-  template<typename T1, typename T2> arma_inline const subview_elem2<eT,T1,T2> operator()(const Base<uword,T1>& ri, const Base<uword,T2>& ci) const;
-  
-  
-  template<typename T1> arma_inline       subview_elem2<eT,T1,T1> rows(const Base<uword,T1>& ri);
-  template<typename T1> arma_inline const subview_elem2<eT,T1,T1> rows(const Base<uword,T1>& ri) const;
-  
-  template<typename T2> arma_inline       subview_elem2<eT,T2,T2> cols(const Base<uword,T2>& ci);
-  template<typename T2> arma_inline const subview_elem2<eT,T2,T2> cols(const Base<uword,T2>& ci) const;
-  
-  
-  arma_inline subview_each1< Mat<eT>, 0 > each_col();
-  arma_inline subview_each1< Mat<eT>, 1 > each_row();
-  
-  template<typename T1> inline subview_each2< Mat<eT>, 0, T1 > each_col(const Base<uword, T1>& indices);
-  template<typename T1> inline subview_each2< Mat<eT>, 1, T1 > each_row(const Base<uword, T1>& indices);
   
   arma_inline       diagview<eT> diag(const sword in_id = 0);
   arma_inline const diagview<eT> diag(const sword in_id = 0) const;
@@ -231,13 +189,13 @@ class Mat : public Base< eT, Mat<eT> >
   template<typename T1> inline void insert_cols(const uword col_num, const Base<eT,T1>& X);
   
   
-  template<typename T1, typename gen_type> inline                   Mat(const Gen<T1, gen_type>& X);
-  template<typename T1, typename gen_type> inline const Mat&  operator=(const Gen<T1, gen_type>& X);
-  template<typename T1, typename gen_type> inline const Mat& operator+=(const Gen<T1, gen_type>& X);
-  template<typename T1, typename gen_type> inline const Mat& operator-=(const Gen<T1, gen_type>& X);
-  template<typename T1, typename gen_type> inline const Mat& operator*=(const Gen<T1, gen_type>& X);
-  template<typename T1, typename gen_type> inline const Mat& operator%=(const Gen<T1, gen_type>& X);
-  template<typename T1, typename gen_type> inline const Mat& operator/=(const Gen<T1, gen_type>& X);
+  template<typename gen_type> inline                   Mat(const Gen<eT, gen_type>& X);
+  template<typename gen_type> inline const Mat&  operator=(const Gen<eT, gen_type>& X);
+  template<typename gen_type> inline const Mat& operator+=(const Gen<eT, gen_type>& X);
+  template<typename gen_type> inline const Mat& operator-=(const Gen<eT, gen_type>& X);
+  template<typename gen_type> inline const Mat& operator*=(const Gen<eT, gen_type>& X);
+  template<typename gen_type> inline const Mat& operator%=(const Gen<eT, gen_type>& X);
+  template<typename gen_type> inline const Mat& operator/=(const Gen<eT, gen_type>& X);
   
   template<typename T1, typename op_type> inline                   Mat(const Op<T1, op_type>& X);
   template<typename T1, typename op_type> inline const Mat&  operator=(const Op<T1, op_type>& X);
@@ -291,12 +249,12 @@ class Mat : public Base< eT, Mat<eT> >
   template<typename T1, typename T2, typename glue_type> inline const Mat& operator/=(const mtGlue<eT, T1, T2, glue_type>& X);
   
   
-  arma_inline arma_warn_unused eT& operator[] (const uword ii);
-  arma_inline arma_warn_unused eT  operator[] (const uword ii) const;
-  arma_inline arma_warn_unused eT& at         (const uword ii);
-  arma_inline arma_warn_unused eT  at         (const uword ii) const;
-  arma_inline arma_warn_unused eT& operator() (const uword ii);
-  arma_inline arma_warn_unused eT  operator() (const uword ii) const;
+  arma_inline arma_warn_unused eT& operator[] (const uword i);
+  arma_inline arma_warn_unused eT  operator[] (const uword i) const;
+  arma_inline arma_warn_unused eT& at         (const uword i);
+  arma_inline arma_warn_unused eT  at         (const uword i) const;
+  arma_inline arma_warn_unused eT& operator() (const uword i);
+  arma_inline arma_warn_unused eT  operator() (const uword i) const;
   
   arma_inline arma_warn_unused eT& at         (const uword in_row, const uword in_col);
   arma_inline arma_warn_unused eT  at         (const uword in_row, const uword in_col) const;
@@ -316,8 +274,8 @@ class Mat : public Base< eT, Mat<eT> >
   arma_inline arma_warn_unused bool is_square() const;
        inline arma_warn_unused bool is_finite() const;
   
-  arma_inline arma_warn_unused bool in_range(const uword ii) const;
-  arma_inline arma_warn_unused bool in_range(const span& x ) const;
+  arma_inline arma_warn_unused bool in_range(const uword i) const;
+  arma_inline arma_warn_unused bool in_range(const span& x) const;
   
   arma_inline arma_warn_unused bool in_range(const uword   in_row, const uword   in_col) const;
   arma_inline arma_warn_unused bool in_range(const span& row_span, const uword   in_col) const;
@@ -334,12 +292,18 @@ class Mat : public Base< eT, Mat<eT> >
   inline void impl_print(const std::string& extra_text) const;
   inline void impl_print(std::ostream& user_stream, const std::string& extra_text) const;
   
+  inline void impl_print_trans(const std::string& extra_text) const;
+  inline void impl_print_trans(std::ostream& user_stream, const std::string& extra_text) const;
+  
   inline void impl_raw_print(const std::string& extra_text) const;
   inline void impl_raw_print(std::ostream& user_stream, const std::string& extra_text) const;
   
+  inline void impl_raw_print_trans(const std::string& extra_text) const;
+  inline void impl_raw_print_trans(std::ostream& user_stream, const std::string& extra_text) const;
   
-  template<typename eT2, typename expr>
-  inline void copy_size(const Base<eT2,expr>& X);
+  
+  template<typename eT2>
+  inline void copy_size(const Mat<eT2>& m);
   
   inline void set_size(const uword in_elem);
   inline void set_size(const uword in_rows, const uword in_cols);
@@ -347,13 +311,6 @@ class Mat : public Base< eT, Mat<eT> >
   inline void   resize(const uword in_elem);
   inline void   resize(const uword in_rows, const uword in_cols);
   inline void  reshape(const uword in_rows, const uword in_cols, const uword dim = 0);
-  
-  
-  template<typename functor>
-  inline const Mat& transform(functor F);
-  
-  template<typename functor>
-  inline const Mat& imbue(functor F);
   
   
   arma_hot inline const Mat& fill(const eT val);
@@ -486,11 +443,74 @@ class Mat : public Base< eT, Mat<eT> >
   inline bool  empty() const;
   inline uword size()  const;
   
-  inline void swap(Mat& B);
-  
-  inline void steal_mem(Mat& X);  //!< don't use this unless you're writing code internal to Armadillo
-  
-  template<uword fixed_n_rows, uword fixed_n_cols> class fixed;
+  template<uword fixed_n_rows, uword fixed_n_cols>
+  class fixed : public Mat<eT>
+    {
+    private:
+    
+    static const uword fixed_n_elem = fixed_n_rows * fixed_n_cols;
+    static const bool  use_extra    = (fixed_n_elem > arma_config::mat_prealloc);
+    
+    arma_aligned eT mem_local_extra[ (use_extra) ? fixed_n_elem : 1 ];
+    
+    arma_inline void mem_setup();
+    
+    
+    public:
+    
+    static const uword n_rows = fixed_n_rows;
+    static const uword n_cols = fixed_n_cols;
+    static const uword n_elem = fixed_n_elem;
+    
+    
+    arma_inline fixed();
+    arma_inline fixed(const fixed<fixed_n_rows, fixed_n_cols>& X);
+    
+    template<typename T1>              inline fixed(const Base<eT,T1>& A);
+    template<typename T1, typename T2> inline fixed(const Base<pod_type,T1>& A, const Base<pod_type,T2>& B);
+    
+    inline fixed(      eT* aux_mem, const bool copy_aux_mem = true);
+    inline fixed(const eT* aux_mem);
+    
+    inline fixed(const char*        text);
+    inline fixed(const std::string& text);
+    
+    // TODO: handling of initializer_list ?
+    
+    template<typename T1> inline const Mat& operator=(const Base<eT,T1>& A);
+    
+    inline const Mat& operator=(const eT val);
+    inline const Mat& operator=(const char*        text);
+    inline const Mat& operator=(const std::string& text);
+    
+    
+    inline       subview_row<eT> operator()(const uword  row_num, const span& col_span);
+    inline const subview_row<eT> operator()(const uword  row_num, const span& col_span) const;
+    
+    inline       subview_col<eT> operator()(const span& row_span, const uword col_num);
+    inline const subview_col<eT> operator()(const span& row_span, const uword col_num) const;
+    
+    inline       subview<eT>     operator()(const span& row_span, const span& col_span);
+    inline const subview<eT>     operator()(const span& row_span, const span& col_span) const;
+    
+    
+    arma_inline arma_warn_unused eT& operator[] (const uword i);
+    arma_inline arma_warn_unused eT  operator[] (const uword i) const;
+    arma_inline arma_warn_unused eT& at         (const uword i);
+    arma_inline arma_warn_unused eT  at         (const uword i) const;
+    arma_inline arma_warn_unused eT& operator() (const uword i);
+    arma_inline arma_warn_unused eT  operator() (const uword i) const;
+    
+    arma_inline arma_warn_unused eT& at         (const uword in_row, const uword in_col);
+    arma_inline arma_warn_unused eT  at         (const uword in_row, const uword in_col) const;
+    arma_inline arma_warn_unused eT& operator() (const uword in_row, const uword in_col);
+    arma_inline arma_warn_unused eT  operator() (const uword in_row, const uword in_col) const;
+    
+    
+    arma_hot inline const Mat<eT>& fill(const eT val);
+    arma_hot inline const Mat<eT>& zeros();
+    arma_hot inline const Mat<eT>& ones();
+    };
   
   
   protected:
@@ -507,13 +527,9 @@ class Mat : public Base< eT, Mat<eT> >
   template<typename T1, typename T2>
   inline void init(const Base<pod_type,T1>& A, const Base<pod_type,T2>& B);
   
+  inline void steal_mem(Mat& X);
+  
   inline Mat(const char junk, const eT* aux_mem, const uword aux_n_rows, const uword aux_n_cols);
-  
-  inline Mat(const arma_vec_indicator&, const uhword in_vec_state);
-  inline Mat(const arma_vec_indicator&, const uword in_n_rows, const uword in_n_cols, const uhword in_vec_state);
-  
-  inline Mat(const arma_fixed_indicator&, const uword in_n_rows, const uword in_n_cols, const uhword in_vec_state, const eT* in_mem);
-  
   
   friend class Cube<eT>;
   friend class glue_join;
@@ -521,90 +537,12 @@ class Mat : public Base< eT, Mat<eT> >
   friend class op_htrans;
   friend class op_resize;
   
+  
   public:
   
   #ifdef ARMA_EXTRA_MAT_PROTO
     #include ARMA_INCFILE_WRAP(ARMA_EXTRA_MAT_PROTO)
   #endif
-  };
-
-
-
-template<typename eT>
-template<uword fixed_n_rows, uword fixed_n_cols> 
-class Mat<eT>::fixed : public Mat<eT>
-  {
-  private:
-  
-  static const uword fixed_n_elem = fixed_n_rows * fixed_n_cols;
-  static const bool  use_extra    = (fixed_n_elem > arma_config::mat_prealloc);
-  
-  arma_aligned eT mem_local_extra[ (use_extra) ? fixed_n_elem : 1 ];
-  
-  
-  public:
-  
-  typedef fixed<fixed_n_rows, fixed_n_cols> Mat_fixed_type;
-  
-  typedef eT                                elem_type;
-  typedef typename get_pod_type<eT>::result pod_type;
-  
-  static const bool is_col = (fixed_n_cols == 1) ? true : false;
-  static const bool is_row = (fixed_n_rows == 1) ? true : false;
-  
-  static const uword n_rows = fixed_n_rows;
-  static const uword n_cols = fixed_n_cols;
-  static const uword n_elem = fixed_n_elem;
-  
-  arma_inline fixed();
-  arma_inline fixed(const fixed<fixed_n_rows, fixed_n_cols>& X);
-  
-  template<typename T1>              inline fixed(const Base<eT,T1>& A);
-  template<typename T1, typename T2> inline fixed(const Base<pod_type,T1>& A, const Base<pod_type,T2>& B);
-  
-  inline fixed(const eT* aux_mem);
-  
-  inline fixed(const char*        text);
-  inline fixed(const std::string& text);
-  
-  
-  #if !defined(ARMA_GCC47_BUG)
-    using Mat<eT>::operator=;
-    using Mat<eT>::operator();
-  #else
-    template<typename T1> inline const Mat& operator=(const Base<eT,T1>& A);
-    
-    inline const Mat& operator=(const eT val);
-    
-    inline const Mat& operator=(const char*        text);
-    inline const Mat& operator=(const std::string& text);
-  #endif
-  
-  
-  #if defined(ARMA_USE_CXX11)
-    inline                fixed(const std::initializer_list<eT>& list);
-    inline const Mat& operator=(const std::initializer_list<eT>& list);
-  #endif
-  
-  
-  arma_inline arma_warn_unused eT& operator[] (const uword i);
-  arma_inline arma_warn_unused eT  operator[] (const uword i) const;
-  arma_inline arma_warn_unused eT& at         (const uword i);
-  arma_inline arma_warn_unused eT  at         (const uword i) const;
-  arma_inline arma_warn_unused eT& operator() (const uword i);
-  arma_inline arma_warn_unused eT  operator() (const uword i) const;
-  
-  arma_inline arma_warn_unused eT& at         (const uword in_row, const uword in_col);
-  arma_inline arma_warn_unused eT  at         (const uword in_row, const uword in_col) const;
-  arma_inline arma_warn_unused eT& operator() (const uword in_row, const uword in_col);
-  arma_inline arma_warn_unused eT  operator() (const uword in_row, const uword in_col) const;
-  
-  arma_inline arma_warn_unused       eT* memptr();
-  arma_inline arma_warn_unused const eT* memptr() const;
-  
-  arma_hot inline const Mat<eT>& fill(const eT val);
-  arma_hot inline const Mat<eT>& zeros();
-  arma_hot inline const Mat<eT>& ones();
   };
 
 

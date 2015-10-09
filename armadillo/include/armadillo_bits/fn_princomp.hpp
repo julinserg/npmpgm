@@ -1,10 +1,15 @@
-// Copyright (C) 2010-2012 NICTA (www.nicta.com.au)
-// Copyright (C) 2010-2012 Conrad Sanderson
+// Copyright (C) 2010-2011 NICTA (www.nicta.com.au)
+// Copyright (C) 2010-2011 Conrad Sanderson
 // Copyright (C) 2010 Dimitrios Bouzas
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup fn_princomp
@@ -32,9 +37,13 @@ princomp
   )
   {
   arma_extra_debug_sigprint();
-  arma_ignore(junk);
   
-  const bool status = op_princomp::direct_princomp(coeff_out, score_out, latent_out, tsquared_out, X);
+  typedef typename T1::elem_type eT;
+  
+  const unwrap<T1>   tmp(X.get_ref());
+  const Mat<eT>& A = tmp.M;
+  
+  const bool status = op_princomp::direct_princomp(coeff_out, score_out, latent_out, tsquared_out, A);
   
   if(status == false)
     {
@@ -69,9 +78,13 @@ princomp
   )
   {
   arma_extra_debug_sigprint();
-  arma_ignore(junk);
   
-  const bool status = op_princomp::direct_princomp(coeff_out, score_out, latent_out, X); 
+  typedef typename T1::elem_type eT;
+  
+  const unwrap<T1>   tmp(X.get_ref());
+  const Mat<eT>& A = tmp.M;
+  
+  const bool status = op_princomp::direct_princomp(coeff_out, score_out, latent_out, A); 
   
   if(status == false)
     {
@@ -103,9 +116,13 @@ princomp
   )
   {
   arma_extra_debug_sigprint();
-  arma_ignore(junk);
   
-  const bool status = op_princomp::direct_princomp(coeff_out, score_out, X); 
+  typedef typename T1::elem_type eT;
+  
+  const unwrap<T1>   tmp(X.get_ref());
+  const Mat<eT>& A = tmp.M;
+  
+  const bool status = op_princomp::direct_princomp(coeff_out, score_out, A); 
   
   if(status == false)
     {
@@ -134,9 +151,13 @@ princomp
   )
   {
   arma_extra_debug_sigprint();
-  arma_ignore(junk);
   
-  const bool status = op_princomp::direct_princomp(coeff_out, X);
+  typedef typename T1::elem_type eT;
+  
+  const unwrap<T1>   tmp(X.get_ref());
+  const Mat<eT>& A = tmp.M;
+  
+  const bool status = op_princomp::direct_princomp(coeff_out, A);
   
   if(status == false)
     {
@@ -160,8 +181,7 @@ princomp
   )
   {
   arma_extra_debug_sigprint();
-  arma_ignore(junk);
-  
+
   return Op<T1, op_princomp>(X.get_ref());
   }
 

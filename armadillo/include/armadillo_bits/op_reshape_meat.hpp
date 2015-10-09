@@ -1,9 +1,14 @@
-// Copyright (C) 2008-2012 NICTA (www.nicta.com.au)
-// Copyright (C) 2008-2012 Conrad Sanderson
+// Copyright (C) 2008-2011 NICTA (www.nicta.com.au)
+// Copyright (C) 2008-2011 Conrad Sanderson
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 
@@ -21,10 +26,8 @@ op_reshape::apply(Mat<typename T1::elem_type>& out, const Op<T1,op_reshape>& in)
   
   typedef typename T1::elem_type eT;
   
-  const unwrap<T1>   A_tmp(in.m);
-  const Mat<eT>& A = A_tmp.M;
-  
-  const bool is_alias = (&out == &A);
+  const unwrap<T1>   tmp(in.m);
+  const Mat<eT>& A = tmp.M;
   
   const uword in_n_rows = in.aux_uword_a;
   const uword in_n_cols = in.aux_uword_b;
@@ -36,7 +39,7 @@ op_reshape::apply(Mat<typename T1::elem_type>& out, const Op<T1,op_reshape>& in)
     {
     if(in_dim == 0)
       {
-      if(is_alias == false)
+      if(&out != &A)
         {
         out.set_size(in_n_rows, in_n_cols);
         arrayops::copy( out.memptr(), A.memptr(), out.n_elem );
@@ -60,8 +63,8 @@ op_reshape::apply(Mat<typename T1::elem_type>& out, const Op<T1,op_reshape>& in)
       }
     else
       {
-      unwrap_check< Mat<eT> > B_tmp(A, is_alias);
-      const Mat<eT>& B      = B_tmp.M;
+      unwrap_check< Mat<eT> > tmp(A, out);
+      const Mat<eT>& B      = tmp.M;
       
       out.set_size(in_n_rows, in_n_cols);
       
@@ -72,17 +75,20 @@ op_reshape::apply(Mat<typename T1::elem_type>& out, const Op<T1,op_reshape>& in)
       const uword B_n_cols = B.n_cols;
       
       for(uword row=0; row<B_n_rows; ++row)
-      for(uword col=0; col<B_n_cols; ++col)
         {
-        out_mem[i] = B.at(row,col);
-        ++i;
+        for(uword col=0; col<B_n_cols; ++col)
+          {
+          out_mem[i] = B.at(row,col);
+          ++i;
+          }
         }
+        
       }
     }
   else
     {
-    const unwrap_check< Mat<eT> > B_tmp(A, is_alias);
-    const Mat<eT>& B            = B_tmp.M;
+    const unwrap_check< Mat<eT> > tmp(A, out);
+    const Mat<eT>& B            = tmp.M;
     
     const uword n_elem_to_copy = (std::min)(B.n_elem, in_n_elem);
     
@@ -134,8 +140,8 @@ op_reshape::apply(Cube<typename T1::elem_type>& out, const OpCube<T1,op_reshape>
   
   typedef typename T1::elem_type eT;
   
-  const unwrap_cube<T1> A_tmp(in.m);
-  const Cube<eT>& A   = A_tmp.M;
+  const unwrap_cube<T1> tmp(in.m);
+  const Cube<eT>& A   = tmp.M;
   
   const uword in_n_rows   = in.aux_uword_a;
   const uword in_n_cols   = in.aux_uword_b;
@@ -178,8 +184,8 @@ op_reshape::apply(Cube<typename T1::elem_type>& out, const OpCube<T1,op_reshape>
       }
     else
       {
-      unwrap_cube_check< Cube<eT> > B_tmp(A, out);
-      const Cube<eT>& B           = B_tmp.M;
+      unwrap_cube_check< Cube<eT> > tmp(A, out);
+      const Cube<eT>& B           = tmp.M;
       
       out.set_size(in_n_rows, in_n_cols, in_n_slices);
       
@@ -191,18 +197,23 @@ op_reshape::apply(Cube<typename T1::elem_type>& out, const OpCube<T1,op_reshape>
       const uword B_n_slices = B.n_slices;
       
       for(uword slice=0; slice<B_n_slices; ++slice)
-      for(uword row=0; row<B_n_rows; ++row)
-      for(uword col=0; col<B_n_cols; ++col)
         {
-        out_mem[i] = B.at(row,col,slice);
-        ++i;
+        for(uword row=0; row<B_n_rows; ++row)
+          {
+          for(uword col=0; col<B_n_cols; ++col)
+            {
+            out_mem[i] = B.at(row,col,slice);
+            ++i;
+            }
+          }
         }
+        
       }
     }
   else
     {
-    const unwrap_cube_check< Cube<eT> > B_tmp(A, out);
-    const Cube<eT>& B                 = B_tmp.M;
+    const unwrap_cube_check< Cube<eT> > tmp(A, out);
+    const Cube<eT>& B                 = tmp.M;
     
     const uword n_elem_to_copy = (std::min)(B.n_elem, in_n_elem);
     

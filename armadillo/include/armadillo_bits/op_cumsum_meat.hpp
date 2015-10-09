@@ -1,9 +1,14 @@
-// Copyright (C) 2010-2012 NICTA (www.nicta.com.au)
-// Copyright (C) 2010-2012 Conrad Sanderson
+// Copyright (C) 2010-2011 NICTA (www.nicta.com.au)
+// Copyright (C) 2010-2011 Conrad Sanderson
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup op_cumsum
@@ -19,8 +24,8 @@ op_cumsum_mat::apply(Mat<typename T1::elem_type>& out, const Op<T1,op_cumsum_mat
   
   typedef typename T1::elem_type eT;
   
-  const unwrap_check<T1>  tmp(in.m, out);
-  const Mat<eT>&      X = tmp.M;
+  const unwrap<T1>   tmp(in.m);
+  const Mat<eT>& X = tmp.M;
   
   const uword dim = in.aux_uword_a;
   arma_debug_check( (dim > 1), "cumsum(): incorrect usage. dim must be 0 or 1");
@@ -79,8 +84,8 @@ op_cumsum_vec::apply(Mat<typename T1::elem_type>& out, const Op<T1,op_cumsum_vec
   
   typedef typename T1::elem_type eT;
   
-  const unwrap_check<T1>   tmp(in.m, out);
-  const Mat<eT>&       X = tmp.M;
+  const unwrap<T1>   tmp(in.m);
+  const Mat<eT>& X = tmp.M;
   
   const uword n_elem = X.n_elem;
   

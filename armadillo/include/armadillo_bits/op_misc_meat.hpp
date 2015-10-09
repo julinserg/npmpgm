@@ -1,9 +1,14 @@
-// Copyright (C) 2008-2012 NICTA (www.nicta.com.au)
-// Copyright (C) 2008-2012 Conrad Sanderson
+// Copyright (C) 2008-2011 NICTA (www.nicta.com.au)
+// Copyright (C) 2008-2011 Conrad Sanderson
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup op_misc
@@ -20,35 +25,16 @@ op_real::apply( Mat<typename T1::pod_type>& out, const mtOp<typename T1::pod_typ
   
   typedef typename T1::pod_type T;
   
-  const Proxy<T1> P(X.m);
+  const Proxy<T1> A(X.m);
   
-  const uword n_rows = P.get_n_rows();
-  const uword n_cols = P.get_n_cols();
-    
-  out.set_size(n_rows, n_cols);
+  out.set_size(A.get_n_rows(), A.get_n_cols());
   
-  T* out_mem = out.memptr();
+  const uword n_elem  = out.n_elem;
+        T*  out_mem = out.memptr();
   
-  if(Proxy<T1>::prefer_at_accessor == false)
+  for(uword i=0; i<n_elem; ++i)
     {
-    typedef typename Proxy<T1>::ea_type ea_type;
-    
-    const uword   n_elem  = P.get_n_elem();
-          ea_type A       = P.get_ea();
-    
-    for(uword i=0; i < n_elem; ++i)
-      {
-      out_mem[i] = std::real( A[i] );
-      }
-    }
-  else
-    {
-    for(uword col=0; col < n_cols; ++col)
-    for(uword row=0; row < n_rows; ++row)
-      {
-      *out_mem = std::real( P.at(row,col) );
-      out_mem++;
-      }
+    out_mem[i] = std::real(A[i]);
     }
   }
 
@@ -63,37 +49,16 @@ op_real::apply( Cube<typename T1::pod_type>& out, const mtOpCube<typename T1::po
   
   typedef typename T1::pod_type T;
   
-  const ProxyCube<T1> P(X.m);
+  const ProxyCube<T1> A(X.m);
   
-  const uword n_rows   = P.get_n_rows();
-  const uword n_cols   = P.get_n_cols();
-  const uword n_slices = P.get_n_slices();
-    
-  out.set_size(n_rows, n_cols, n_slices);
+  out.set_size(A.get_n_rows(), A.get_n_cols(), A.get_n_slices());
   
-  T* out_mem = out.memptr();
-
-  if(ProxyCube<T1>::prefer_at_accessor == false)
+  const uword n_elem  = out.n_elem;
+        T*  out_mem = out.memptr();
+  
+  for(uword i=0; i<n_elem; ++i)
     {
-    typedef typename ProxyCube<T1>::ea_type ea_type;
-    
-    const uword   n_elem  = P.get_n_elem();
-          ea_type A       = P.get_ea();
-    
-    for(uword i=0; i < n_elem; ++i)
-      {
-      out_mem[i] = std::real( A[i] );
-      }
-    }
-  else
-    {
-    for(uword slice=0; slice < n_slices; ++slice)
-    for(uword col=0;   col   < n_cols;   ++col  )
-    for(uword row=0;   row   < n_rows;   ++row  )
-      {
-      *out_mem = std::real( P.at(row,col,slice) );
-      out_mem++;
-      }
+    out_mem[i] = std::real(A[i]);
     }
   }
 
@@ -108,35 +73,16 @@ op_imag::apply( Mat<typename T1::pod_type>& out, const mtOp<typename T1::pod_typ
   
   typedef typename T1::pod_type T;
   
-  const Proxy<T1> P(X.m);
+  const Proxy<T1> A(X.m);
   
-  const uword n_rows = P.get_n_rows();
-  const uword n_cols = P.get_n_cols();
-    
-  out.set_size(n_rows, n_cols);
+  out.set_size(A.get_n_rows(), A.get_n_cols());
   
-  T* out_mem = out.memptr();
+  const uword n_elem  = out.n_elem;
+        T*  out_mem = out.memptr();
   
-  if(Proxy<T1>::prefer_at_accessor == false)
+  for(uword i=0; i<n_elem; ++i)
     {
-    typedef typename Proxy<T1>::ea_type ea_type;
-    
-    const uword   n_elem  = P.get_n_elem();
-          ea_type A       = P.get_ea();
-    
-    for(uword i=0; i < n_elem; ++i)
-      {
-      out_mem[i] = std::imag( A[i] );
-      }
-    }
-  else
-    {
-    for(uword col=0; col < n_cols; ++col)
-    for(uword row=0; row < n_rows; ++row)
-      {
-      *out_mem = std::imag( P.at(row,col) );
-      out_mem++;
-      }
+    out_mem[i] = std::imag(A[i]);
     }
   }
 
@@ -151,37 +97,16 @@ op_imag::apply( Cube<typename T1::pod_type>& out, const mtOpCube<typename T1::po
   
   typedef typename T1::pod_type T;
   
-  const ProxyCube<T1> P(X.m);
+  const ProxyCube<T1> A(X.m);
   
-  const uword n_rows   = P.get_n_rows();
-  const uword n_cols   = P.get_n_cols();
-  const uword n_slices = P.get_n_slices();
-    
-  out.set_size(n_rows, n_cols, n_slices);
+  out.set_size(A.get_n_rows(), A.get_n_cols(), A.get_n_slices());
   
-  T* out_mem = out.memptr();
-
-  if(ProxyCube<T1>::prefer_at_accessor == false)
+  const uword n_elem  = out.n_elem;
+        T*  out_mem = out.memptr();
+  
+  for(uword i=0; i<n_elem; ++i)
     {
-    typedef typename ProxyCube<T1>::ea_type ea_type;
-    
-    const uword   n_elem  = P.get_n_elem();
-          ea_type A       = P.get_ea();
-    
-    for(uword i=0; i < n_elem; ++i)
-      {
-      out_mem[i] = std::imag( A[i] );
-      }
-    }
-  else
-    {
-    for(uword slice=0; slice < n_slices; ++slice)
-    for(uword col=0;   col   < n_cols;   ++col  )
-    for(uword row=0;   row   < n_rows;   ++row  )
-      {
-      *out_mem = std::imag( P.at(row,col,slice) );
-      out_mem++;
-      }
+    out_mem[i] = std::imag(A[i]);
     }
   }
 
@@ -196,35 +121,16 @@ op_abs::apply( Mat<typename T1::pod_type>& out, const mtOp<typename T1::pod_type
   
   typedef typename T1::pod_type T;
   
-  const Proxy<T1> P(X.m);
+  const Proxy<T1> A(X.m);
   
-  const uword n_rows = P.get_n_rows();
-  const uword n_cols = P.get_n_cols();
-    
-  out.set_size(n_rows, n_cols);
+  out.set_size(A.get_n_rows(), A.get_n_cols());
   
-  T* out_mem = out.memptr();
+  const uword n_elem  = out.n_elem;
+        T*  out_mem = out.memptr();
   
-  if(Proxy<T1>::prefer_at_accessor == false)
+  for(uword i=0; i<n_elem; ++i)
     {
-    typedef typename Proxy<T1>::ea_type ea_type;
-    
-    const uword   n_elem  = P.get_n_elem();
-          ea_type A       = P.get_ea();
-    
-    for(uword i=0; i < n_elem; ++i)
-      {
-      out_mem[i] = std::abs( A[i] );
-      }
-    }
-  else
-    {
-    for(uword col=0; col < n_cols; ++col)
-    for(uword row=0; row < n_rows; ++row)
-      {
-      *out_mem = std::abs( P.at(row,col) );
-      out_mem++;
-      }
+    out_mem[i] = std::abs(A[i]);
     }
   }
 
@@ -239,37 +145,16 @@ op_abs::apply( Cube<typename T1::pod_type>& out, const mtOpCube<typename T1::pod
   
   typedef typename T1::pod_type T;
   
-  const ProxyCube<T1> P(X.m);
+  const ProxyCube<T1> A(X.m);
   
-  const uword n_rows   = P.get_n_rows();
-  const uword n_cols   = P.get_n_cols();
-  const uword n_slices = P.get_n_slices();
-    
-  out.set_size(n_rows, n_cols, n_slices);
+  out.set_size(A.get_n_rows(), A.get_n_cols(), A.get_n_slices());
   
-  T* out_mem = out.memptr();
-
-  if(ProxyCube<T1>::prefer_at_accessor == false)
+  const uword n_elem  = out.n_elem;
+        T*  out_mem = out.memptr();
+  
+  for(uword i=0; i<n_elem; ++i)
     {
-    typedef typename ProxyCube<T1>::ea_type ea_type;
-    
-    const uword   n_elem  = P.get_n_elem();
-          ea_type A       = P.get_ea();
-    
-    for(uword i=0; i < n_elem; ++i)
-      {
-      out_mem[i] = std::abs( A[i] );
-      }
-    }
-  else
-    {
-    for(uword slice=0; slice < n_slices; ++slice)
-    for(uword col=0;   col   < n_cols;   ++col  )
-    for(uword row=0;   row   < n_rows;   ++row  )
-      {
-      *out_mem = std::abs( P.at(row,col,slice) );
-      out_mem++;
-      }
+    out_mem[i] = std::abs(A[i]);
     }
   }
 

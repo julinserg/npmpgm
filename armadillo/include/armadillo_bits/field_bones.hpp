@@ -2,9 +2,14 @@
 // Copyright (C) 2008-2011 Conrad Sanderson
 // Copyright (C) 2009-2010 Ian Cullinan
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup field
@@ -36,8 +41,9 @@ class field
   
   private:
   
-  arma_aligned oT** mem;                                     //!< pointer to memory used by the object
-  arma_aligned oT*  mem_local[ field_prealloc_n_elem::val ]; //!< Internal memory, to avoid calling the 'new' operator for small amounts of memory
+  arma_aligned oT** mem;             //!< pointer to memory used by the object
+  arma_aligned oT*  mem_local[ field_prealloc_n_elem::val ];
+  //!< Internal memory, to avoid calling the 'new' operator for small amounts of memory
   
   
   public:
@@ -76,7 +82,7 @@ class field
   arma_inline const oT& operator()(const uword row, const uword col) const;
   
   inline field_injector<field> operator<<(const oT& val);
-  inline field_injector<field> operator<<(const injector_end_of_row<>& x);
+  inline field_injector<field> operator<<(const injector_end_of_row& x);
   
   
   inline       subview_field<oT> row(const uword row_num);

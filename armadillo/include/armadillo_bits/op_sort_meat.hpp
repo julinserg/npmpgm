@@ -1,9 +1,14 @@
-// Copyright (C) 2008-2012 NICTA (www.nicta.com.au)
-// Copyright (C) 2008-2012 Conrad Sanderson
+// Copyright (C) 2008-2011 NICTA (www.nicta.com.au)
+// Copyright (C) 2008-2011 Conrad Sanderson
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup op_sort
@@ -101,20 +106,6 @@ op_sort::direct_sort(eT* X, const uword n_elem, const uword sort_type)
 template<typename eT>
 inline 
 void
-op_sort::direct_sort_ascending(eT* X, const uword n_elem)
-  {
-  arma_extra_debug_sigprint();
-  
-  arma_ascend_sort_helper<eT> comparator;
-    
-  std::sort(&X[0], &X[n_elem], comparator);
-  }
-
-
-
-template<typename eT>
-inline 
-void
 op_sort::copy_row(eT* X, const Mat<eT>& A, const uword row)
   {
   const uword N = A.n_cols;
@@ -167,8 +158,8 @@ op_sort::apply(Mat<typename T1::elem_type>& out, const Op<T1,op_sort>& in)
   
   typedef typename T1::elem_type eT;
   
-  const unwrap_check<T1>   tmp(in.m, out);
-  const Mat<eT>&       X = tmp.M;
+  const unwrap<T1>   tmp(in.m);
+  const Mat<eT>& X = tmp.M;
   
   const uword sort_type = in.aux_uword_a;
   const uword dim       = in.aux_uword_b;

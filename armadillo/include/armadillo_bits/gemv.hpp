@@ -1,9 +1,14 @@
-// Copyright (C) 2008-2013 NICTA (www.nicta.com.au)
-// Copyright (C) 2008-2013 Conrad Sanderson
+// Copyright (C) 2008-2011 NICTA (www.nicta.com.au)
+// Copyright (C) 2008-2011 Conrad Sanderson
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup gemv
@@ -131,74 +136,6 @@ class gemv_emul_tinysq
 
 
 
-class gemv_emul_large_helper
-  {
-  public:
-  
-  template<typename eT>
-  arma_hot
-  inline
-  static
-  typename arma_not_cx<eT>::result
-  dot_row_col( const Mat<eT>& A, const eT* x, const uword row, const uword N)
-    {
-    eT acc1 = eT(0);
-    eT acc2 = eT(0);
-    
-    uword i,j;
-    for(i=0, j=1; j < N; i+=2, j+=2)
-      {
-      const eT xi = x[i];
-      const eT xj = x[j];
-      
-      acc1 += A.at(row,i) * xi;
-      acc2 += A.at(row,j) * xj;
-      }
-    
-    if(i < N)
-      {
-      acc1 += A.at(row,i) * x[i];
-      }
-    
-    return (acc1 + acc2);
-    }
-  
-  
-  
-  template<typename eT>
-  arma_hot
-  inline
-  static
-  typename arma_cx_only<eT>::result
-  dot_row_col( const Mat<eT>& A, const eT* x, const uword row, const uword N)
-    {
-    typedef typename get_pod_type<eT>::result T;
-    
-    T val_real = T(0);
-    T val_imag = T(0);
-    
-    for(uword i=0; i<N; ++i)
-      {
-      const std::complex<T>& Ai = A.at(row,i);
-      const std::complex<T>& xi = x[i];
-      
-      const T a = Ai.real();
-      const T b = Ai.imag();
-      
-      const T c = xi.real();
-      const T d = xi.imag();
-      
-      val_real += (a*c) - (b*d);
-      val_imag += (a*d) + (b*c);
-      }
-    
-    return std::complex<T>(val_real, val_imag);
-    }
-  
-  };
-
-
-
 //! \brief
 //! Partial emulation of ATLAS/BLAS gemv().
 //! 'y' is assumed to have been set to the correct size (i.e. taking into account the transpose)
@@ -249,7 +186,12 @@ class gemv_emul_large
       else
       for(uword row=0; row < A_n_rows; ++row)
         {
-        const eT acc = gemv_emul_large_helper::dot_row_col(A, x, row, A_n_cols);
+        eT acc = eT(0);
+        
+        for(uword i=0; i < A_n_cols; ++i)
+          {
+          acc += A.at(row,i) * x[i];
+          }
         
         if( (use_alpha == false) && (use_beta == false) )
           {
@@ -400,10 +342,7 @@ class gemv
     {
     arma_extra_debug_sigprint();
     
-    //const uword threshold = (is_complex<eT>::value == true) ? 16u : 64u;
-    const uword threshold = (is_complex<eT>::value == true) ? 64u : 100u;
-    
-    if(A.n_elem <= threshold)
+    if(A.n_elem <= 64u)
       {
       gemv_emul<do_trans_A, use_alpha, use_beta>::apply(y,A,x,alpha,beta);
       }
@@ -411,50 +350,23 @@ class gemv
       {
       #if defined(ARMA_USE_ATLAS)
         {
-        if(is_complex<eT>::value == false)
-          {
-          // use gemm() instead of gemv() to work around a speed issue in Atlas 3.8.4
-          
-          arma_extra_debug_print("atlas::cblas_gemm()");
-          
-          atlas::cblas_gemm<eT>
-            (
-            atlas::CblasColMajor,
-            (do_trans_A) ? ( is_complex<eT>::value ? CblasConjTrans : atlas::CblasTrans ) : atlas::CblasNoTrans,
-            atlas::CblasNoTrans,
-            (do_trans_A) ? A.n_cols : A.n_rows,
-            1,
-            (do_trans_A) ? A.n_rows : A.n_cols,
-            (use_alpha) ? alpha : eT(1),
-            A.mem,
-            A.n_rows,
-            x,
-            (do_trans_A) ? A.n_rows : A.n_cols,
-            (use_beta) ? beta : eT(0),
-            y,
-            (do_trans_A) ? A.n_cols : A.n_rows
-            );
-          }
-        else
-          {
-          arma_extra_debug_print("atlas::cblas_gemv()");
-          
-          atlas::cblas_gemv<eT>
-            (
-            atlas::CblasColMajor,
-            (do_trans_A) ? ( is_complex<eT>::value ? CblasConjTrans : atlas::CblasTrans ) : atlas::CblasNoTrans,
-            A.n_rows,
-            A.n_cols,
-            (use_alpha) ? alpha : eT(1),
-            A.mem,
-            A.n_rows,
-            x,
-            1,
-            (use_beta) ? beta : eT(0),
-            y,
-            1
-            );
-          }
+        arma_extra_debug_print("atlas::cblas_gemv()");
+        
+        atlas::cblas_gemv<eT>
+          (
+          atlas::CblasColMajor,
+          (do_trans_A) ? ( is_complex<eT>::value ? CblasConjTrans : atlas::CblasTrans ) : atlas::CblasNoTrans,
+          A.n_rows,
+          A.n_cols,
+          (use_alpha) ? alpha : eT(1),
+          A.mem,
+          A.n_rows,
+          x,
+          1,
+          (use_beta) ? beta : eT(0),
+          y,
+          1
+          );
         }
       #elif defined(ARMA_USE_BLAS)
         {

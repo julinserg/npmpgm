@@ -1,9 +1,14 @@
-// Copyright (C) 2008-2013 NICTA (www.nicta.com.au)
-// Copyright (C) 2008-2013 Conrad Sanderson
+// Copyright (C) 2008-2011 NICTA (www.nicta.com.au)
+// Copyright (C) 2008-2011 Conrad Sanderson
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup fn_det
@@ -24,6 +29,7 @@ det
   )
   {
   arma_extra_debug_sigprint();
+  
   arma_ignore(junk);
   
   return auxlib::det(X, slow);
@@ -49,67 +55,16 @@ det
   
   const diagmat_proxy<T1> A(X.m);
   
-  const uword N = A.n_elem;
+  const uword A_n_elem = A.n_elem;
   
-  eT val1 = eT(1);
-  eT val2 = eT(1);
+  eT val = eT(1);
   
-  uword i,j;
-  for(i=0, j=1; j<N; i+=2, j+=2)
+  for(uword i=0; i<A_n_elem; ++i)
     {
-    val1 *= A[i];
-    val2 *= A[j];
+    val *= A[i];
     }
   
-  
-  if(i < N)
-    {
-    val1 *= A[i];
-    }
-  
-  return val1 * val2;
-  }
-
-
-
-//! determinant of a triangular matrix
-template<typename T1>
-inline
-arma_warn_unused
-typename T1::elem_type
-det
-  (
-  const Op<T1, op_trimat>& X,
-  const bool slow = false
-  )
-  {
-  arma_extra_debug_sigprint();
-  arma_ignore(slow);
-  
-  typedef typename T1::elem_type eT;
-  
-  const Proxy<T1> P(X.m);
-  
-  const uword N = P.get_n_rows();
-  
-  arma_debug_check( (N != P.get_n_cols()), "det(): matrix is not square" );
-  
-  eT val1 = eT(1);
-  eT val2 = eT(1);
-  
-  uword i,j;
-  for(i=0, j=1; j<N; i+=2, j+=2)
-    {
-    val1 *= P.at(i,i);
-    val2 *= P.at(j,j);
-    }
-  
-  if(i < N)
-    {
-    val1 *= P.at(i,i);
-    }
-  
-  return val1 * val2;
+  return val;
   }
 
 
@@ -156,18 +111,12 @@ det
   arma_ignore(junk1);
   arma_ignore(junk2);
   
-  return auxlib::det(in.m, slow);  // bypass op_htrans
-  }
-
-
-
-template<typename T>
-arma_inline
-arma_warn_unused
-const typename arma_scalar_only<T>::result &
-det(const T& x)
-  {
-  return x;
+  typedef typename T1::elem_type eT;
+  
+  const unwrap<T1>   tmp(in.m);
+  const Mat<eT>& X = tmp.M;
+  
+  return det(X, slow);
   }
 
 

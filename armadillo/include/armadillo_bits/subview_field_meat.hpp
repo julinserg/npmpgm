@@ -1,9 +1,14 @@
-// Copyright (C) 2008-2012 NICTA (www.nicta.com.au)
-// Copyright (C) 2008-2012 Conrad Sanderson
+// Copyright (C) 2008-2011 NICTA (www.nicta.com.au)
+// Copyright (C) 2008-2011 Conrad Sanderson
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup subview_field
@@ -24,12 +29,36 @@ arma_inline
 subview_field<oT>::subview_field
   (
   const field<oT>& in_f,
-  const uword      in_row1,
-  const uword      in_col1,
-  const uword      in_n_rows,
-  const uword      in_n_cols
+  const uword        in_row1,
+  const uword        in_col1,
+  const uword        in_n_rows,
+  const uword        in_n_cols
   )
   : f(in_f)
+  , f_ptr(0)
+  , aux_row1(in_row1)
+  , aux_col1(in_col1)
+  , n_rows(in_n_rows)
+  , n_cols(in_n_cols)
+  , n_elem(in_n_rows*in_n_cols)
+  {
+  arma_extra_debug_sigprint();
+  }
+
+
+
+template<typename oT>
+arma_inline
+subview_field<oT>::subview_field
+  (
+        field<oT>& in_f,
+  const uword        in_row1,
+  const uword        in_col1,
+  const uword        in_n_rows,
+  const uword        in_n_cols
+  )
+  : f(in_f)
+  , f_ptr(&in_f)
   , aux_row1(in_row1)
   , aux_col1(in_col1)
   , n_rows(in_n_rows)
@@ -103,12 +132,14 @@ arma_inline
 oT&
 subview_field<oT>::operator[](const uword i)
   {
+  arma_check( (f_ptr == 0), "subview_field::operator[]: field is read-only");
+  
   const uword in_col = i / n_rows;
   const uword in_row = i % n_rows;
     
   const uword index = (in_col + aux_col1)*f.n_rows + aux_row1 + in_row;
   
-  return *((const_cast< field<oT>& >(f)).mem[index]);
+  return *((*f_ptr).mem[index]);
   }
 
 
@@ -133,14 +164,15 @@ arma_inline
 oT&
 subview_field<oT>::operator()(const uword i)
   {
+  arma_check( (f_ptr == 0), "subview_field::operator(): field is read-only");
   arma_debug_check( (i >= n_elem), "subview_field::operator(): index out of bounds");
-  
+    
   const uword in_col = i / n_rows;
   const uword in_row = i % n_rows;
   
   const uword index = (in_col + aux_col1)*f.n_rows + aux_row1 + in_row;
   
-  return *((const_cast< field<oT>& >(f)).mem[index]);
+  return *((*f_ptr).mem[index]);
   }
 
 
@@ -167,11 +199,12 @@ arma_inline
 oT&
 subview_field<oT>::operator()(const uword in_row, const uword in_col)
   {
+  arma_check( (f_ptr == 0), "subview_field::operator(): field is read-only");
   arma_debug_check( ((in_row >= n_rows) || (in_col >= n_cols)), "subview_field::operator(): index out of bounds");
   
   const uword index = (in_col + aux_col1)*f.n_rows + aux_row1 + in_row;
   
-  return *((const_cast< field<oT>& >(f)).mem[index]);
+  return *((*f_ptr).mem[index]);
   }
 
 
@@ -195,9 +228,13 @@ arma_inline
 oT&
 subview_field<oT>::at(const uword in_row, const uword in_col)
   {
+  //arma_extra_debug_sigprint();
+  
+  arma_check( (f_ptr == 0), "subview_field::at(): field is read-only");
+  
   const uword index = (in_col + aux_col1)*f.n_rows + aux_row1 + in_row;
   
-  return *((const_cast< field<oT>& >(f)).mem[index]);
+  return *((*f_ptr).mem[index]);
   }
 
 

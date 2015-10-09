@@ -2,9 +2,14 @@
 // Copyright (C) 2008-2011 Conrad Sanderson
 // Copyright (C) 2009-2010 Ian Cullinan
 // 
-// This Source Code Form is subject to the terms of the Mozilla Public
-// License, v. 2.0. If a copy of the MPL was not distributed with this
-// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+// This file is part of the Armadillo C++ library.
+// It is provided without any warranty of fitness
+// for any purpose. You can redistribute this file
+// and/or modify it under the terms of the GNU
+// Lesser General Public License (LGPL) as published
+// by the Free Software Foundation, either version 3
+// of the License or (at your option) any later version.
+// (see http://www.opensource.org/licenses for more info)
 
 
 //! \addtogroup field
@@ -310,7 +315,7 @@ field<oT>::operator<<(const oT& val)
 template<typename oT>
 inline
 field_injector< field<oT> >
-field<oT>::operator<<(const injector_end_of_row<>& x)
+field<oT>::operator<<(const injector_end_of_row& x)
   {
   return field_injector< field<oT> >(*this, x);
   }
@@ -1008,17 +1013,14 @@ field<oT>::init(const field<oT>& x)
   
   if(this != &x)
     {
-    const uword x_n_rows = x.n_rows;
-    const uword x_n_cols = x.n_cols;
-    
-    init(x_n_rows, x_n_cols);
+    init(x.n_rows, x.n_cols);
     
     field& t = *this;
     
-    for(uword ucol=0; ucol < x_n_cols; ++ucol)
-    for(uword urow=0; urow < x_n_rows; ++urow)
+    for(uword col=0; col<x.n_cols; ++col)
+    for(uword row=0; row<x.n_rows; ++row)
       {
-      t.at(urow,ucol) = x.at(urow,ucol);
+      t.at(row,col) = x.at(row,col);
       }
     }
   
@@ -1456,7 +1458,7 @@ field_aux::reset_objects(field< std::string >& x)
 template<typename oT>
 inline
 bool
-field_aux::save(const field<oT>&, const std::string&, const file_type, std::string& err_msg)
+field_aux::save(const field<oT>& x, const std::string& name, const file_type type, std::string& err_msg)
   {
   arma_extra_debug_sigprint();
   
@@ -1470,7 +1472,7 @@ field_aux::save(const field<oT>&, const std::string&, const file_type, std::stri
 template<typename oT>
 inline
 bool
-field_aux::save(const field<oT>&, std::ostream&, const file_type, std::string& err_msg)
+field_aux::save(const field<oT>& x, std::ostream& os, const file_type type, std::string& err_msg)
   {
   arma_extra_debug_sigprint();
   
@@ -1484,7 +1486,7 @@ field_aux::save(const field<oT>&, std::ostream&, const file_type, std::string& e
 template<typename oT>
 inline
 bool
-field_aux::load(field<oT>&, const std::string&, const file_type, std::string& err_msg)
+field_aux::load(field<oT>& x, const std::string& name, const file_type type, std::string& err_msg)
   {
   arma_extra_debug_sigprint();
   
@@ -1498,7 +1500,7 @@ field_aux::load(field<oT>&, const std::string&, const file_type, std::string& er
 template<typename oT>
 inline
 bool
-field_aux::load(field<oT>&, std::istream&, const file_type, std::string& err_msg)
+field_aux::load(field<oT>& x, std::istream& is, const file_type type, std::string& err_msg)
   {
   arma_extra_debug_sigprint();
   
