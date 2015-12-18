@@ -14,9 +14,15 @@
 #include "gaussian_kernel.h"
 #include "dmaps.h"
 #include "util_fns.h"*/
+#include "QDir"
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+    QDir dir;
+    if (!dir.exists("model"))
+    {
+        dir.mkdir("model");
+    }
    /* std::cout << "<---------------------------------------->" << std::endl;
 
     const int graph_size = atoi(argv[2]);
