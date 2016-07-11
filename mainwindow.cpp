@@ -19,8 +19,8 @@
 //somthread->setObjectEvent(this,i);
 //somthread->start();
 
-const QString C_DEF_PATH_TO_TRAIN_DATA = "./data/characterTrainData.csv";
-const QString C_DEF_PATH_TO_TEST_DATA = "./data/characterTestData.csv";
+const QString C_DEF_PATH_TO_TRAIN_DATA = "./data/TrainCharacter";
+const QString C_DEF_PATH_TO_TEST_DATA = "./data/TestCharacter";
 const QString C_DEF_PATH_TO_MODEL = "./model";
 
 class_npmpgm_gui::class_npmpgm_gui(QWidget *parent) :
@@ -92,10 +92,12 @@ void class_npmpgm_gui::on_pbSetTrainData_clicked()
 {
    ui->leStatusTrainData->setText("Данные не загружены.");
    ui->leStatusTrainData->setStyleSheet("background-color: #FFD700");
-   QString fileName = QFileDialog::getOpenFileName(this,
-        tr("Выбор файла с обучающими данными"), "./", tr("Обучающие данные (*.csv)"));
-   ui->leLoadTrainData->setText(fileName);
-   m_filename_traindata = fileName;
+   /*QString fileName = QFileDialog::getOpenFileName(this,
+        tr("Выбор файла с обучающими данными"), "./", tr("Обучающие данные (*.csv)"));*/
+   QString dirName = QFileDialog::getExistingDirectory(this,
+        tr("Выбрать папку с обучающими данными"), "./");
+   ui->leLoadTrainData->setText(dirName);
+   m_filename_traindata = dirName;
 
 }
 
@@ -110,10 +112,12 @@ void class_npmpgm_gui::on_pbSetTestData_clicked()
 {
     ui->leStatusTestData->setText("Данные не загружены.");
     ui->leStatusTestData->setStyleSheet("background-color: #FFD700");
-    QString fileName = QFileDialog::getOpenFileName(this,
-         tr("Выбор файла с тестовыми данными"), "./", tr("Тестовые данные (*.csv)"));
-    ui->leLoadTestData->setText(fileName);
-    m_filename_testdata = fileName;
+    /*QString fileName = QFileDialog::getOpenFileName(this,
+         tr("Выбор файла с тестовыми данными"), "./", tr("Тестовые данные (*.csv)"));*/
+    QString dirName = QFileDialog::getExistingDirectory(this,
+         tr("Выбрать папку с тестовыми данными"), "./");
+    ui->leLoadTestData->setText(dirName);
+    m_filename_testdata = dirName;
 }
 
 void class_npmpgm_gui::on_pbLoadTestData_clicked()
@@ -152,21 +156,28 @@ void class_npmpgm_gui::on_pbSetClassifyData_clicked()
 {
     QString namefile = QFileDialog::getOpenFileName(this,
          tr("Выбрать файл с данными для классификации"), "./", tr("Файл с данными (*.csv)"));
-    QFile file(namefile);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    if (!namefile.isEmpty())
     {
-         ui->leLoadClassifyData->setStyleSheet("background-color: #B22222");
-         return ;
+        bool ok;
+        mat Data;
+        if (CGetData::get_mat_from_file(namefile, Data))
+        {
+            std::vector< std::vector<double> > matrixdata(Data.n_rows, std::vector<double>(Data.n_cols));
+            for(int i=0;i< Data.n_rows;++i)
+            {
+                for(int j=0;j< Data.n_cols;++j)
+                {
+                    matrixdata[i][j] = Data(i,j);
+                }
+            }
+            ui->leLoadClassifyData->setText(namefile);
+            ui->leLoadClassifyData->setStyleSheet("background-color: #32CD32");
+            m_matrixdata = matrixdata;
+            return ;
+        }
     }
-
-    int lineNum = 0;
-    QTextStream in(&file);
-    QString line = in.readLine();
-    QStringList strListVal = line.split(",");
-    bool ok;
-    int row = strListVal.at(0).toInt(&ok);
-    int col = strListVal.at(1).toInt(&ok);
-    if (row <= 1 || col <= 1)
+    ui->leLoadClassifyData->setStyleSheet("background-color: #B22222");
+    /*if (row <= 1 || col <= 1)
     {
         ui->leLoadClassifyData->setStyleSheet("background-color: #B22222");
         return ;
@@ -186,7 +197,7 @@ void class_npmpgm_gui::on_pbSetClassifyData_clicked()
     int g = 0;
     ui->leLoadClassifyData->setText(namefile);
     ui->leLoadClassifyData->setStyleSheet("background-color: #32CD32");
-    m_matrixdata = matrixdata;
+    m_matrixdata = matrixdata;*/
 }
 
 void class_npmpgm_gui::on_pbSetClassifyModel_clicked()

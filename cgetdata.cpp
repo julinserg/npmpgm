@@ -3,9 +3,18 @@
 #include <QFile>
 #include <QTextStream>
 #include <QStringList>
+#include <QDir>
 //const int C_MAX_ROWS = 999999;
 const int C_MAX_ROWS = 1100000;
 const int C_MAX_COLUMNS = 20;
+int CGetData::convertFileNameToNumClass(QString str)
+{
+    int begin = str.indexOf("cl_");
+    int end = str.indexOf("_i_");
+    QString cl = str.mid(begin + QString("cl_").size(),end-begin-QString("cl_").size());
+    return cl.toInt();
+}
+
 bool CGetData::get_mat_from_file(const QString& namefile, mat &data, mat &label)
 {
     QFile file(namefile);
@@ -42,7 +51,33 @@ bool CGetData::get_mat_from_file(const QString& namefile, mat &data, mat &label)
 
 }
 
-bool CGetData::get_cell_from_file(const QString& namefileData,field<mat>& data, mat& label)
+bool CGetData::get_mat_from_file(const QString &namefile, mat &data)
+{
+    QFile file(namefile);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return false;
+    data.set_size(C_MAX_ROWS,C_MAX_COLUMNS);
+    QTextStream in(&file);
+    int lineNum = 0;
+    bool ok;
+    int desi = 0;
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+        QStringList strListVal = line.split(",");
+        desi = strListVal.size();
+        for(int i=0;i< desi;++i)
+        {
+            data(lineNum,i) = strListVal.at(i).toDouble(&ok);
+        }
+        lineNum++;
+    }
+    data.resize(lineNum,desi);
+    int g = 0;
+    return true;
+
+}
+
+/*bool CGetData::get_cell_from_file(const QString& namefileData,field<mat>& data, mat& label)
 {
     mat Data;
     mat Label;
@@ -92,6 +127,33 @@ bool CGetData::get_cell_from_file(const QString& namefileData,field<mat>& data, 
     int t = 0;
 
     return true;
+}*/
+
+bool CGetData::get_cell_from_file(const QString& namefileData,field<mat>& data, mat& label)
+{
+    QDir dir(namefileData);
+    dir.setFilter(QDir::Files | QDir::Hidden | QDir::NoSymLinks);
+    dir.setSorting(QDir::Size | QDir::Reversed);
+    QStringList filters;
+    filters << "*.csv";
+    dir.setNameFilters(filters);
+    dir.setSorting(QDir::Name);
+    QFileInfoList list = dir.entryInfoList();
+    data.set_size(list.size(),1);
+    label.set_size(list.size(),1);
+    for (int i = 0; i < list.size(); ++i)
+    {
+         mat Data;
+         QFileInfo fileInfo = list.at(i);
+         if (!CGetData::get_mat_from_file(fileInfo.absoluteFilePath(),Data))
+         {
+            return false;
+         }
+         data(i,0) = Data;
+         label(i,0) = convertFileNameToNumClass(fileInfo.fileName());
+    }
+
+    return true;
 }
 
 void CGetData::forming_train_data_for_som(field<mat> data, mat label, field<mat> &dataForSOM)
@@ -103,7 +165,8 @@ void CGetData::forming_train_data_for_som(field<mat> data, mat label, field<mat>
     int indexField = 0;
     int first_row = 0;
     int last_row = 0;
-    int sizeRow =label(label.n_rows-1,0) -  label(0,0) + 1;
+    int sizeRow =label.max();
+    label.print();
     A.set_size(C_MAX_ROWS,data(0,0).n_cols);
     dataForSOM.set_size(sizeRow,1);
     int des = 0;
